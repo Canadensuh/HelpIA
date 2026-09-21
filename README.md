@@ -4,7 +4,6 @@
 - João Pedro Marques Souza (@marquess07)
 - Murilo do Nascimento Bezerra (@Canadensuh)
 
-
 ## Descrição
 Sistema de hub de atendimento que integra Microsoft Teams para triagem e direcionamento de chamados de suporte.
 
