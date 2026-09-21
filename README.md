@@ -1,51 +1,38 @@
-# CallSync
+# Avaliação A2 - Do modelo à arquitetura do MVP
 
-Sistema de hub de atendimento que integra Microsoft Teams para triagem e direcionamento de chamados de suporte.
+## Equipe
 
-## Integrantes
+| Integrante | Usuário GitHub | Responsabilidade | Evidência |
+|---|---|---|---|
+| João Pedro Marques Souza | @marquess07 | Requisitos e rastreabilidade | README, história, critérios |
+| Murilo do Nascimento Bezerra | @Canadensuh | Modelagem, Projeto e Arquitetura | Modelagem revisada, análise de projeto, arquitetura |
 
-- João Pedro Marques Souza (@marquess07)
-- Murilo do Nascimento Bezerra (@Canadensuh)
+## Projeto
+CallSync - Sistema de hub de atendimento no Microsoft Teams
 
-## Descrição
+## Problema
+Colaboradores não têm canal padronizado para abrir chamados, e analistas perdem tempo triando mensagens dispersas no Teams, resultando em atrasos e retrabalho.
 
-O CallSync é uma plataforma web que organiza o atendimento de suporte técnico dentro do Microsoft Teams. Quando um colaborador tem um problema, ele envia uma mensagem no Teams, o sistema registra automaticamente um chamado, classifica por categoria e direciona para a fila do analista correto. O analista visualiza a fila, assume o chamado e o colaborador recebe uma confirmação.
+## Jornada selecionada
+Abrir uma solicitação via Microsoft Teams
 
-### Problema resolvido
+## História de usuário
+Como colaborador, quero abrir uma solicitação através do Microsoft Teams, para que meu problema seja registrado formalmente e direcionado ao analista correto sem que eu precise procurar alguém.
 
-- Chamados chegam de forma desorganizada (chat privado, canal geral)
-- Analistas perdem tempo triando mensagens manualmente
-- Não há histórico centralizado de atendimentos
-- Colaboradores não sabem se serão atendidos
+## Critérios de aceitação
+- CA-01: O sistema registra automaticamente o chamado com número único, data e hora.
+- CA-02: O sistema classifica a solicitação por categoria e direciona para a fila correta.
+- CA-03: O colaborador recebe confirmação no Teams com número e status inicial.
 
-### Solução
+## Regra de negócio
+- RN-01: Se a mensagem não contiver descrição suficiente, o sistema deve solicitar informações complementares antes de registrar o chamado.
 
-- Registro automático de chamados via Teams
-- Classificação por categoria (Hardware, Software, Rede)
-- Direcionamento para filas de analistas
-- Painel do analista com fila de chamados
-- Confirmação automática para o colaborador
+## Rastreabilidade resumida
 
-## Tecnologias
-
-- Python 3.12
-- Flask
-- PostgreSQL
-- Microsoft Graph API (integração com Teams)
-- AWS (EC2 + RDS - free tier)
-- GitHub Actions (CI)
-
-## Como executar localmente
-
-### Pré-requisitos
-
-- Python 3.12 ou superior
-- Git
-- pip
-
-### Passos
-
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/Canadensuh/CallSync.git
-   cd CallSync
+| Origem | Representação no projeto |
+|---|---|
+| História | Jornada de abertura de chamado via Teams |
+| CA-01 | Fluxograma (etapa de registro) e Classe Chamado |
+| CA-02 | Fluxograma (etapa de classificação) e Classe Chamado |
+| CA-03 | Fluxograma (etapa de confirmação) e Protótipo (Tela 2) |
+| RN-01 | Fluxograma (decisão) e Casos de Uso |
