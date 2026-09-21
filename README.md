@@ -4,7 +4,7 @@
 
 | Integrante | Usuário GitHub | Responsabilidade | Evidência |
 |---|---|---|---|
-| João Pedro Marques Souza | @marquess07 | Requisitos e rastreabilidade | README, história, critérios |
+| João Pedro Marques Souza | @marquess07 | Requisitos e rastreabilidade | README, história, critérios |  Modelagem, Projeto e Arquitetura 
 | Murilo do Nascimento Bezerra | @Canadensuh | Modelagem, Projeto e Arquitetura | Modelagem revisada, análise de projeto, arquitetura |
 
 ## Projeto
