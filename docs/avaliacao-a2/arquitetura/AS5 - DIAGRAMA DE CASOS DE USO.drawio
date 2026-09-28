@@ -1,0 +1,37 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Página-1" id="hN4jnC1DUwFfmI8w_Pk4">
+    <mxGraphModel dx="884" dy="647" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="0WZVLRIM_lMOyaO8pJJh-2" parent="1" style="whiteSpace=wrap;html=1;aspect=fixed;" value="" vertex="1">
+          <mxGeometry height="530" width="530" x="230" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="0WZVLRIM_lMOyaO8pJJh-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;pre&gt;&lt;span&gt;Abrir solicitação&lt;/span&gt;&lt;/pre&gt;" vertex="1">
+          <mxGeometry height="60" width="146" x="410" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="0WZVLRIM_lMOyaO8pJJh-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Visualizar fila de chamados" vertex="1">
+          <mxGeometry height="60" width="146" x="410" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="0WZVLRIM_lMOyaO8pJJh-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Assumir chamado" vertex="1">
+          <mxGeometry height="60" width="146" x="414" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="0WZVLRIM_lMOyaO8pJJh-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;pre&gt;&lt;span&gt;Receber confirmação&lt;/span&gt;&lt;/pre&gt;" vertex="1">
+          <mxGeometry height="60" width="146" x="414" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="0WZVLRIM_lMOyaO8pJJh-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;pre&gt;&lt;span&gt;Analista&lt;/span&gt;&lt;/pre&gt;" vertex="1">
+          <mxGeometry height="60" width="130" x="600" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="0WZVLRIM_lMOyaO8pJJh-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;pre&gt;&lt;span&gt;Colaborador&lt;/span&gt;&lt;/pre&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="260" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="0WZVLRIM_lMOyaO8pJJh-11" edge="1" parent="1" source="0WZVLRIM_lMOyaO8pJJh-10" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="0WZVLRIM_lMOyaO8pJJh-9" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="445" y="650" as="sourcePoint" />
+            <mxPoint x="495" y="600" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
