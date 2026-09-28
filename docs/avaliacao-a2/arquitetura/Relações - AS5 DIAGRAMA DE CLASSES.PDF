@@ -1,0 +1,9 @@
+Relações:
+
+    Usuario é a classe pai
+
+    Colaborador e Analista herdam de Usuario
+
+    Colaborador abre 1..N Chamados
+
+    Analista assume 1..N Chamados
