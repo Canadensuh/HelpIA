@@ -1,0 +1,97 @@
+/* =========================================================
+   landing.css — página inicial (index.html)
+   ========================================================= */
+
+body { background: var(--bg); }
+
+section { padding: 4.5rem 0; }
+.secao-alt { background: var(--bg-alt); }
+.secao-titulo { text-align: center; max-width: 680px; margin: 0 auto 2.5rem; }
+.secao-titulo h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); }
+.secao-titulo p { color: var(--muted); }
+.selo {
+  display: inline-block;
+  margin-bottom: .75rem;
+  padding: .25rem .75rem;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-text);
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  padding: 4.5rem 0 4rem;
+  background: radial-gradient(1000px 400px at 85% -10%, var(--brilho-1) 0%, transparent 60%),
+              radial-gradient(700px 300px at 0% 110%, var(--brilho-2) 0%, transparent 60%);
+}
+.hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 3rem; align-items: center; }
+.hero h1 { font-size: clamp(2rem, 4.5vw, 3.1rem); letter-spacing: -.02em; }
+.destaque {
+  background: linear-gradient(90deg, var(--primary-text), var(--ai));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-sub { font-size: 1.1rem; color: var(--muted); max-width: 540px; }
+.hero-acoes { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: 1.5rem; }
+
+.mockup { padding: 1.25rem; }
+.mockup-topo { display: flex; align-items: center; gap: .5rem; font-weight: 700; margin-bottom: 1rem; }
+.mockup-topo .pontinho { width: 10px; height: 10px; border-radius: 50%; background: var(--success); }
+.balao { padding: .7rem .9rem; border-radius: 14px; margin-bottom: .6rem; font-size: .93rem; max-width: 90%; }
+.balao-usuario { margin-left: auto; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+.balao-bot { background: var(--surface-2); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+.balao-bot strong { color: var(--ai); }
+
+/* ---------- Problema ---------- */
+.problema-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.problema-grid .card { padding: 1.5rem; }
+.problema-grid ul { margin: 0; padding-left: 1.2rem; color: var(--muted); }
+.problema-grid li { margin-bottom: .4rem; }
+
+/* ---------- Jornada ---------- */
+.passos { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.passos li { padding: 1.4rem; }
+.passo-num {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--primary); color: #fff; font-weight: 800;
+  margin-bottom: .75rem;
+}
+.passos p { color: var(--muted); font-size: .93rem; margin-bottom: .6rem; }
+
+/* ---------- Telas ---------- */
+.telas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.tela { padding: 1.75rem; display: flex; flex-direction: column; gap: .5rem; }
+.tela-icone { font-size: 2rem; }
+.tela p { color: var(--muted); flex: 1; }
+
+/* ---------- Arquitetura ---------- */
+.camadas { display: grid; gap: .6rem; max-width: 760px; margin: 0 auto; }
+.camada { display: grid; grid-template-columns: 170px 1fr; gap: 1rem; padding: 1rem 1.25rem; align-items: center; }
+.camada strong { color: var(--primary-text); }
+.camada code { font-size: .85rem; color: var(--muted); }
+
+/* ---------- Equipe ---------- */
+.equipe { display: flex; gap: 1.25rem; justify-content: center; flex-wrap: wrap; }
+.membro { padding: 1.5rem; text-align: center; width: 280px; max-width: 100%; }
+.avatar {
+  width: 56px; height: 56px; margin: 0 auto .75rem; border-radius: 50%;
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--primary), var(--ai));
+  color: #fff; font-weight: 800;
+}
+.membro p { color: var(--muted); font-size: .9rem; margin: 0; }
+
+@media (max-width: 900px) {
+  .hero-grid, .problema-grid, .telas-grid { grid-template-columns: 1fr; }
+  .passos { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  .passos { grid-template-columns: 1fr; }
+  .camada { grid-template-columns: 1fr; gap: .2rem; }
+  section { padding: 3rem 0; }
+}

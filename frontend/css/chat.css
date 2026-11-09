@@ -1,0 +1,93 @@
+/* =========================================================
+   chat.css — tela do colaborador (chat.html)
+   ========================================================= */
+
+.chat-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.25rem;
+  padding-block: 1.5rem;
+  align-items: start;
+}
+.chat-layout .aviso-offline { grid-column: 1 / -1; margin: 0; }
+
+/* ---------- Conversa ---------- */
+.conversa {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px - 3rem);
+  min-height: 480px;
+  overflow: hidden;
+}
+.conversa-topo {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .9rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.bot-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 1.3rem;
+  background: var(--ai-soft);
+}
+.online { font-size: .8rem; color: var(--success); }
+.campo-nome { margin-left: auto; flex-direction: row; align-items: center; gap: .5rem; }
+.campo-nome input { width: 160px; padding: .4rem .7rem; }
+
+.mensagens {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  background: var(--bg-alt);
+}
+.msg {
+  max-width: min(78%, 520px);
+  padding: .7rem .95rem;
+  border-radius: 16px;
+  font-size: .95rem;
+  animation: entrar .2s ease-out;
+}
+.msg-hora { display: block; margin-top: .25rem; font-size: .72rem; opacity: .65; }
+.msg-usuario { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+.msg-bot { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+.msg-bot.alerta { border-color: var(--alerta-borda); background: var(--alerta-bg); }
+.msg-bot.sucesso { border-color: var(--sucesso-borda); background: var(--sucesso-bg); }
+.msg-bot strong { display: block; margin-bottom: .2rem; }
+.digitando { color: var(--muted); font-style: italic; }
+.detalhes { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .5rem; }
+
+@keyframes entrar { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.sugestoes { display: flex; flex-wrap: wrap; gap: .4rem; padding: .75rem 1.25rem 0; }
+.chip {
+  font: inherit; font-size: .82rem;
+  padding: .3rem .75rem; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--muted);
+  cursor: pointer;
+}
+.chip:hover { border-color: var(--primary); color: var(--primary-text); }
+
+.envio { display: flex; gap: .5rem; padding: .75rem 1.25rem 1.1rem; }
+.envio .input { flex: 1; min-width: 0; }
+
+/* ---------- Meus chamados ---------- */
+.meus { padding: 1.25rem; }
+.meus h2 { font-size: 1.1rem; }
+.meus-sub { font-size: .82rem; color: var(--muted); }
+.lista-meus { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .6rem; }
+.item-meu { padding: .75rem; border: 1px solid var(--border); border-radius: var(--radius); }
+.item-meu-topo { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+.item-meu p { margin: .3rem 0 0; font-size: .87rem; color: var(--muted); }
+.vazio { font-size: .9rem; color: var(--muted); }
+
+@media (max-width: 860px) {
+  .chat-layout { grid-template-columns: 1fr; }
+  .conversa { height: 70vh; }
+  .campo-nome { margin-left: 0; width: 100%; }
+  .campo-nome input { flex: 1; width: auto; }
+}

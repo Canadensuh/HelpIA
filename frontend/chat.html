@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HelpIA — Chat do colaborador</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="stylesheet" href="css/base.css" />
+  <script src="js/tema.js"></script>
+  <link rel="stylesheet" href="css/chat.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="index.html" class="brand"><img src="assets/logo.svg" alt="" />HelpIA</a>
+      <nav class="nav" aria-label="Navegação">
+        <a href="index.html">Início</a>
+        <a href="chat.html" class="ativo">Chat do colaborador</a>
+        <a href="painel.html">Painel do analista</a>
+      </nav>
+      <button type="button" class="btn-tema" aria-label="Alternar tema">
+        <svg class="icone-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icone-lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container chat-layout">
+    <p class="aviso-offline" id="avisoOffline" hidden></p>
+
+    <!-- CONVERSA -->
+    <section class="card conversa" aria-label="Conversa com o HelpBot">
+      <header class="conversa-topo">
+        <div class="bot-avatar" aria-hidden="true">🤖</div>
+        <div>
+          <strong>HelpBot</strong>
+          <div class="online">● Online</div>
+        </div>
+        <label class="campo campo-nome">
+          Você é
+          <input id="nome" type="text" maxlength="40" autocomplete="name" />
+        </label>
+      </header>
+
+      <div class="mensagens" id="mensagens" role="log" aria-live="polite"></div>
+
+      <div class="sugestoes" id="sugestoes">
+        <button type="button" class="chip">Meu computador não liga</button>
+        <button type="button" class="chip">Esqueci a senha do sistema</button>
+        <button type="button" class="chip">Internet lenta, setor todo parado</button>
+        <button type="button" class="chip">ajuda</button>
+      </div>
+
+      <form class="envio" id="formMensagem" autocomplete="off">
+        <input id="entrada" class="input" type="text" placeholder="Descreva seu problema…" aria-label="Mensagem" required />
+        <button class="btn btn-primary" type="submit" aria-label="Enviar">Enviar ➤</button>
+      </form>
+    </section>
+
+    <!-- MEUS CHAMADOS -->
+    <aside class="card meus" aria-label="Meus chamados">
+      <h2>Meus chamados</h2>
+      <p class="meus-sub">Atualiza automaticamente quando um analista assume.</p>
+      <ul class="lista-meus" id="listaMeus"></ul>
+    </aside>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/chat.js"></script>
+</body>
+</html>

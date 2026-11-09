@@ -1,0 +1,72 @@
+/* =========================================================
+   painel.css — painel do analista (painel.html)
+   ========================================================= */
+
+.painel { padding-block: 1.75rem 3rem; }
+
+.painel-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+.painel-topo h1 { font-size: 1.75rem; }
+.sub { color: var(--muted); margin: 0; }
+
+/* ---------- Indicadores (também funcionam como filtro) ---------- */
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+}
+.indicador {
+  font: inherit;
+  text-align: left;
+  padding: 1rem 1.15rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+.indicador:hover { border-color: var(--primary-text); }
+.indicador.ativo { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+.ind-valor { display: block; font-size: 1.8rem; font-weight: 800; line-height: 1.1; }
+.ind-rotulo { font-size: .85rem; color: var(--muted); font-weight: 600; }
+
+/* ---------- Lista ---------- */
+.fila { padding: .5rem; }
+.lista-chamados { list-style: none; margin: 0; padding: 0; }
+.chamado {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  border-radius: var(--radius);
+  animation: entrar .2s ease-out;
+}
+.chamado + .chamado { border-top: 1px solid var(--border); border-radius: 0; }
+.chamado.alta { background: linear-gradient(90deg, rgba(220, 38, 38, .05), transparent 40%); }
+.chamado-icone {
+  width: 46px; height: 46px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 1.25rem;
+  background: var(--primary-soft);
+}
+.chamado h3 { font-size: 1.02rem; margin: 0 0 .25rem; }
+.chamado-meta { display: flex; flex-wrap: wrap; gap: .35rem .6rem; align-items: center; font-size: .85rem; color: var(--muted); }
+.chamado-acoes { display: flex; gap: .5rem; }
+.fila-vazia { padding: 2.5rem 1rem; text-align: center; color: var(--muted); }
+
+@keyframes entrar { from { opacity: 0; } to { opacity: 1; } }
+
+@media (max-width: 760px) {
+  .indicadores { grid-template-columns: 1fr 1fr; }
+  .chamado { grid-template-columns: auto 1fr; }
+  .chamado-acoes { grid-column: 1 / -1; }
+  .chamado-acoes .btn { flex: 1; }
+}

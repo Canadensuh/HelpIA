@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HelpIA — Painel do analista</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="stylesheet" href="css/base.css" />
+  <script src="js/tema.js"></script>
+  <link rel="stylesheet" href="css/painel.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="index.html" class="brand"><img src="assets/logo.svg" alt="" />HelpIA</a>
+      <nav class="nav" aria-label="Navegação">
+        <a href="index.html">Início</a>
+        <a href="chat.html">Chat do colaborador</a>
+        <a href="painel.html" class="ativo">Painel do analista</a>
+      </nav>
+      <button type="button" class="btn-tema" aria-label="Alternar tema">
+        <svg class="icone-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icone-lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container painel">
+    <p class="aviso-offline" id="avisoOffline" hidden></p>
+
+    <div class="painel-topo">
+      <div>
+        <h1>Painel do analista</h1>
+        <p class="sub" id="resumo">Carregando fila…</p>
+      </div>
+      <label class="campo">
+        Analista
+        <input id="analista" type="text" maxlength="40" autocomplete="name" />
+      </label>
+    </div>
+
+    <!-- Indicadores / filtros -->
+    <div class="indicadores" role="tablist" aria-label="Filtrar por status">
+      <button class="indicador ativo" role="tab" data-status="Aguardando">
+        <span class="ind-valor" data-contador="Aguardando">0</span>
+        <span class="ind-rotulo">Aguardando</span>
+      </button>
+      <button class="indicador" role="tab" data-status="Em atendimento">
+        <span class="ind-valor" data-contador="Em atendimento">0</span>
+        <span class="ind-rotulo">Em atendimento</span>
+      </button>
+      <button class="indicador" role="tab" data-status="Resolvido">
+        <span class="ind-valor" data-contador="Resolvido">0</span>
+        <span class="ind-rotulo">Resolvidos</span>
+      </button>
+      <button class="indicador" role="tab" data-status="">
+        <span class="ind-valor" data-contador="">0</span>
+        <span class="ind-rotulo">Todos</span>
+      </button>
+    </div>
+
+    <section class="card fila" aria-label="Fila de chamados">
+      <ul class="lista-chamados" id="listaChamados"></ul>
+    </section>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/painel.js"></script>
+</body>
+</html>

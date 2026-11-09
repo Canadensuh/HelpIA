@@ -1,0 +1,247 @@
+/* =========================================================
+   base.css — temas, reset, tipografia e componentes comuns
+   Tema padrão: ESCURO. O tema claro é aplicado com
+   <html data-theme="light"> (ver js/tema.js).
+   ========================================================= */
+
+/* ---------- Tema escuro (padrão) ---------- */
+:root {
+  color-scheme: dark;
+
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --primary-text: #a5b4fc;
+  --primary-soft: rgba(99, 102, 241, .16);
+  --ai: #22d3ee;
+  --ai-soft: rgba(34, 211, 238, .12);
+
+  --bg: #0b1120;
+  --bg-alt: #0f1629;
+  --surface: #151d31;
+  --surface-2: #1b2540;
+  --border: #27324d;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+
+  --success: #4ade80;
+  --success-solid: #16a34a;
+  --success-soft: rgba(74, 222, 128, .14);
+  --warning: #fbbf24;
+  --warning-soft: rgba(251, 191, 36, .14);
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, .14);
+
+  --alerta-bg: rgba(251, 191, 36, .08);
+  --alerta-borda: rgba(251, 191, 36, .45);
+  --sucesso-bg: rgba(74, 222, 128, .07);
+  --sucesso-borda: rgba(74, 222, 128, .4);
+
+  --topbar: rgba(11, 17, 32, .85);
+  --brilho-1: rgba(99, 102, 241, .28);
+  --brilho-2: rgba(34, 211, 238, .14);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .25);
+
+  --radius: 12px;
+  --radius-lg: 18px;
+  --container: 1120px;
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ---------- Tema claro ---------- */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --primary: #4f46e5;
+  --primary-dark: #4338ca;
+  --primary-text: #4f46e5;
+  --primary-soft: #eef2ff;
+  --ai: #0891b2;
+  --ai-soft: #ecfeff;
+
+  --bg: #ffffff;
+  --bg-alt: #f6f7fb;
+  --surface: #ffffff;
+  --surface-2: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --muted: #64748b;
+
+  --success: #16a34a;
+  --success-solid: #16a34a;
+  --success-soft: #dcfce7;
+  --warning: #b45309;
+  --warning-soft: #fef3c7;
+  --danger: #dc2626;
+  --danger-soft: #fee2e2;
+
+  --alerta-bg: #fffbeb;
+  --alerta-borda: #fcd34d;
+  --sucesso-bg: #f0fdf4;
+  --sucesso-borda: #86efac;
+
+  --topbar: rgba(255, 255, 255, .92);
+  --brilho-1: #e0e7ff;
+  --brilho-2: #cffafe;
+  --shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 4px 16px rgba(15, 23, 42, .06);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg-alt);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color .2s, color .2s;
+}
+h1, h2, h3 { margin: 0 0 .5rem; line-height: 1.2; }
+p { margin: 0 0 1rem; }
+a { color: var(--primary-text); text-decoration: none; }
+img { max-width: 100%; display: block; }
+[hidden] { display: none !important; }
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding-inline: 20px;
+}
+
+/* ---------- Cabeçalho ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--topbar);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 64px;
+  flex-wrap: wrap;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  margin-right: auto;
+  color: var(--text);
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: -.01em;
+}
+.brand img { width: 34px; height: 34px; }
+.nav { display: flex; gap: .25rem; flex-wrap: wrap; }
+.nav a {
+  padding: .45rem .8rem;
+  border-radius: 8px;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: .92rem;
+}
+.nav a:hover { background: var(--surface-2); color: var(--text); }
+.nav a.ativo { background: var(--primary-soft); color: var(--primary-text); }
+
+/* ---------- Botão de tema ---------- */
+.btn-tema {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.btn-tema:hover { border-color: var(--primary); transform: rotate(-12deg); }
+.btn-tema svg { width: 20px; height: 20px; }
+.btn-tema .icone-lua { display: none; }
+:root[data-theme="light"] .btn-tema .icone-sol { display: none; }
+:root[data-theme="light"] .btn-tema .icone-lua { display: block; }
+
+/* ---------- Botões ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  padding: .6rem 1.1rem;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, transform .1s, box-shadow .15s;
+}
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-outline { background: transparent; color: var(--primary-text); border-color: var(--primary); }
+.btn-outline:hover { background: var(--primary-soft); }
+.btn-success { background: var(--success-solid); color: #fff; }
+.btn-success:hover { filter: brightness(.95); }
+.btn-lg { padding: .85rem 1.5rem; font-size: 1.05rem; }
+.btn-sm { padding: .4rem .8rem; font-size: .88rem; }
+
+/* ---------- Etiquetas de status / prioridade ---------- */
+.tag {
+  display: inline-block;
+  padding: .15rem .6rem;
+  border-radius: 999px;
+  font-size: .78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.tag-aguardando     { background: var(--warning-soft); color: var(--warning); }
+.tag-em-atendimento { background: var(--primary-soft); color: var(--primary-text); }
+.tag-resolvido      { background: var(--success-soft); color: var(--success); }
+.tag-alta           { background: var(--danger-soft);  color: var(--danger); }
+.tag-normal         { background: var(--ai-soft);      color: var(--ai); }
+.tag-neutra         { background: var(--surface-2);    color: var(--muted); border: 1px solid var(--border); }
+
+/* ---------- Cartão ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+/* ---------- Campos ---------- */
+.campo { display: flex; flex-direction: column; gap: .25rem; font-size: .85rem; font-weight: 600; color: var(--muted); }
+.campo input, .input {
+  font: inherit;
+  font-weight: 400;
+  color: var(--text);
+  padding: .55rem .8rem;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+.campo input:focus, .input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+.input::placeholder { color: var(--muted); }
+
+.aviso-offline {
+  margin: 1rem 0;
+  padding: .75rem 1rem;
+  border-radius: var(--radius);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: .9rem;
+}
+
+.rodape {
+  padding: 2rem 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: .85rem;
+}
