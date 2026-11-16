@@ -305,13 +305,20 @@ async function enviar(texto) {
       elEntrada.focus();
       return;
     }
-    // Se afirmativa ou ambígua, usa a descrição original da dica para criar o chamado
-    if (ehAfirmativa(texto) || descricaoOriginalDica) {
+    // Se afirmativa -> usa a descrição original da dica para criar o chamado
+    if (ehAfirmativa(texto)) {
       texto = descricaoOriginalDica; // substitui "sim" pela descrição original
       descricaoOriginalDica = '';
+      mostrarSugestoes(); // volta a mostrar chips
+      // continua para fluxo normal abaixo com a descrição correta
+    } else {
+      // Não é sim nem não -> pede resposta clara
+      aguardandoConfirmacaoDica = true; // mantém estado
+      await botDiz(`<strong>Não entendi 🤔</strong> Por favor, responda <strong>"sim"</strong> para registrar ou <strong>"não"</strong> para cancelar.`);
+      elEntrada.disabled = false;
+      elEntrada.focus();
+      return;
     }
-    // continua para fluxo normal abaixo com a descrição correta
-    mostrarSugestoes(); // volta a mostrar chips
   }
 
   // 3. Fluxo normal: criar chamado (RN-01 → CA-01/CA-02 → CA-03)
