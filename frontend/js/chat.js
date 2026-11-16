@@ -211,11 +211,14 @@ async function enviar(texto) {
   }
 
   // 2. Dica rápida detectada -> mostra dica e pergunta se quer abrir chamado
+  // (mesmo com descricaoPendente: clicar no chip mostra a dica daquele chip)
   const dica = detectarDica(texto);
-  if (dica && !descricaoPendente) {
+  if (dica) {
+    // Se tinha descrição pendente (RN-01), descarta - user está pedindo dica nova via chip
+    descricaoPendente = '';
     await botDiz(dica, 'dica');
     aguardandoConfirmacaoDica = true;
-    descricaoOriginalDica = texto; // guarda a descrição original para usar no "sim"
+    descricaoOriginalDica = texto; // guarda a descrição do chip para usar no "sim"
     elEntrada.disabled = false;
     elEntrada.focus();
     return;
