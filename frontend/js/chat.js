@@ -154,7 +154,12 @@ async function enviar(texto) {
   texto = texto.trim();
   if (!texto) return;
 
-  // Se conversa foi encerrada, reinicia (sem saudação inicial)
+  // 1. SEMPRE adiciona a mensagem do usuário no chat primeiro
+  adicionarMensagem(escaparHtml(texto), 'usuario');
+  elEntrada.value = '';
+  elEntrada.disabled = true;
+
+  // 2. Se conversa foi encerrada, reinicia (sem saudação inicial)
   if (conversaEncerrada) {
     reiniciarChat(false);
 
@@ -169,10 +174,6 @@ async function enviar(texto) {
     }
     // Senão continua fluxo normal (processa como saudação/dica/novo chamado)
   }
-
-  adicionarMensagem(escaparHtml(texto), 'usuario');
-  elEntrada.value = '';
-  elEntrada.disabled = true;
 
   // 0. Aguardando resposta "Posso ajudar em algo mais?" após criar chamado
   if (aguardandoNovoChamado) {
