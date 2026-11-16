@@ -1,4 +1,4 @@
-# HelpIA
+# CallSync
 
 > Abertura e triagem de chamados de suporte com um assistente (HelpBot).
 > Projeto da disciplina de **Engenharia de Software** — curso de **Análise e Desenvolvimento de Sistemas**.
