@@ -1,12 +1,7 @@
-"""Camada de Interface — API REST (Flask) e servidor das telas do frontend.
-
-Executar a partir da raiz do projeto:
-    python -m backend.app
-e abrir http://localhost:5000
-"""
 from pathlib import Path
 
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 from backend.aplicacao.servico_chamado import ChamadoNaoEncontrado, ServicoChamado
 from backend.aplicacao.servico_notificacao import mensagem_confirmacao
@@ -15,21 +10,21 @@ from backend.persistencia.repositorio_chamado import RepositorioChamadoMemoria
 
 PASTA_FRONTEND = Path(__file__).resolve().parent.parent / "frontend"
 
-
 def criar_app(com_exemplos: bool = True) -> Flask:
     app = Flask(__name__, static_folder=str(PASTA_FRONTEND), static_url_path="")
     app.json.ensure_ascii = False
 
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
+
     servico = ServicoChamado(RepositorioChamadoMemoria())
+
     if com_exemplos:
         servico.popular_exemplos()
 
-    # ---------- Telas ----------
     @app.get("/")
     def inicio():
         return app.send_static_file("index.html")
 
-    # ---------- API ----------
     @app.get("/api/status")
     def status():
         return jsonify({"sistema": "HelpIA", "status": "online", "versao": "1.0"})
@@ -47,7 +42,7 @@ def criar_app(com_exemplos: bool = True) -> Flask:
         dados = request.get_json(silent=True) or {}
         try:
             chamado = servico.abrir(dados.get("descricao", ""), dados.get("solicitante", ""))
-        except DescricaoInsuficiente as erro:  # RN-01
+        except DescricaoInsuficiente as erro:
             return jsonify({"precisa_complemento": True, "mensagem": str(erro)}), 422
         return jsonify({"chamado": chamado.to_dict(), "mensagem": mensagem_confirmacao(chamado)}), 201
 
@@ -64,7 +59,6 @@ def criar_app(com_exemplos: bool = True) -> Flask:
     def resolver_chamado(numero):
         return jsonify(servico.resolver(numero).to_dict())
 
-    # ---------- Erros ----------
     @app.errorhandler(ChamadoNaoEncontrado)
     def nao_encontrado(erro):
         return jsonify({"erro": str(erro)}), 404
@@ -74,7 +68,6 @@ def criar_app(com_exemplos: bool = True) -> Flask:
         return jsonify({"erro": str(erro)}), 409
 
     return app
-
 
 app = criar_app()
 

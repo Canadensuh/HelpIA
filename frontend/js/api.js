@@ -1,10 +1,15 @@
-/* =========================================================
-   api.js — comunicação com o backend Flask e funções utilitárias
-   ========================================================= */
+/** Cliente da API — usa variável de build CONFIG.API_BASE_URL ou fallback para /api */
+
+const CONFIG = (() => {
+  return {
+    API_BASE_URL: (typeof __API_BASE_URL__ !== 'undefined' ? __API_BASE_URL__ : '/api')
+  };
+})();
 
 const API = {
   async requisitar(caminho, opcoes = {}) {
-    const resposta = await fetch(`/api${caminho}`, {
+    const url = `${CONFIG.API_BASE_URL}${caminho}`;
+    const resposta = await fetch(url, {
       headers: { 'Content-Type': 'application/json' },
       ...opcoes,
     });
@@ -13,10 +18,10 @@ const API = {
   },
 
   listar(filtros = {}) {
-    const params = new URLSearchParams(
-      Object.entries(filtros).filter(([, valor]) => valor)
-    );
-    return this.requisitar(`/chamados?${params}`);
+    const params = new URLSearchParams();
+    if (filtros.status) params.set('status', filtros.status);
+    if (filtros.solicitante) params.set('solicitante', filtros.solicitante);
+    return this.requisitar(`/chamados?${params.toString()}`);
   },
 
   abrir(descricao, solicitante) {
@@ -34,35 +39,46 @@ const API = {
   },
 
   resolver(numero) {
-    return this.requisitar(`/chamados/${numero}/resolver`, { method: 'POST' });
+    return this.requisitar(`/chamados/${numero}/resolver`, {
+      method: 'POST',
+    });
+  },
+
+  escaparHtml(texto) {
+    const div = document.createElement('div');
+    div.textContent = texto;
+    return div.innerHTML;
+  },
+
+  formatarHora(iso) {
+    const d = new Date(iso);
+    return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  },
+
+  classeStatus(status) {
+    return {
+      aberto: 'status-aberto',
+      em_andamento: 'status-andamento',
+      resolvido: 'status-resolvido',
+    }[status] || '';
+  },
+
+  lerPreferencia(chave, padrao = '') {
+    try { return localStorage.getItem(chave) ?? padrao; } catch { return padrao; }
+  },
+
+  salvarPreferencia(chave, valor) {
+    try { localStorage.setItem(chave, valor); } catch {}
+  },
+
+  mostrarOffline(container) {
+    container.innerHTML = `
+      <div class=\"offline-banner\">
+        <svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\"><path fill=\"currentColor\" d=\"M13.5 2.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm-6 12h12v2h-12v-2zm0-4h12v2h-12v-2zm0-4h12v2h-12v-2z\"/></svg>
+        <span>Sem conexão com o servidor. Verifique sua internet ou tente mais tarde.</span>
+      </div>
+    `;
   },
 };
 
-function escaparHtml(texto) {
-  const div = document.createElement('div');
-  div.textContent = texto ?? '';
-  return div.innerHTML;
-}
-
-function formatarHora(iso) {
-  return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-}
-
-function classeStatus(status) {
-  return 'tag-' + status.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '-');
-}
-
-function lerPreferencia(chave, padrao) {
-  try { return localStorage.getItem(chave) || padrao; } catch { return padrao; }
-}
-
-function salvarPreferencia(chave, valor) {
-  try { localStorage.setItem(chave, valor); } catch { /* armazenamento indisponível */ }
-}
-
-function mostrarOffline(elemento) {
-  elemento.hidden = false;
-  elemento.textContent =
-    'Não foi possível falar com o servidor. Inicie o backend com "python -m backend.app" ' +
-    'e acesse http://localhost:5000.';
-}
+window.API = API;
