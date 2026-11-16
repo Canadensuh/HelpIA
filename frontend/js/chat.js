@@ -17,6 +17,7 @@ const statusConhecidos = {};     // número do chamado -> último status visto
 let aguardandoConfirmacaoDica = false; // true após mostrar dica e perguntar "Quer registrar?"
 let conversaEncerrada = false;   // true após bot dizer "tenha um bom dia"
 let aguardandoNovoChamado = false; // true após criar chamado e perguntar "Posso ajudar em algo mais?"
+let descricaoOriginalDica = '';  // descrição original que disparou a dica (para usar no "sim")
 
 // ---------- Base de conhecimento do HelpBot ----------
 const SAUDACOES = ['oi', 'olá', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'hey', 'hello', 'tudo bem', 'td bem'];
@@ -135,6 +136,7 @@ function reiniciarChat() {
   conversaEncerrada = false;
   aguardandoConfirmacaoDica = false;
   descricaoPendente = '';
+  descricaoOriginalDica = '';
   botDiz(
     `<strong>Olá! Eu sou o HelpBot 🤖</strong>
      Descreva o seu problema que eu registro o chamado e encaminho para a equipe certa.
@@ -193,6 +195,7 @@ async function enviar(texto) {
   if (dica && !descricaoPendente) {
     await botDiz(dica, 'dica');
     aguardandoConfirmacaoDica = true;
+    descricaoOriginalDica = texto; // guarda a descrição original para usar no "sim"
     elEntrada.disabled = false;
     elEntrada.focus();
     return;
@@ -203,12 +206,18 @@ async function enviar(texto) {
     aguardandoConfirmacaoDica = false;
     if (ehNegativa(texto)) {
       conversaEncerrada = true;
+      descricaoOriginalDica = '';
       await botDiz(`Sem problemas! 😊 Se precisar de mais ajuda, é só chamar. Tenha um bom dia!`);
       elEntrada.disabled = false;
       elEntrada.focus();
       return;
     }
-    // Se não for negativa, continua para criar o chamado (fluxo normal abaixo)
+    // Se afirmativa ou ambígua, usa a descrição original da dica para criar o chamado
+    if (ehAfirmativa(texto) || descricaoOriginalDica) {
+      texto = descricaoOriginalDica; // substitui "sim" pela descrição original
+      descricaoOriginalDica = '';
+    }
+    // continua para fluxo normal abaixo com a descrição correta
   }
 
   // 3. Fluxo normal: criar chamado (RN-01 → CA-01/CA-02 → CA-03)
