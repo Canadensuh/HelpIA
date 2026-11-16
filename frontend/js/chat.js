@@ -131,17 +131,19 @@ function botDiz(html, extraClasse = '') {
   });
 }
 
-function reiniciarChat() {
+function reiniciarChat(mostrarSaudacaoInicial = true) {
   elMensagens.innerHTML = '';
   conversaEncerrada = false;
   aguardandoConfirmacaoDica = false;
   descricaoPendente = '';
   descricaoOriginalDica = '';
-  botDiz(
-    `<strong>Olá! Eu sou o HelpBot 🤖</strong>
-     Descreva o seu problema que eu registro o chamado e encaminho para a equipe certa.
-     <br><small>Dica: tente dizer "esqueci a senha", "computador lento" ou "não liga" para dicas rápidas.</small>`
-  );
+  if (mostrarSaudacaoInicial) {
+    botDiz(
+      `<strong>Olá! Eu sou o HelpBot 🤖</strong>
+       Descreva o seu problema que eu registro o chamado e encaminho para a equipe certa.
+       <br><small>Dica: tente dizer "esqueci a senha", "computador lento" ou "não liga" para dicas rápidas.</small>`
+    );
+  }
 }
 
 // ---------- Envio ----------
@@ -149,10 +151,10 @@ async function enviar(texto) {
   texto = texto.trim();
   if (!texto) return;
 
-  // Se conversa foi encerrada, reinicia ao receber nova mensagem
+  // Se conversa foi encerrada, reinicia (sem saudação inicial) e CONTINUA processando a mensagem
   if (conversaEncerrada) {
-    reiniciarChat();
-    return;
+    reiniciarChat(false);
+    // Não retorna aqui - continua para processar a mensagem atual
   }
 
   adicionarMensagem(escaparHtml(texto), 'usuario');
