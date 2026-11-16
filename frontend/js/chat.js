@@ -15,6 +15,7 @@ const elOffline = document.getElementById('avisoOffline');
 let descricaoPendente = '';      // texto guardado enquanto o bot pede complemento (RN-01)
 const statusConhecidos = {};     // número do chamado -> último status visto
 let aguardandoConfirmacaoDica = false; // true após mostrar dica e perguntar "Quer registrar?"
+let conversaEncerrada = false;   // true após bot dizer "tenha um bom dia"
 
 // ---------- Base de conhecimento do HelpBot ----------
 const SAUDACOES = ['oi', 'olá', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'hey', 'hello', 'tudo bem', 'td bem'];
@@ -122,10 +123,28 @@ function botDiz(html, extraClasse = '') {
   });
 }
 
+function reiniciarChat() {
+  elMensagens.innerHTML = '';
+  conversaEncerrada = false;
+  aguardandoConfirmacaoDica = false;
+  descricaoPendente = '';
+  botDiz(
+    `<strong>Olá! Eu sou o HelpBot 🤖</strong>
+     Descreva o seu problema que eu registro o chamado e encaminho para a equipe certa.
+     <br><small>Dica: tente dizer "esqueci a senha", "computador lento" ou "não liga" para dicas rápidas.</small>`
+  );
+}
+
 // ---------- Envio ----------
 async function enviar(texto) {
   texto = texto.trim();
   if (!texto) return;
+
+  // Se conversa foi encerrada, reinicia ao receber nova mensagem
+  if (conversaEncerrada) {
+    reiniciarChat();
+    return;
+  }
 
   adicionarMensagem(escaparHtml(texto), 'usuario');
   elEntrada.value = '';
@@ -156,6 +175,7 @@ async function enviar(texto) {
   if (aguardandoConfirmacaoDica && !descricaoPendente) {
     aguardandoConfirmacaoDica = false;
     if (ehNegativa(texto)) {
+      conversaEncerrada = true;
       await botDiz(`Sem problemas! 😊 Se precisar de mais ajuda, é só chamar. Tenha um bom dia!`);
       elEntrada.disabled = false;
       elEntrada.focus();
