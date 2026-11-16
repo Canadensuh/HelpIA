@@ -167,6 +167,18 @@ async function enviar(texto) {
     return;
   }
 
+  // 2b. NOVO: Se tinha descrição pendente (RN-01) mas user mandou saudação -> RESETA e trata como saudação
+  if (descricaoPendente && ehSaudacao(texto)) {
+    descricaoPendente = ''; // limpa o "batata", "asdf", etc.
+    await botDiz(
+      `<strong>Olá! Tudo bem? 😊</strong> Sou o HelpBot e estou aqui para ajudar você a abrir seu chamado.<br>
+      Descreva a situação (ex: "esqueci a senha", "computador não liga", "internet lenta") e eu registro para a equipe certa.`
+    );
+    elEntrada.disabled = false;
+    elEntrada.focus();
+    return;
+  }
+
   // 0. Aguardando resposta "Posso ajudar em algo mais?" após criar chamado
   if (aguardandoNovoChamado) {
     aguardandoNovoChamado = false;
