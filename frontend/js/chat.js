@@ -37,6 +37,17 @@ const DICAS_RAPIDAS = {
       </ul>
       <p>Quer que eu registre o chamado?</p>`
   },
+  rede: {
+    palavras: ['internet', 'wifi', 'wi-fi', 'rede', 'conexao', 'conexão', 'caiu', 'offline', 'sem net', 'queda de internet'],
+    resposta: `<strong>📡 Internet lenta / queda de internet?</strong>
+      <ul>
+        <li>Reinicie o roteador (desliga da tomada, espera 10s, liga)</li>
+        <li>Verifique se outros dispositivos também estão sem internet</li>
+        <li>Tente cabo de rede no lugar do Wi-Fi (se possível)</li>
+        <li>No Windows: <kbd>Win</kbd>+<kbd>R</kbd> → <code>ncpa.cpl</code> → desative e ative a placa de rede</li>
+      </ul>
+      <p>Se não resolver, posso abrir chamado para Infraestrutura. Quer que eu registre?</p>`
+  },
   lentidao: {
     palavras: ['lento', 'lenta', 'devagar', 'travando', 'trava', 'lentidão', 'lentidao', 'demora', 'pesado'],
     resposta: `<strong>🐌 Computador/Sistema lento?</strong>
@@ -58,17 +69,6 @@ const DICAS_RAPIDAS = {
         <li>Monitores: confira se o cabo de vídeo (HDMI/VGA/DP) está firme dos dois lados</li>
       </ul>
       <p>Se não resolver, abro chamado para Hardware. Quer que eu registre?</p>`
-  },
-  rede: {
-    palavras: ['internet', 'wifi', 'wi-fi', 'rede', 'conexao', 'conexão', 'caiu', 'offline', 'sem net', 'queda de internet'],
-    resposta: `<strong>📡 Internet lenta / queda de internet?</strong>
-      <ul>
-        <li>Reinicie o roteador (desliga da tomada, espera 10s, liga)</li>
-        <li>Verifique se outros dispositivos também estão sem internet</li>
-        <li>Tente cabo de rede no lugar do Wi-Fi (se possível)</li>
-        <li>No Windows: <kbd>Win</kbd>+<kbd>R</kbd> → <code>ncpa.cpl</code> → desative e ative a placa de rede</li>
-      </ul>
-      <p>Se não resolver, posso abrir chamado para Infraestrutura. Quer que eu registre?</p>`
   },
   impressora: {
     palavras: ['impressora', 'imprimir', 'print', 'papel', 'atolado', 'toner', 'tinta'],
@@ -134,6 +134,15 @@ function botDiz(html, extraClasse = '') {
   });
 }
 
+// ---------- Sugestões (chips) ----------
+function esconderSugestoes() {
+  elSugestoes.style.display = 'none';
+}
+
+function mostrarSugestoes() {
+  elSugestoes.style.display = 'flex';
+}
+
 function reiniciarChat(mostrarSaudacaoInicial = true) {
   elMensagens.innerHTML = '';
   conversaEncerrada = false;
@@ -141,6 +150,7 @@ function reiniciarChat(mostrarSaudacaoInicial = true) {
   descricaoPendente = '';
   descricaoOriginalDica = '';
   aguardandoCausaSetorParado = false;
+  mostrarSugestoes(); // mostra chips ao reiniciar
   if (mostrarSaudacaoInicial) {
     botDiz(
       `<strong>Olá! Eu sou o HelpBot 🤖</strong>
@@ -205,6 +215,7 @@ async function enviar(texto) {
           'sucesso'
         );
         aguardandoNovoChamado = true;
+        mostrarSugestoes(); // volta a mostrar chips
         atualizarMeusChamados();
       } else if (status === 422) {
         descricaoPendente = descricao;
@@ -227,6 +238,7 @@ async function enviar(texto) {
     if (ehNegativa(texto)) {
       await botDiz(`Sem problemas! 😊 Se precisar de mais ajuda, é só chamar. Tenha um bom dia!`);
       conversaEncerrada = true;
+      mostrarSugestoes(); // volta a mostrar chips
       elEntrada.disabled = false;
       elEntrada.focus();
       return;
@@ -239,6 +251,7 @@ async function enviar(texto) {
     }
     // Se não for clara, assume que quer abrir novo chamado
     // continua para fluxo normal abaixo
+    mostrarSugestoes(); // volta a mostrar chips
   }
 
   // 1. Saudação -> resposta amigável
@@ -263,6 +276,7 @@ async function enviar(texto) {
     const t = normalizar(texto);
     if (t.includes('setor parado') || t.includes('setor todo parado')) {
       aguardandoCausaSetorParado = true;
+      esconderSugestoes();
       await botDiz(`<strong>🚨 Setor parado detectado (Prioridade ALTA)</strong>
          Qual a causa? (ex: "queda de energia", "link caiu", "roteador queimou")`);
       elEntrada.disabled = false;
@@ -272,6 +286,7 @@ async function enviar(texto) {
 
     await botDiz(dica, 'dica');
     aguardandoConfirmacaoDica = true;
+    esconderSugestoes();
     descricaoOriginalDica = texto; // guarda a descrição do chip para usar no "sim"
     elEntrada.disabled = false;
     elEntrada.focus();
@@ -284,6 +299,7 @@ async function enviar(texto) {
     if (ehNegativa(texto)) {
       conversaEncerrada = true;
       descricaoOriginalDica = '';
+      mostrarSugestoes(); // volta a mostrar chips
       await botDiz(`Sem problemas! 😊 Se precisar de mais ajuda, é só chamar. Tenha um bom dia!`);
       elEntrada.disabled = false;
       elEntrada.focus();
@@ -295,6 +311,7 @@ async function enviar(texto) {
       descricaoOriginalDica = '';
     }
     // continua para fluxo normal abaixo com a descrição correta
+    mostrarSugestoes(); // volta a mostrar chips
   }
 
   // 3. Fluxo normal: criar chamado (RN-01 → CA-01/CA-02 → CA-03)
