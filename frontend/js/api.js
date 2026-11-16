@@ -81,4 +81,12 @@ const API = {
   },
 };
 
+// Exporta utilitários como globais para compatibilidade com chat.js / painel.js
+window.escaparHtml = API.escaparHtml;
+window.formatarHora = API.formatarHora;
+window.classeStatus = API.classeStatus;
+window.lerPreferencia = API.lerPreferencia;
+window.salvarPreferencia = API.salvarPreferencia;
+window.mostrarOffline = API.mostrarOffline;
+
 window.API = API;
