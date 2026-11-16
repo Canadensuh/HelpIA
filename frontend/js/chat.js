@@ -22,6 +22,9 @@ let descricaoOriginalDica = '';  // descrição original que disparou a dica (pa
 // ---------- Base de conhecimento do HelpBot ----------
 const SAUDACOES = ['oi', 'olá', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'hey', 'hello', 'tudo bem', 'td bem'];
 
+// Flag para controlar fluxo "Setor parado" (pergunta causa -> cria chamado direto)
+let aguardandoCausaSetorParado = false;
+
 const DICAS_RAPIDAS = {
   senha: {
     palavras: ['senha', 'password', 'esqueci', 'nao lembro', 'não lembro', 'bloqueado', 'bloqueada', 'acesso'],
@@ -57,15 +60,15 @@ const DICAS_RAPIDAS = {
       <p>Se não resolver, abro chamado para Hardware. Quer que eu registre?</p>`
   },
   rede: {
-    palavras: ['internet', 'wifi', 'wi-fi', 'rede', 'conexao', 'conexão', 'caiu', 'offline', 'sem net'],
-    resposta: `<strong>📡 Problema de rede/internet?</strong>
+    palavras: ['internet', 'wifi', 'wi-fi', 'rede', 'conexao', 'conexão', 'caiu', 'offline', 'sem net', 'queda de internet'],
+    resposta: `<strong>📡 Internet lenta / queda de internet?</strong>
       <ul>
         <li>Reinicie o roteador (desliga da tomada, espera 10s, liga)</li>
         <li>Verifique se outros dispositivos também estão sem internet</li>
         <li>Tente cabo de rede no lugar do Wi-Fi (se possível)</li>
         <li>No Windows: <kbd>Win</kbd>+<kbd>R</kbd> → <code>ncpa.cpl</code> → desative e ative a placa de rede</li>
       </ul>
-      <p>Se o setor todo está parado, abro chamado para Infraestrutura (prioridade Alta). Quer que eu registre?</p>`
+      <p>Se não resolver, posso abrir chamado para Infraestrutura. Quer que eu registre?</p>`
   },
   impressora: {
     palavras: ['impressora', 'imprimir', 'print', 'papel', 'atolado', 'toner', 'tinta'],
@@ -137,6 +140,7 @@ function reiniciarChat(mostrarSaudacaoInicial = true) {
   aguardandoConfirmacaoDica = false;
   descricaoPendente = '';
   descricaoOriginalDica = '';
+  aguardandoCausaSetorParado = false;
   if (mostrarSaudacaoInicial) {
     botDiz(
       `<strong>Olá! Eu sou o HelpBot 🤖</strong>
@@ -179,6 +183,44 @@ async function enviar(texto) {
     return;
   }
 
+  // 2c. NOVO: Fluxo "Setor parado" - aguardando causa para criar chamado direto (alta prioridade)
+  if (aguardandoCausaSetorParado) {
+    aguardandoCausaSetorParado = false;
+    // Cria chamado direto com a causa fornecida, forçando categoria Rede + prioridade Alta
+    try {
+      const descricao = `Setor parado: ${texto}`;
+      const { status, dados } = await API.abrir(descricao, elNome.value);
+
+      if (status === 201) {
+        const c = dados.chamado;
+        statusConhecidos[c.numero] = c.status;
+        await botDiz(
+          `<strong>✅ Chamado ${c.codigo} registrado com prioridade ALTA!</strong>
+           <div class="detalhes">
+             <span class="tag tag-neutra">${escaparHtml(c.categoria)}</span>
+             <span class="tag tag-neutra">Fila: ${escaparHtml(c.fila)}</span>
+             <span class="tag tag-${c.prioridade.toLowerCase()}">Prioridade ${escaparHtml(c.prioridade)}</span>
+           </div>
+           <br><strong>Posso ajudar em algo mais?</strong> (sim / não)`,
+          'sucesso'
+        );
+        aguardandoNovoChamado = true;
+        atualizarMeusChamados();
+      } else if (status === 422) {
+        descricaoPendente = descricao;
+        await botDiz(`<strong>Preciso de mais informações 🧐</strong>${escaparHtml(dados.mensagem)}`, 'alerta');
+      } else {
+        await botDiz('Algo deu errado ao registrar seu chamado. Tente novamente.', 'alerta');
+      }
+    } catch {
+      mostrarOffline(elOffline);
+    } finally {
+      elEntrada.disabled = false;
+      elEntrada.focus();
+    }
+    return;
+  }
+
   // 0. Aguardando resposta "Posso ajudar em algo mais?" após criar chamado
   if (aguardandoNovoChamado) {
     aguardandoNovoChamado = false;
@@ -216,6 +258,18 @@ async function enviar(texto) {
   if (dica) {
     // Se tinha descrição pendente (RN-01), descarta - user está pedindo dica nova via chip
     descricaoPendente = '';
+
+    // NOVO: Se clicou em "Setor parado", ativa fluxo especial (pergunta causa -> cria direto)
+    const t = normalizar(texto);
+    if (t.includes('setor parado') || t.includes('setor todo parado')) {
+      aguardandoCausaSetorParado = true;
+      await botDiz(`<strong>🚨 Setor parado detectado (Prioridade ALTA)</strong>
+         Qual a causa? (ex: "queda de energia", "link caiu", "roteador queimou")`);
+      elEntrada.disabled = false;
+      elEntrada.focus();
+      return;
+    }
+
     await botDiz(dica, 'dica');
     aguardandoConfirmacaoDica = true;
     descricaoOriginalDica = texto; // guarda a descrição do chip para usar no "sim"
