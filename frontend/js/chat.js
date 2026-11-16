@@ -16,6 +16,7 @@ let descricaoPendente = '';      // texto guardado enquanto o bot pede complemen
 const statusConhecidos = {};     // número do chamado -> último status visto
 let aguardandoConfirmacaoDica = false; // true após mostrar dica e perguntar "Quer registrar?"
 let conversaEncerrada = false;   // true após bot dizer "tenha um bom dia"
+let aguardandoNovoChamado = false; // true após criar chamado e perguntar "Posso ajudar em algo mais?"
 
 // ---------- Base de conhecimento do HelpBot ----------
 const SAUDACOES = ['oi', 'olá', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'hey', 'hello', 'tudo bem', 'td bem'];
@@ -103,6 +104,12 @@ function ehNegativa(texto) {
   return negativas.some(n => t.includes(n));
 }
 
+function ehAfirmativa(texto) {
+  const t = normalizar(texto);
+  const afirmativas = ['sim', 'quero', 'pode', 'pode sim', 'claro', 'obrigado', 'obrigada', 'valeu', 'ok', 'beleza', 'bora', 'vamos', 'pode abrir', 'quero sim'];
+  return afirmativas.some(a => t.includes(a));
+}
+
 // ---------- Mensagens ----------
 function adicionarMensagem(html, tipo, extraClasse = '') {
   const msg = document.createElement('div');
@@ -149,6 +156,26 @@ async function enviar(texto) {
   adicionarMensagem(escaparHtml(texto), 'usuario');
   elEntrada.value = '';
   elEntrada.disabled = true;
+
+  // 0. Aguardando resposta "Posso ajudar em algo mais?" após criar chamado
+  if (aguardandoNovoChamado) {
+    aguardandoNovoChamado = false;
+    if (ehNegativa(texto)) {
+      await botDiz(`Sem problemas! 😊 Se precisar de mais ajuda, é só chamar. Tenha um bom dia!`);
+      conversaEncerrada = true;
+      elEntrada.disabled = false;
+      elEntrada.focus();
+      return;
+    }
+    if (ehAfirmativa(texto)) {
+      await botDiz(`Ótimo! 😊 Qual é o novo problema? Descreva para eu registrar.`);
+      elEntrada.disabled = false;
+      elEntrada.focus();
+      return;
+    }
+    // Se não for clara, assume que quer abrir novo chamado
+    // continua para fluxo normal abaixo
+  }
 
   // 1. Saudação -> resposta amigável
   if (ehSaudacao(texto) && !descricaoPendente) {
@@ -203,9 +230,11 @@ async function enviar(texto) {
            <span class="tag tag-neutra">${escaparHtml(c.categoria)}</span>
            <span class="tag tag-neutra">Fila: ${escaparHtml(c.fila)}</span>
            <span class="tag tag-${c.prioridade.toLowerCase()}">Prioridade ${escaparHtml(c.prioridade)}</span>
-         </div>`,
+         </div>
+         <br><strong>Posso ajudar em algo mais?</strong> (sim / não)`,
         'sucesso'
       );
+      aguardandoNovoChamado = true;
       atualizarMeusChamados();
     } else {
       await botDiz('Algo deu errado ao registrar seu chamado. Tente novamente.', 'alerta');
