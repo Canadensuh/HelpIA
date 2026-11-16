@@ -12,7 +12,7 @@
 
 | Integrante | GitHub | Responsabilidade |
 |---|---|---|
-| João Pedro Marques Souza | @marquess07 | Requisitos e rastreabilidade |
+| João Pedro Marques Souza | @marquess07 | Requisitos, rastreabilidade, documentação, deploy, especificação de produto (chatbot), testes e coordenação |
 | Murilo do Nascimento Bezerra | @Canadensuh | Modelagem, projeto e arquitetura |
 
 ## Problema
