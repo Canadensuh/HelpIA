@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Projeto | CallSync / HelpIA |
+| Projeto | HelpIA |
 | Versão | v1.1 |
 | Data | 15/11/2026 |
 | Tipo | Mudança de escopo (critério da seção 5 do Plano de Projeto, E02) |
@@ -61,11 +61,11 @@ atualização periódica, como hoje) e painel de gestor.
 |---|---|
 | `README.md` | **Atualizado** (v1.1) |
 | História de usuário e critérios (`docs/E05/AS5 - HISTÓRIA DE USUÁRIO E CRITÉRIOS.docx`) | **Atualizado (versão 2)**, conforme a seção 7 |
-| Backlog (`docs/E03/E03_Backlog_CallSync.docx` e `.pdf`) | **Atualizado (versão 2)**: US-01 reescrita, nova US-08, US-05 passa a Alta, critérios, corte e mapa de histórias |
-| Plano de projeto (`docs/E02/E02_Plano_Projeto_CallSync.docx` e `.pdf`) | **Atualizado (versão 2)**: cronograma E07 e E08, dependências, riscos (R01 e R04 encerrados; R07 e R08 novos) e critérios adicionais |
+| Backlog (`docs/E03/E03_Backlog_HelpIA.docx` e `.pdf`) | **Atualizado (versão 2)**: US-01 reescrita, nova US-08, US-05 passa a Alta, critérios, corte e mapa de histórias |
+| Plano de projeto (`docs/E02/E02_Plano_Projeto_HelpIA.docx` e `.pdf`) | **Atualizado (versão 2)**: cronograma E07 e E08, dependências, riscos (R01 e R04 encerrados; R07 e R08 novos) e critérios adicionais |
 | Responsabilidades das classes (análise de projeto, A2) | **Atualizadas** na seção 8 deste documento |
 | Registro de riscos | **Atualizado** na seção 9 e no plano de projeto (E02, versão 2) |
-| E01, E04 e `docs/avaliacao-a2/` | Mantidos como estão. Registram o que foi decidido na época; as referências ao Teams ali estão **superadas por este documento** |
+| E01 (`E01_HowTo_HelpIA.docx`), E04 e `docs/avaliacao-a2/` | Mantidos como estão. Registram o que foi decidido na época; as referências ao Teams ali estão **superadas por este documento** |
 | Diagrama de casos de uso e fluxograma (`docs/E05/*.drawio`) | **Atualizados (versão 2)**: casos de uso do portal (com os planejados tracejados) e fluxo com o desvio do RN-01 |
 | Diagrama de classes (E05, imagem `.jpeg`) | **A atualizar**: incluir `Mensagem` e a solução no `Chamado` |
 | Protótipos de tela (E04 e E05, imagens) | **A atualizar**: a Tela 1 ainda mostra o Microsoft Teams |

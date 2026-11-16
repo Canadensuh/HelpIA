@@ -1,4 +1,4 @@
-# CallSync
+# HelpIA
 
 > Portal de chamados de suporte: o colaborador abre o chamado com a ajuda de um assistente
 > (HelpBot), ele cai na fila do analista e o atendimento acontece no próprio portal.
