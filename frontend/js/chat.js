@@ -14,6 +14,7 @@ const elOffline = document.getElementById('avisoOffline');
 
 let descricaoPendente = '';      // texto guardado enquanto o bot pede complemento (RN-01)
 const statusConhecidos = {};     // número do chamado -> último status visto
+let aguardandoConfirmacaoDica = false; // true após mostrar dica e perguntar "Quer registrar?"
 
 // ---------- Base de conhecimento do HelpBot ----------
 const SAUDACOES = ['oi', 'olá', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'hey', 'hello', 'tudo bem', 'td bem'];
@@ -95,6 +96,12 @@ function detectarDica(texto) {
   return null;
 }
 
+function ehNegativa(texto) {
+  const t = normalizar(texto);
+  const negativas = ['nao', 'não', 'nao quero', 'não quero', 'obrigado', 'obrigada', 'valeu', 'tchau', 'ate mais', 'até mais', 'deixa pra la', 'deixa pra lá', 'sem chamado', 'nao precisa', 'não precisa', 'resolvi', 'ja resolvi', 'já resolvi', 'consegui'];
+  return negativas.some(n => t.includes(n));
+}
+
 // ---------- Mensagens ----------
 function adicionarMensagem(html, tipo, extraClasse = '') {
   const msg = document.createElement('div');
@@ -139,9 +146,22 @@ async function enviar(texto) {
   const dica = detectarDica(texto);
   if (dica && !descricaoPendente) {
     await botDiz(dica, 'dica');
+    aguardandoConfirmacaoDica = true;
     elEntrada.disabled = false;
     elEntrada.focus();
     return;
+  }
+
+  // 2b. Usuário respondeu à pergunta "Quer registrar?" após dica
+  if (aguardandoConfirmacaoDica && !descricaoPendente) {
+    aguardandoConfirmacaoDica = false;
+    if (ehNegativa(texto)) {
+      await botDiz(`Sem problemas! 😊 Se precisar de mais ajuda, é só chamar. Tenha um bom dia!`);
+      elEntrada.disabled = false;
+      elEntrada.focus();
+      return;
+    }
+    // Se não for negativa, continua para criar o chamado (fluxo normal abaixo)
   }
 
   // 3. Fluxo normal: criar chamado (RN-01 → CA-01/CA-02 → CA-03)
