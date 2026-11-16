@@ -111,6 +111,9 @@ function ehAfirmativa(texto) {
   return afirmativas.some(a => t.includes(a));
 }
 
+// Palavras que indicam "só estou agradecendo/despedindo" após encerramento, não nova solicitação
+const FECHAMENTO_POS_ENCERRAMENTO = ['obrigado', 'obrigada', 'valeu', 'tchau', 'ok', 'beleza', 'ate mais', 'até mais'];
+
 // ---------- Mensagens ----------
 function adicionarMensagem(html, tipo, extraClasse = '') {
   const msg = document.createElement('div');
@@ -151,10 +154,20 @@ async function enviar(texto) {
   texto = texto.trim();
   if (!texto) return;
 
-  // Se conversa foi encerrada, reinicia (sem saudação inicial) e CONTINUA processando a mensagem
+  // Se conversa foi encerrada, reinicia (sem saudação inicial)
   if (conversaEncerrada) {
     reiniciarChat(false);
-    // Não retorna aqui - continua para processar a mensagem atual
+
+    // Se for só agradecimento/despedida, mostra saudação inicial e para (não processa como nova solicitação)
+    if (FECHAMENTO_POS_ENCERRAMENTO.some(p => normalizar(texto).includes(p))) {
+      await botDiz(`<strong>Olá! Eu sou o HelpBot 🤖</strong>
+         Descreva o seu problema que eu registro o chamado e encaminho para a equipe certa.
+         <br><small>Dica: tente dizer "esqueci a senha", "computador lento" ou "não liga" para dicas rápidas.</small>`);
+      elEntrada.disabled = false;
+      elEntrada.focus();
+      return;
+    }
+    // Senão continua fluxo normal (processa como saudação/dica/novo chamado)
   }
 
   adicionarMensagem(escaparHtml(texto), 'usuario');
