@@ -41,7 +41,17 @@ triando mensagens dispersas, o que gera atrasos e retrabalho.
 Os critérios completos e a forma de verificação estão em
 [docs/mudanca-escopo](docs/mudanca-escopo/mudanca_escopo_portal.md).
 
-## Como executar
+## 🚀 Deploy em Produção (Render)
+
+- **URL:** https://helpia-backend.onrender.com
+- **Frontend (estático):** `index.html`, `chat.html`, `painel.html`
+- **API Flask:** `/api/chamados`, `/api/chamados/<numero>`, `/api/chamados/<numero>/assumir`, `/api/chamados/<numero>/resolver`
+
+> O Render serve o frontend (pasta `frontend/`) como arquivos estáticos e roda o backend Flask na mesma origem — sem problemas de CORS.
+
+---
+
+## 💻 Como executar localmente
 
 Pré-requisito: **Python 3.10+**.
 
