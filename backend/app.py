@@ -3,10 +3,10 @@ from pathlib import Path
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from backend.aplicacao.servico_chamado import ChamadoNaoEncontrado, ServicoChamado
-from backend.aplicacao.servico_notificacao import mensagem_confirmacao
-from backend.dominio.chamado import DescricaoInsuficiente
-from backend.persistencia.repositorio_chamado import RepositorioChamadoMemoria
+from aplicacao.servico_chamado import ChamadoNaoEncontrado, ServicoChamado
+from aplicacao.servico_notificacao import mensagem_confirmacao
+from dominio.chamado import DescricaoInsuficiente
+from persistencia.repositorio_chamado import RepositorioChamadoMemoria
 
 PASTA_FRONTEND = Path(__file__).resolve().parent.parent / "frontend"
 
