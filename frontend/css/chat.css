@@ -57,6 +57,7 @@
 .msg-bot { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
 .msg-bot.alerta { border-color: var(--alerta-borda); background: var(--alerta-bg); }
 .msg-bot.sucesso { border-color: var(--sucesso-borda); background: var(--sucesso-bg); }
+.msg-bot.dica { border-color: var(--primary); background: var(--ai-soft); }
 .msg-bot strong { display: block; margin-bottom: .2rem; }
 .digitando { color: var(--muted); font-style: italic; }
 .detalhes { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .5rem; }
