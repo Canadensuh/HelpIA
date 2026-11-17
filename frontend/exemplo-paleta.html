@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-fundo="berinjela">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HelpIA — Exemplo de paleta "Papelaria"</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Nunito:wght@400;600;700;800&display=swap" />
+  <link rel="stylesheet" href="css/simbolos.css" />
+  <style>
+    /* ======================================================================
+       Paleta "Papelaria" — fundo escuro e quente (a "mesa"), com cartões e
+       tickets claros por cima (os "papéis"). Nada de fundo branco.
+       ====================================================================== */
+    :root {
+      /* Papéis (cartões, tickets, balões) */
+      --papel: #FBF5EC;
+      --papel-2: #F4EBDD;
+      --superficie: #FFFDF9;
+      --tinta: #2B2236;
+      --tinta-suave: #6E6379;
+
+      /* Cores de ação e significado */
+      --folha: #2F7D5B;
+      --folha-escura: #24644A;
+      --folha-clara: #DCF0E3;
+      --mostarda: #F2B33D;
+      --mostarda-clara: #FDF0D0;
+      --coral: #EC6A52;
+      --coral-clara: #FCE3DC;
+      --ceu: #5F9BD3;
+      --ceu-clara: #E2EEF9;
+      --lilas: #9C7FD6;
+      --lilas-clara: #EDE5FA;
+      --cortica: #E6CFA9;
+
+      --primary: var(--folha);   /* usado pelos ícones de css/simbolos.css */
+      --raio: 16px;
+    }
+
+    /* ---- Os 3 fundos possíveis ---- */
+    [data-fundo="berinjela"] {
+      --fundo: #2A2133;
+      --fundo-detalhe: rgba(255, 240, 225, .07);
+      --fundo-texto: #F7EFE4;
+      --fundo-texto-suave: #C7BBD1;
+      --sombra-cor: #120C18;
+    }
+    [data-fundo="quadro"] {
+      --fundo: #22372F;
+      --fundo-detalhe: rgba(240, 255, 245, .07);
+      --fundo-texto: #F2F5EC;
+      --fundo-texto-suave: #B5C8BC;
+      --sombra-cor: #0F1A15;
+    }
+    [data-fundo="kraft"] {
+      --fundo: #C9A878;
+      --fundo-detalhe: rgba(60, 40, 15, .12);
+      --fundo-texto: #2B2236;
+      --fundo-texto-suave: #4E4038;
+      --sombra-cor: #2B2236;
+    }
+    :root { --sombra-adesivo: 3px 3px 0 var(--sombra-cor); }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background-color: var(--fundo);
+      background-image: radial-gradient(var(--fundo-detalhe) 1px, transparent 1.2px);
+      background-size: 22px 22px;
+      color: var(--fundo-texto);
+      font-family: 'Nunito', system-ui, sans-serif;
+      line-height: 1.55;
+      transition: background-color .4s, color .4s;
+    }
+    h1, h2, h3, .display { font-family: 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em; margin: 0; }
+    .pagina { max-width: 1180px; margin: 0 auto; padding: 32px 16px 80px; }
+    .marca-texto {
+      background: var(--mostarda); color: var(--tinta);
+      padding: 0 .25em; border-radius: 6px; box-decoration-break: clone; -webkit-box-decoration-break: clone;
+      display: inline; transform: rotate(-1deg);
+    }
+    .secao { margin-top: 64px; }
+    .secao > h2 { font-size: 1.6rem; margin-bottom: 6px; }
+    .secao > p.sub { color: var(--fundo-texto-suave); margin: 0 0 22px; }
+    .rotulo-secao {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: .78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em;
+      background: var(--lilas-clara); color: #5B3FA6; padding: 4px 10px; border-radius: 999px; margin-bottom: 12px;
+    }
+
+    /* ---------- Seletor de fundo ---------- */
+    .seletor {
+      position: sticky; top: 12px; z-index: 10; margin-bottom: 36px;
+      display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+      background: var(--superficie); color: var(--tinta); border: 2px solid var(--tinta);
+      border-radius: 999px; padding: 8px 10px 8px 18px; box-shadow: var(--sombra-adesivo); width: fit-content; max-width: 100%;
+    }
+    .seletor span { font-weight: 800; font-size: .9rem; }
+    .seletor button {
+      display: inline-flex; align-items: center; gap: 8px;
+      font: 800 .88rem 'Nunito', sans-serif; color: var(--tinta);
+      background: transparent; border: 2px solid transparent; border-radius: 999px; padding: 6px 12px; cursor: pointer;
+    }
+    .seletor button i.bolinha { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--tinta); }
+    .seletor button[aria-pressed="true"] { background: var(--mostarda); border-color: var(--tinta); }
+
+    /* ---------- Cabeçalho ---------- */
+    .cabeca h1 { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.15; max-width: 780px; }
+    .cabeca p { font-size: 1.1rem; color: var(--fundo-texto-suave); max-width: 640px; }
+
+    /* ---------- Amostras ---------- */
+    .amostras { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+    .amostra { background: var(--superficie); color: var(--tinta); border: 2px solid var(--tinta); border-radius: 14px; overflow: hidden; box-shadow: var(--sombra-adesivo); }
+    .amostra .cor { height: 72px; border-bottom: 2px solid var(--tinta); }
+    .amostra div:last-child { padding: 10px 12px; font-size: .85rem; }
+    .amostra strong { display: block; }
+    .amostra code { color: var(--tinta-suave); font-size: .78rem; }
+
+    /* ---------- Botões ---------- */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font: 800 1rem 'Nunito', sans-serif; padding: 12px 22px; border-radius: 999px;
+      border: 2px solid var(--tinta); cursor: pointer; transition: transform .15s, box-shadow .15s;
+    }
+    .btn:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--sombra-cor); }
+    .btn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--sombra-cor); }
+    .btn-principal { background: var(--folha); color: #fff; box-shadow: var(--sombra-adesivo); }
+    .btn-secundario { background: var(--superficie); color: var(--tinta); box-shadow: var(--sombra-adesivo); }
+    .btn-mostarda { background: var(--mostarda); color: var(--tinta); box-shadow: var(--sombra-adesivo); }
+
+    /* ---------- Tela do colaborador ---------- */
+    .tela { background: var(--superficie); color: var(--tinta); border: 2px solid var(--tinta); border-radius: 24px; box-shadow: 6px 6px 0 var(--sombra-cor); overflow: hidden; }
+    .tela-colab { display: grid; grid-template-columns: 1fr 300px; }
+    .palco { padding: 32px; background: var(--papel); }
+    .palco h3 { font-size: 1.9rem; }
+    .palco .saudacao { color: var(--tinta-suave); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .cartoes { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 16px; margin-top: 22px; }
+    .cartao {
+      background: var(--tom-claro); border: 2px solid var(--tinta); border-radius: var(--raio);
+      padding: 18px; cursor: pointer; text-align: left; font: inherit; color: var(--tinta);
+      transition: transform .18s, box-shadow .18s; box-shadow: 3px 3px 0 var(--tinta);
+    }
+    .cartao:nth-child(odd) { transform: rotate(-.6deg); }
+    .cartao:nth-child(even) { transform: rotate(.5deg); }
+    .cartao:hover { transform: rotate(0) translate(-3px, -3px); box-shadow: 6px 6px 0 var(--tinta); }
+    .cartao .ico-bolha {
+      width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center;
+      background: var(--superficie); border: 2px solid var(--tinta); color: var(--tom); font-size: 1.6rem; margin-bottom: 12px;
+    }
+    .cartao strong { display: block; font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.15rem; }
+    .cartao small { color: var(--tinta-suave); font-weight: 600; }
+    .t-computador { --tom: var(--folha); --tom-claro: var(--folha-clara); }
+    .t-senha { --tom: #7A5BC4; --tom-claro: var(--lilas-clara); }
+    .t-internet { --tom: #3D7DB8; --tom-claro: var(--ceu-clara); }
+    .t-impressora { --tom: #C24E37; --tom-claro: var(--coral-clara); }
+    .t-setor { --tom: #A9781A; --tom-claro: var(--mostarda-clara); }
+    .t-outro { --tom: var(--tinta); --tom-claro: var(--superficie); }
+
+    .helpy-lado { background: var(--mostarda-clara); border-left: 2px solid var(--tinta); padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+    .helpy-topo { display: flex; align-items: center; gap: 10px; }
+    .helpy-rosto {
+      width: 48px; height: 48px; border-radius: 50%; background: var(--mostarda); border: 2px solid var(--tinta);
+      display: grid; place-items: center; font-size: 1.5rem; color: var(--tinta);
+      animation: flutua 3s ease-in-out infinite;
+    }
+    @keyframes flutua { 50% { transform: translateY(-4px) rotate(-4deg); } }
+    .balao {
+      background: var(--superficie); color: var(--tinta); border: 2px solid var(--tinta); border-radius: 16px 16px 16px 4px;
+      padding: 12px 14px; font-size: .95rem;
+    }
+    .atalho {
+      background: transparent; border: 2px dashed color-mix(in srgb, var(--tinta) 45%, transparent); border-radius: 12px;
+      padding: 9px 12px; font: 700 .88rem 'Nunito', sans-serif; color: var(--tinta); text-align: left; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .atalho:hover { border-style: solid; background: var(--superficie); }
+
+    /* ---------- Tags de status (semáforo) ---------- */
+    .tags { display: flex; flex-wrap: wrap; gap: 10px; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px;
+      font-size: .82rem; font-weight: 800; border: 2px solid currentColor;
+    }
+    .tag-aguardando { color: #2F6A9F; background: var(--ceu-clara); }
+    .tag-atendimento { color: #8A5F0B; background: var(--mostarda-clara); }
+    .tag-resolvido { color: var(--folha-escura); background: var(--folha-clara); }
+    .tag-alta { color: #B5412B; background: var(--coral-clara); }
+
+    /* ---------- Ticket ---------- */
+    .ticket {
+      background: var(--superficie); color: var(--tinta); border: 2px solid var(--tinta); border-radius: 14px;
+      display: grid; grid-template-columns: 1fr auto; position: relative; max-width: 560px;
+      box-shadow: 5px 5px 0 var(--sombra-cor);
+    }
+    .ticket::before, .ticket::after {
+      content: ''; position: absolute; right: 118px; width: 22px; height: 22px; border-radius: 50%;
+      background: var(--fundo); border: 2px solid var(--tinta); transition: background-color .4s;
+    }
+    .ticket::before { top: -12px; border-top-color: transparent; border-left-color: transparent; transform: rotate(45deg); }
+    .ticket::after { bottom: -12px; border-bottom-color: transparent; border-right-color: transparent; transform: rotate(45deg); }
+    .ticket-corpo { padding: 20px 22px; }
+    .ticket-codigo { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 1.5rem; }
+    .ticket-linha { display: flex; flex-wrap: wrap; gap: 14px; color: var(--tinta-suave); font-weight: 700; font-size: .88rem; margin-top: 10px; }
+    .ticket-linha span { display: inline-flex; align-items: center; gap: 5px; }
+    .ticket-canhoto {
+      width: 130px; border-left: 2px dashed var(--tinta); display: grid; place-items: center; text-align: center;
+      padding: 14px; background: var(--mostarda-clara); border-radius: 0 12px 12px 0;
+    }
+    .ticket-canhoto b { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.8rem; display: block; }
+    .ticket-canhoto small { font-weight: 800; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--tinta-suave); }
+
+    /* ---------- Mesa do analista ---------- */
+    .mesa {
+      background-color: var(--cortica); color: var(--tinta);
+      background-image:
+        radial-gradient(rgba(138, 106, 58, .35) 1.2px, transparent 1.4px),
+        radial-gradient(rgba(255, 255, 255, .35) 1px, transparent 1.2px);
+      background-size: 14px 14px, 19px 19px;
+      background-position: 0 0, 7px 9px;
+      border: 2px solid var(--tinta); border-radius: 24px; box-shadow: 6px 6px 0 var(--sombra-cor);
+      padding: 28px; display: grid; grid-template-columns: 1fr 1fr 240px; gap: 22px; align-items: start;
+    }
+    .mesa h4 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.05rem; margin: 0 0 12px; display: flex; align-items: center; gap: 6px; }
+    .mini-ticket {
+      background: var(--superficie); border: 2px solid var(--tinta); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px;
+      box-shadow: 3px 3px 0 var(--tinta); position: relative;
+    }
+    .mini-ticket:nth-child(2) { transform: rotate(-1deg); }
+    .mini-ticket:nth-child(3) { transform: rotate(.8deg); }
+    .mini-ticket .topo { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .mini-ticket .codigo { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; }
+    .mini-ticket p { margin: 8px 0 10px; font-weight: 700; }
+    .mini-ticket .acoes { display: flex; gap: 8px; }
+    .mini-ticket .btn { padding: 7px 14px; font-size: .85rem; box-shadow: 3px 3px 0 var(--tinta); }
+    .lembra {
+      margin-top: 10px; background: var(--lilas-clara); border: 2px dashed #7A5BC4; border-radius: 10px;
+      padding: 8px 10px; font-size: .84rem; font-weight: 700; color: #4F3591; display: flex; gap: 6px;
+    }
+    .carimbo {
+      position: absolute; right: 14px; top: 38px; transform: rotate(-12deg);
+      border: 3px solid var(--folha); color: var(--folha); border-radius: 8px; padding: 2px 10px;
+      font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; letter-spacing: .08em; opacity: .85;
+    }
+    .post-it {
+      background: var(--mostarda); border: 2px solid var(--tinta); padding: 16px; transform: rotate(2deg);
+      box-shadow: 3px 3px 0 var(--tinta); font-weight: 700;
+    }
+    .post-it b { font-family: 'Bricolage Grotesque', sans-serif; font-size: 2rem; display: block; line-height: 1.1; }
+    .helpy-mesa { margin-top: 18px; }
+
+    /* ---------- Regras ---------- */
+    .regras { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .regra { background: var(--superficie); color: var(--tinta); border: 2px solid var(--tinta); border-radius: var(--raio); padding: 18px; box-shadow: var(--sombra-adesivo); }
+    .regra h3 { font-size: 1.1rem; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .regra p { margin: 0; color: var(--tinta-suave); font-size: .93rem; }
+
+    @media (max-width: 900px) {
+      .tela-colab { grid-template-columns: 1fr; }
+      .helpy-lado { border-left: 0; border-top: 2px solid var(--tinta); }
+      .mesa { grid-template-columns: 1fr; }
+      .seletor { border-radius: 18px; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main class="pagina">
+
+    <div class="seletor" role="group" aria-label="Escolher o fundo">
+      <span>Fundo:</span>
+      <button type="button" data-fundo="berinjela" aria-pressed="true"><i class="bolinha" style="background:#2A2133"></i>Berinjela</button>
+      <button type="button" data-fundo="quadro" aria-pressed="false"><i class="bolinha" style="background:#22372F"></i>Quadro-verde</button>
+      <button type="button" data-fundo="kraft" aria-pressed="false"><i class="bolinha" style="background:#C9A878"></i>Papel kraft</button>
+    </div>
+
+    <header class="cabeca">
+      <span class="rotulo-secao"><i class="ic ic-brilho" aria-hidden="true"></i> Proposta de paleta</span>
+      <h1>Papelaria: o HelpIA com cara de <span class="marca-texto">mesa de verdade</span>, não de software corporativo.</h1>
+      <p>O fundo é a mesa, escuro e aconchegante. Por cima ficam os "papéis" claros: cartões, tickets e o Helpy. Verde-folha para agir e cores de marca-texto para dar vida.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:22px">
+        <button class="btn btn-principal"><i class="ic ic-ticket" aria-hidden="true"></i> Abrir chamado</button>
+        <button class="btn btn-mostarda"><i class="ic ic-carimbo" aria-hidden="true"></i> Carimbar</button>
+        <button class="btn btn-secundario">Ver meus chamados</button>
+      </div>
+    </header>
+
+    <!-- PALETA -->
+    <section class="secao">
+      <h2>As cores</h2>
+      <p class="sub">Cada cor tem um papel fixo, assim a pessoa aprende o significado sem perceber.</p>
+      <div class="amostras">
+        <div class="amostra"><div class="cor" style="background:var(--fundo)"></div><div><strong>Fundo</strong><code id="hexFundo">#2A2133</code><br>a "mesa"</div></div>
+        <div class="amostra"><div class="cor" style="background:var(--papel)"></div><div><strong>Papel</strong><code>#FBF5EC</code><br>cartões e telas</div></div>
+        <div class="amostra"><div class="cor" style="background:var(--folha)"></div><div><strong>Folha</strong><code>#2F7D5B</code><br>ação principal</div></div>
+        <div class="amostra"><div class="cor" style="background:var(--mostarda)"></div><div><strong>Mostarda</strong><code>#F2B33D</code><br>destaque e Helpy</div></div>
+        <div class="amostra"><div class="cor" style="background:var(--coral)"></div><div><strong>Coral</strong><code>#EC6A52</code><br>prioridade alta</div></div>
+        <div class="amostra"><div class="cor" style="background:var(--ceu)"></div><div><strong>Céu</strong><code>#5F9BD3</code><br>aguardando</div></div>
+        <div class="amostra"><div class="cor" style="background:var(--lilas)"></div><div><strong>Lilás</strong><code>#9C7FD6</code><br>memória do Helpy</div></div>
+        <div class="amostra"><div class="cor" style="background:var(--cortica)"></div><div><strong>Cortiça</strong><code>#E6CFA9</code><br>mesa do analista</div></div>
+      </div>
+    </section>
+
+    <!-- COLABORADOR -->
+    <section class="secao">
+      <h2>Abertura de chamado</h2>
+      <p class="sub">Cada tipo de problema ganha um tom pastel próprio. Dá para reconhecer o cartão pela cor, sem ler.</p>
+      <div class="tela tela-colab">
+        <div class="palco">
+          <span class="saudacao"><i class="ic ic-aceno" aria-hidden="true"></i> Olá, Lúcio!</span>
+          <h3>Por que você está aqui hoje?</h3>
+          <div class="cartoes">
+            <button class="cartao t-computador"><span class="ico-bolha"><i class="ic ic-monitor"></i></span><strong>Computador</strong><small>Não liga, lento, tela…</small></button>
+            <button class="cartao t-senha"><span class="ico-bolha"><i class="ic ic-chave"></i></span><strong>Senha</strong><small>E-mail, apps, Windows…</small></button>
+            <button class="cartao t-internet"><span class="ico-bolha"><i class="ic ic-wifi"></i></span><strong>Internet</strong><small>Wi-Fi, cabo, VPN…</small></button>
+            <button class="cartao t-impressora"><span class="ico-bolha"><i class="ic ic-impressora"></i></span><strong>Impressora</strong><small>Não imprime, atolou…</small></button>
+            <button class="cartao t-setor"><span class="ico-bolha"><i class="ic ic-sirene"></i></span><strong>Setor parado</strong><small>Ninguém consegue trabalhar</small></button>
+            <button class="cartao t-outro"><span class="ico-bolha"><i class="ic ic-duvida"></i></span><strong>Outro assunto</strong><small>Explico na nota</small></button>
+          </div>
+        </div>
+        <aside class="helpy-lado">
+          <div class="helpy-topo">
+            <span class="helpy-rosto"><i class="ic ic-robo"></i></span>
+            <div><strong class="display">Helpy</strong><br><small style="color:var(--tinta-suave);font-weight:700">seu ajudante</small></div>
+          </div>
+          <div class="balao">Oi, Lúcio! Escolhe um cartão aí do lado que eu te guio no resto. Prometo que é rapidinho.</div>
+          <button class="atalho"><i class="ic ic-duvida"></i> Não achei minha opção</button>
+          <button class="atalho"><i class="ic ic-etiqueta"></i> Onde vejo o nº da máquina?</button>
+          <button class="atalho"><i class="ic ic-relogio"></i> Quanto tempo demora?</button>
+        </aside>
+      </div>
+    </section>
+
+    <!-- TICKET + STATUS -->
+    <section class="secao">
+      <h2>O ticket e os status</h2>
+      <p class="sub">Semáforo que todo mundo entende: céu espera, mostarda trabalha, folha resolveu, coral é urgente (sem o susto do vermelho puro).</p>
+      <div class="tags" style="margin-bottom:22px">
+        <span class="tag tag-aguardando"><i class="ic ic-relogio"></i> Aguardando</span>
+        <span class="tag tag-atendimento"><i class="ic ic-ferramenta"></i> Em atendimento</span>
+        <span class="tag tag-resolvido"><i class="ic ic-check"></i> Resolvido</span>
+        <span class="tag tag-alta"><i class="ic ic-chama"></i> Prioridade alta</span>
+      </div>
+      <div class="ticket">
+        <div class="ticket-corpo">
+          <div class="tags"><span class="tag tag-aguardando">Aguardando</span><span class="tag tag-alta"><i class="ic ic-chama"></i> Alta</span></div>
+          <div class="ticket-codigo" style="margin-top:10px">Computador não liga</div>
+          <div class="ticket-linha">
+            <span><i class="ic ic-usuario"></i> Lúcio Martins</span>
+            <span><i class="ic ic-etiqueta"></i> Máquina 043</span>
+            <span><i class="ic ic-pasta"></i> Suporte N1</span>
+          </div>
+        </div>
+        <div class="ticket-canhoto"><div><small>Ticket</small><b>#007</b><small>17/11</small></div></div>
+      </div>
+    </section>
+
+    <!-- ANALISTA -->
+    <section class="secao">
+      <h2>Mesa do analista</h2>
+      <p class="sub">Tampo de cortiça, tickets como papéis presos na mesa, post-it de meta e o Helpy em lilás quando ele "lembra" de algo.</p>
+      <div class="mesa">
+        <div>
+          <h4><i class="ic ic-entrada"></i> Bandeja de entrada</h4>
+          <div class="mini-ticket">
+            <div class="topo"><span class="codigo">#007</span><span class="tag tag-alta"><i class="ic ic-chama"></i> Alta</span></div>
+            <p>Lúcio · computador não liga</p>
+            <div class="acoes"><button class="btn btn-secundario"><i class="ic ic-envelope"></i> Nota</button><button class="btn btn-principal">Assumir</button></div>
+            <div class="lembra"><i class="ic ic-lampada"></i> Você já atendeu o Lúcio na máquina 043 ontem: "cabo de força solto no estabilizador".</div>
+          </div>
+          <div class="mini-ticket">
+            <div class="topo"><span class="codigo">#008</span><span class="tag tag-aguardando">Aguardando</span></div>
+            <p>João · cabo de rede</p>
+            <div class="acoes"><button class="btn btn-secundario"><i class="ic ic-envelope"></i> Nota</button><button class="btn btn-principal">Assumir</button></div>
+          </div>
+        </div>
+        <div>
+          <h4><i class="ic ic-pastas"></i> Na sua mesa</h4>
+          <div class="mini-ticket">
+            <div class="topo"><span class="codigo">#005</span><span class="tag tag-atendimento">Em atendimento</span></div>
+            <p>Maria · impressora</p>
+            <div class="acoes"><button class="btn btn-mostarda"><i class="ic ic-carimbo"></i> Carimbar</button></div>
+          </div>
+          <div class="mini-ticket">
+            <div class="topo"><span class="codigo">#004</span><span class="tag tag-resolvido"><i class="ic ic-check"></i> Resolvido</span></div>
+            <p>João · senha do e-mail</p>
+            <span class="carimbo">RESOLVIDO</span>
+          </div>
+        </div>
+        <div>
+          <div class="post-it"><small>Meta de hoje</small><b>3 / 5</b>tickets carimbados</div>
+          <div class="helpy-mesa">
+            <div class="helpy-topo"><span class="helpy-rosto"><i class="ic ic-robo"></i></span><strong class="display">Helpy</strong></div>
+            <div class="balao" style="margin-top:10px">Mandou bem, Carlos! Só faltam 2 para bater a meta. Que tal um café?</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REGRAS -->
+    <section class="secao">
+      <h2>Por que não parece "site de IA"</h2>
+      <p class="sub">As escolhas que fogem do padrão azul e branco genérico.</p>
+      <div class="regras">
+        <div class="regra"><h3><i class="ic ic-documento ic-primario"></i> Mesa escura, papel claro</h3><p>O fundo nunca é branco. A cor clara aparece só nos "papéis" (cartões e tickets), o que cria profundidade e conforto para os olhos.</p></div>
+        <div class="regra"><h3><i class="ic ic-caneta ic-primario"></i> Contorno de tinta</h3><p>Bordas escuras e sombras sólidas deslocadas (estilo adesivo), no lugar das sombras borradas que todo template usa.</p></div>
+        <div class="regra"><h3><i class="ic ic-joinha ic-primario"></i> Leve torto de propósito</h3><p>Cartões e post-its levemente rotacionados, como coisas apoiadas numa mesa. Endireitam no hover.</p></div>
+        <div class="regra"><h3><i class="ic ic-brilho ic-primario"></i> Tipografia com personalidade</h3><p>Bricolage Grotesque nos títulos e Nunito no texto: arredondada e simpática, sem perder legibilidade.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const hex = { berinjela: '#2A2133', quadro: '#22372F', kraft: '#C9A878' };
+      const botoes = document.querySelectorAll('.seletor button');
+      function aplicar(nome) {
+        if (!hex[nome]) return;
+        document.documentElement.dataset.fundo = nome;
+        document.getElementById('hexFundo').textContent = hex[nome];
+        botoes.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.fundo === nome)));
+        try { localStorage.setItem('helpia-exemplo-fundo', nome); } catch (e) { /* sem armazenamento */ }
+      }
+      botoes.forEach((b) => b.addEventListener('click', () => aplicar(b.dataset.fundo)));
+      try { aplicar(localStorage.getItem('helpia-exemplo-fundo') || 'berinjela'); } catch (e) { aplicar('berinjela'); }
+    })();
+  </script>
+</body>
+</html>

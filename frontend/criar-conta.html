@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HelpIA — Centro de comando</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/simbolos.css" />
+  <script src="js/tema.js"></script>
+  <link rel="stylesheet" href="css/helpy.css" />
+  <link rel="stylesheet" href="css/contas.css" />
+  <link rel="stylesheet" href="css/teclas.css" />
+  <link rel="stylesheet" href="css/papelaria.css" />
+</head>
+<body class="tela-comando">
+
+  <header class="topbar">
+    <div class="container-largo topbar-inner">
+      <a href="criar-conta.html" class="brand"><img src="assets/logo.svg" alt="" />Help<b>IA</b></a>
+      <nav class="nav" aria-label="Navegação">
+        <a href="criar-conta.html" class="ativo">Centro de comando</a>
+        <a href="painel.html">Mesa do analista</a>
+      </nav>
+      <div class="topbar-acoes">
+        <button type="button" class="btn-tema" aria-label="Alternar tema">
+          <svg class="icone-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <svg class="icone-lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <div class="usuario-menu">
+          <span class="usuario-avatar" data-usuario-iniciais aria-hidden="true"></span>
+          <span class="usuario-info"><strong data-usuario-nome></strong><span data-usuario-perfil></span></span>
+          <button type="button" class="btn-sair" data-acao="sair">Sair</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container-largo comando">
+    <p class="aviso-offline" id="avisoOffline" hidden></p>
+
+    <!-- HERO DO COMANDO -->
+    <section class="comando-hero textura-grade">
+      <div class="radar" aria-hidden="true"><span class="radar-varredura"></span></div>
+      <div class="comando-emblema" aria-hidden="true">
+        <svg viewBox="0 0 80 80">
+          <path class="emblema-escudo" d="M40 6l28 10v20c0 18-12 32-28 38C24 68 12 54 12 36V16z"/>
+          <path class="emblema-coroa" d="M26 44l-2-16 9 7 7-11 7 11 9-7-2 16z"/>
+          <rect class="emblema-base" x="26" y="47" width="28" height="5" rx="2"/>
+        </svg>
+      </div>
+      <div class="comando-texto">
+        <span class="comando-rotulo">Centro de comando · nível de acesso: gestor</span>
+        <h1 id="saudacao">Você está no comando.</h1>
+        <p id="empresaResumo">Carregando…</p>
+      </div>
+      <div class="comando-selo" id="seloPoder">
+        <strong id="totalSob">0</strong>
+        <span>contas sob o seu comando</span>
+      </div>
+    </section>
+
+    <div class="boas-vindas" id="boasVindas" hidden>
+      <strong>Empresa cadastrada! <i class="ic ic-festa" aria-hidden="true"></i></strong>
+      Agora emita os crachás da sua equipe: cada analista e colaborador entra pelo login com os dados que você definir aqui.
+    </div>
+
+    <!-- INDICADORES -->
+    <section class="kpis" aria-label="Indicadores da empresa">
+      <article class="kpi"><span class="kpi-ico"><i class="ic ic-cracha" aria-hidden="true"></i></span><div><strong class="kpi-valor" id="kpiAtivas">0</strong><span>contas ativas</span></div></article>
+      <article class="kpi kpi-anel">
+        <svg viewBox="0 0 36 36" class="anel" aria-hidden="true"><circle class="anel-fundo" cx="18" cy="18" r="15.5"/><circle class="anel-progresso" id="anelPlano" cx="18" cy="18" r="15.5" pathLength="100"/></svg>
+        <div><strong class="kpi-valor" id="kpiAnalistas">0</strong><span id="kpiAnalistasRotulo">analistas no plano</span></div>
+      </article>
+      <article class="kpi"><span class="kpi-ico"><i class="ic ic-entrada" aria-hidden="true"></i></span><div><strong class="kpi-valor" id="kpiAbertos">0</strong><span>chamados em aberto</span></div></article>
+      <article class="kpi"><span class="kpi-ico"><i class="ic ic-check-circulo" aria-hidden="true"></i></span><div><strong class="kpi-valor" id="kpiHoje">0</strong><span>resolvidos hoje</span></div></article>
+    </section>
+
+    <div class="comando-grid">
+      <!-- EMITIR CRACHÁ -->
+      <section class="card emissor" aria-labelledby="tituloEmissor">
+        <header class="secao-topo">
+          <h2 id="tituloEmissor"><i class="ic ic-cracha" aria-hidden="true"></i> Emitir crachá</h2>
+          <span class="sub">Crie o acesso de um novo membro da equipe</span>
+        </header>
+
+        <div class="emissor-corpo">
+          <form class="form-conta" id="formConta" novalidate>
+            <div class="segmentado" role="radiogroup" aria-label="Perfil da nova conta">
+              <input type="radio" name="perfil" id="novoAnalista" value="analista" checked />
+              <label for="novoAnalista"><i class="ic ic-ferramenta" aria-hidden="true"></i> Analista</label>
+              <input type="radio" name="perfil" id="novoColaborador" value="colaborador" />
+              <label for="novoColaborador"><i class="ic ic-chat" aria-hidden="true"></i> Colaborador</label>
+            </div>
+            <p class="perfil-dica" id="perfilDica"></p>
+            <label class="campo">Nome completo
+              <input id="nome" type="text" maxlength="80" autocomplete="off" placeholder="Ex.: Pedro Alves" required />
+            </label>
+            <label class="campo">E-mail
+              <input id="email" type="email" autocomplete="off" placeholder="nome@empresa.com" required />
+            </label>
+            <div class="campo">
+              <label for="senha">Senha provisória</label>
+              <div class="senha-linha">
+                <input id="senha" type="text" minlength="6" autocomplete="off" required />
+                <button type="button" class="btn btn-outline btn-sm" id="gerarSenha"><i class="ic ic-dado" aria-hidden="true"></i> Gerar</button>
+              </div>
+            </div>
+            <p class="aviso aviso-erro" id="aviso" role="alert" hidden></p>
+            <button type="submit" class="btn btn-primary btn-lg btn-bloco" id="botaoCriar">Emitir crachá</button>
+          </form>
+
+          <div class="previa">
+            <div class="fenda" aria-hidden="true"></div>
+            <div class="previa-cracha" id="previaCracha"></div>
+          </div>
+        </div>
+
+        <div class="credencial" id="credencial" hidden>
+          <strong>Crachá emitido <i class="ic ic-check" aria-hidden="true"></i></strong>
+          <p>Envie estes dados para <span id="credNome"></span>:</p>
+          <dl>
+            <dt>Área de login</dt><dd id="credArea"></dd>
+            <dt>E-mail</dt><dd id="credEmail"></dd>
+            <dt>Senha</dt><dd id="credSenha"></dd>
+          </dl>
+          <button type="button" class="btn btn-ghost btn-sm" id="copiarCredencial"><i class="ic ic-copiar" aria-hidden="true"></i> Copiar dados</button>
+        </div>
+      </section>
+
+      <!-- EQUIPE -->
+      <section class="card equipe" aria-labelledby="tituloEquipe">
+        <header class="secao-topo">
+          <h2 id="tituloEquipe"><i class="ic ic-equipe" aria-hidden="true"></i> Sua equipe</h2>
+          <div class="equipe-controles">
+            <input class="input busca" id="busca" type="search" placeholder="Buscar pessoa…" />
+            <div class="filtros" role="tablist" aria-label="Filtrar contas">
+              <button type="button" class="filtro ativo" data-filtro="">Todos</button>
+              <button type="button" class="filtro" data-filtro="analista">Analistas</button>
+              <button type="button" class="filtro" data-filtro="colaborador">Colaboradores</button>
+              <button type="button" class="filtro" data-filtro="suspensos">Suspensos</button>
+            </div>
+          </div>
+        </header>
+        <ul class="crachas" id="listaContas"></ul>
+      </section>
+    </div>
+
+    <div class="comando-grid comando-grid-baixo">
+      <section class="card ranking" aria-labelledby="tituloRanking">
+        <header class="secao-topo"><h2 id="tituloRanking"><i class="ic ic-trofeu" aria-hidden="true"></i> Ranking de analistas</h2><span class="sub">tickets carimbados</span></header>
+        <div class="podio" id="podio"></div>
+      </section>
+      <section class="card registro" aria-labelledby="tituloRegistro">
+        <header class="secao-topo"><h2 id="tituloRegistro"><i class="ic ic-atividade" aria-hidden="true"></i> Registro de atividades</h2><span class="sub">o que acontece na sua empresa</span></header>
+        <ol class="linha-registro" id="registro"></ol>
+      </section>
+    </div>
+  </main>
+
+  <!-- Modal: autorização (segurar para confirmar) -->
+  <dialog class="modal modal-poder" id="modalPoder">
+    <div class="modal-conteudo" id="conteudoPoder"></div>
+  </dialog>
+
+  <script src="js/catalogo.js"></script>
+  <script src="js/simulador.js"></script>
+  <script src="js/sessao.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/helpy.js"></script>
+  <script src="js/contas.js"></script>
+</body>
+</html>

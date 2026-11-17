@@ -1,0 +1,138 @@
+/* =========================================================
+   papelaria.css — camada de tema "Papelaria" (carregar POR ÚLTIMO)
+   A página é a mesa (oliva ou kraft). Os componentes
+   listados abaixo são "papéis": ganham tinta escura, papel
+   creme e sombra de adesivo. Como os tokens são redefinidos no
+   próprio papel, tudo que estiver dentro dele herda as cores certas.
+   ========================================================= */
+
+/* ---------- 1. Tokens do papel ----------
+   :where() = especificidade zero, então as regras próprias de cada
+   componente (cores de destaque, estados) continuam valendo. */
+:where(
+  .card, .cartao, .opcao, .tk, .tkm, .meu, .gaveta, .modal, .toast,
+  .helpy-msg, .cracha, .kpi, .demo-conta, .plano-opcao label, .tampo,
+  .camada, .credencial, .nota-papel
+) {
+  --surface: #FFFCF2;
+  --surface-2: #F3EDDA;
+  --bg: #F7F2E2;
+  --bg-alt: #EFE8D2;
+  --border: #D5CBAE;
+  --text: #23291B;
+  --muted: #625E4A;
+
+  --primary: #5E7A2E;          /* oliva mais escuro para ler bem no papel */
+  --primary-dark: #4C6B3C;
+  --primary-text: #4C6B3C;
+  --primary-soft: #E6EDD3;
+  --primary-2: #8FA858;
+  --on-primary: #FFFFFF;
+
+  --ai: #2D5478;
+  --ai-soft: #E1EBF5;
+  --success: #3E6B2A;
+  --success-solid: #4F9F43;
+  --success-soft: #DFEED3;
+  --warning: #7A5A0A;
+  --warning-soft: #F8EDC8;
+  --danger: #A3361F;
+  --danger-soft: #F8DDD5;
+
+  --alerta-bg: #F8EDC8;
+  --alerta-borda: #D9B44E;
+  --sucesso-bg: #E7F2DC;
+  --sucesso-borda: #9CC487;
+
+  --linha-grade: rgba(35, 41, 27, .06);
+  --ponto: rgba(35, 41, 27, .09);
+
+  color: var(--text);
+}
+
+/* ---------- 2. Fundo da página: oliva com pontinhos ---------- */
+body {
+  background-color: var(--bg);
+  background-image: radial-gradient(var(--ponto) 1px, transparent 1.3px);
+  background-size: 22px 22px;
+}
+
+/* ---------- 3. Contorno de tinta + sombra de adesivo ----------
+   Outline fica por fora da borda, então bordas coloridas de estado
+   (selecionado, urgente…) continuam visíveis por dentro. */
+.card, .cartao, .opcao, .kpi, .demo-conta, .meu, .camada, .credencial,
+.plano-opcao label, .helpy-msg, .toast, .modal, .gaveta {
+  outline: 2px solid var(--tinta);
+  outline-offset: 0;
+}
+.card, .cartao, .kpi, .demo-conta, .meu, .camada, .helpy-msg, .toast, .modal {
+  box-shadow: 5px 5px 0 0 var(--sombra);
+}
+.opcao, .plano-opcao label { box-shadow: 3px 3px 0 0 var(--sombra); }
+.cartao:focus-visible, .opcao:focus-visible, .demo-conta:focus-visible { outline-color: var(--primary); outline-width: 3px; }
+.cartao:hover, .demo-conta:hover { box-shadow: 7px 7px 0 0 var(--sombra); }
+
+/* Tickets recortados usam máscara, que corta outline e box-shadow.
+   - Sem invólucro (planos da landing): contorno interno de tinta.
+   - Com invólucro: o PAI desenha o contorno com drop-shadows, que
+     acompanham até os recortes laterais do ticket. */
+.ticket.card { outline: none; box-shadow: inset 0 0 0 2px var(--tinta); }
+.ticket-palco > .ticket, .mockup-ticket-sombra > .ticket { box-shadow: none; }
+.ticket-palco, .mockup-ticket-sombra, .tkm-sombra {
+  filter:
+    drop-shadow(2px 0 0 var(--tinta)) drop-shadow(-2px 0 0 var(--tinta))
+    drop-shadow(0 2px 0 var(--tinta)) drop-shadow(0 -2px 0 var(--tinta))
+    drop-shadow(4px 4px 0 var(--sombra));
+}
+
+/* ---------- 4. Botões: agora são TECLAS (ver css/teclas.css) ---------- */
+
+/* Tags com contorno da própria cor */
+.tag { border: 1.5px solid color-mix(in srgb, currentColor 55%, transparent); }
+
+/* Avatar do usuário e selo da marca */
+.usuario-avatar { border: 2px solid var(--tinta); }
+.brand b { color: var(--mostarda); }
+:root[data-theme="light"] .brand b { color: var(--oliva-escura); }
+
+/* Fio do cabeçalho em mostarda */
+.topbar::after { opacity: .8; }
+
+/* ---------- 5. Mesa do analista: madeira oliva (Muhsic) + tapete de cortiça ---------- */
+.tela-mesa {
+  --madeira: #2C2A17;
+  --madeira-2: #454022;
+  --veio: rgba(255, 240, 200, .05);
+  --tapete: var(--cortica);
+}
+:root[data-theme="light"] .tela-mesa {
+  --madeira: #BF9D6B;
+  --madeira-2: #C9A878;
+  --veio: rgba(35, 41, 27, .05);
+  --tapete: #F1E3C8;
+}
+.tampo {
+  outline: 2px solid var(--tinta);
+  box-shadow: 6px 6px 0 0 var(--sombra);
+  background-image:
+    radial-gradient(rgba(138, 106, 58, .3) 1.2px, transparent 1.4px),
+    radial-gradient(rgba(255, 255, 255, .35) 1px, transparent 1.2px);
+  background-size: 14px 14px, 19px 19px;
+  background-position: 0 0, 7px 9px;
+}
+.tampo.alvo { outline-color: var(--oliva); box-shadow: 0 0 0 6px rgba(143, 168, 88, .4), 6px 6px 0 0 var(--sombra); }
+.bandeja-fundo {
+  background: rgba(10, 13, 7, .6);
+  box-shadow: inset 0 6px 14px rgba(0, 0, 0, .45), inset 0 0 0 2px rgba(236, 239, 220, .06);
+}
+:root[data-theme="light"] .bandeja-fundo { background: #B48F5A; box-shadow: inset 0 6px 14px rgba(35, 41, 27, .25); }
+.post-it { background: var(--mostarda); color: var(--tinta); outline: 2px solid var(--tinta); }
+.post-it.batida { background: var(--fosforo); }
+
+/* ---------- 6. Helpy no balão ---------- */
+.helpy-msg-memoria { background: var(--lilas-clara); border-left-color: var(--lilas); }
+
+/* ---------- 7. Detalhes de visor ---------- */
+/* Placar do analista com números de visor de fósforo (como o LCD do Muhsic) */
+.placar-valor { color: var(--fosforo); text-shadow: 0 0 6px rgba(166, 240, 138, .45); }
+:root[data-theme="light"] .placar-valor { color: var(--oliva-escura); text-shadow: none; }

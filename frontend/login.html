@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HelpIA — Entrar</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/simbolos.css" />
+  <script src="js/tema.js"></script>
+  <link rel="stylesheet" href="css/acesso.css" />
+  <link rel="stylesheet" href="css/teclas.css" />
+  <link rel="stylesheet" href="css/papelaria.css" />
+</head>
+<body>
+  <div class="acesso">
+    <aside class="acesso-marca textura-grade">
+      <a href="index.html" class="brand"><img src="assets/logo.svg" alt="" />Help<b>IA</b></a>
+      <h2>Cada perfil entra direto na <span>sua área</span>.</h2>
+      <p>Escolha como você vai usar o HelpIA hoje. A plataforma confere o perfil da conta e abre a tela certa.</p>
+      <ul class="acesso-lista">
+        <li><span><strong>Colaborador:</strong> abre chamados conversando com o HelpBot e acompanha o andamento.</span></li>
+        <li><span><strong>Analista:</strong> trabalha a fila de chamados no painel de atendimento.</span></li>
+        <li><span><strong>Gestor:</strong> entra pela área do analista e também cria as contas da equipe.</span></li>
+      </ul>
+      <p class="acesso-rodape">HelpIA · Projeto acadêmico de Engenharia de Software</p>
+      <div class="faixa-alerta" aria-hidden="true"></div>
+    </aside>
+
+    <main class="acesso-form">
+      <div class="acesso-topo">
+        <a href="index.html" class="link-voltar">← Voltar ao site</a>
+        <button type="button" class="btn-tema" aria-label="Alternar tema">
+          <svg class="icone-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <svg class="icone-lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+
+      <div class="acesso-caixa">
+        <h1>Entrar</h1>
+        <p class="acesso-sub">Acesse com a conta criada pelo gestor da sua empresa.</p>
+
+        <form class="form-acesso" id="formLogin" novalidate>
+          <div class="segmentado" role="radiogroup" aria-label="Entrar como">
+            <input type="radio" name="perfil" id="perfilColaborador" value="colaborador" checked />
+            <label for="perfilColaborador"><i class="ic ic-chat" aria-hidden="true"></i> Colaborador</label>
+            <input type="radio" name="perfil" id="perfilAnalista" value="analista" />
+            <label for="perfilAnalista"><i class="ic ic-ferramenta" aria-hidden="true"></i> Analista</label>
+          </div>
+          <p class="perfil-dica" id="perfilDica">Você vai para o chat de abertura de chamados.</p>
+
+          <label class="campo">
+            E-mail
+            <input id="email" type="email" autocomplete="username" placeholder="nome@empresa.com" required />
+          </label>
+          <label class="campo campo-senha">
+            Senha
+            <input id="senha" type="password" autocomplete="current-password" placeholder="Sua senha" required />
+            <button type="button" class="ver-senha" data-alvo="senha" aria-label="Mostrar senha">Mostrar</button>
+          </label>
+
+          <div class="linha-entre">
+            <label class="checkbox"><input type="checkbox" id="lembrar" /> Manter conectado</label>
+          </div>
+
+          <p class="aviso" id="aviso" role="alert" hidden></p>
+
+          <button type="submit" class="btn btn-primary btn-lg btn-bloco" id="botaoEntrar">Entrar</button>
+        </form>
+
+        <div class="demo">
+          <span class="demo-titulo">Contas de demonstração · senha demo123</span>
+          <div class="demo-contas">
+            <button type="button" class="demo-conta" data-email="colaborador@demo.helpia" data-perfil="colaborador">
+              <strong>João Silva</strong><span>Colaborador</span>
+            </button>
+            <button type="button" class="demo-conta" data-email="lucio@demo.helpia" data-perfil="colaborador">
+              <strong>Lúcio Martins</strong><span>Colaborador</span>
+            </button>
+            <button type="button" class="demo-conta" data-email="gestor@demo.helpia" data-perfil="analista">
+              <strong>Ana Lima</strong><span>Gestora</span>
+            </button>
+            <button type="button" class="demo-conta" data-email="analista@demo.helpia" data-perfil="analista">
+              <strong>Carlos Souza</strong><span>Analista</span>
+            </button>
+            <button type="button" class="demo-conta" data-email="beatriz@demo.helpia" data-perfil="analista">
+              <strong>Beatriz Rocha</strong><span>Analista</span>
+            </button>
+          </div>
+        </div>
+
+        <p class="acesso-rodape-form">Sua empresa ainda não usa o HelpIA? <a href="index.html#planos">Conheça os planos</a></p>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/catalogo.js"></script>
+  <script src="js/simulador.js"></script>
+  <script src="js/sessao.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

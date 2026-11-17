@@ -3,83 +3,146 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HelpIA — Abertura e triagem de chamados com IA</title>
+  <title>HelpIA — Service desk com triagem inteligente</title>
+  <meta name="description" content="HelpIA: o colaborador abre o chamado conversando com o HelpBot, o chamado é classificado e cai na fila certa, e o analista atende na mesma plataforma." />
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@400;500;600;700;800&display=swap" />
   <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/simbolos.css" />
   <script src="js/tema.js"></script>
   <link rel="stylesheet" href="css/landing.css" />
+  <link rel="stylesheet" href="css/teclas.css" />
+  <link rel="stylesheet" href="css/papelaria.css" />
 </head>
 <body>
 
   <header class="topbar">
     <div class="container topbar-inner">
-      <a href="index.html" class="brand"><img src="assets/logo.svg" alt="" />HelpIA</a>
+      <a href="index.html" class="brand"><img src="assets/logo.svg" alt="" />Help<b>IA</b></a>
       <nav class="nav" aria-label="Navegação principal">
-        <a href="#jornada">Jornada</a>
-        <a href="#telas">Telas</a>
-        <a href="#arquitetura">Arquitetura</a>
-        <a href="#equipe">Equipe</a>
+        <a href="#recursos">Recursos</a>
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#perfis">Perfis</a>
+        <a href="#planos">Planos</a>
       </nav>
-      <button type="button" class="btn-tema" aria-label="Alternar tema">
-        <svg class="icone-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-        <svg class="icone-lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
+      <div class="topbar-acoes">
+        <button type="button" class="btn-tema" aria-label="Alternar tema">
+          <svg class="icone-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <svg class="icone-lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <a href="login.html" class="btn btn-outline btn-sm">Entrar</a>
+        <a href="contratar.html" class="btn btn-primary btn-sm esconde-mobile">Contratar</a>
+      </div>
     </div>
   </header>
 
   <main>
     <!-- HERO -->
-    <section class="hero">
+    <section class="hero textura-grade">
       <div class="container hero-grid">
-        <div>
-          <span class="selo">Projeto de Engenharia de Software · ADS</span>
-          <h1>Abra chamados conversando com o <span class="destaque">HelpBot</span></h1>
+        <div class="hero-texto">
+          <span class="sobretitulo">Service desk com triagem inteligente</span>
+          <h1>Chamados abertos em uma conversa. <span class="destaque">Resolvidos</span> na mesma plataforma.</h1>
           <p class="hero-sub">
-            O colaborador descreve o problema no chat, o HelpIA registra, classifica e
-            envia para a fila certa. O analista só precisa assumir e resolver.
+            O colaborador conta o problema ao HelpBot. O HelpIA registra, classifica, define a
+            prioridade e coloca o chamado na fila certa. O analista assume e resolve sem sair do painel.
           </p>
           <div class="hero-acoes">
-            <a href="chat.html" class="btn btn-primary btn-lg">💬 Abrir um chamado</a>
-            <a href="painel.html" class="btn btn-outline btn-lg">🧑‍💻 Painel do analista</a>
+            <a href="#planos" class="btn btn-primary btn-lg">Ver planos para empresas</a>
+            <a href="login.html" class="btn btn-outline btn-lg">Entrar na plataforma</a>
           </div>
+          <ul class="hero-garantias">
+            <li>Triagem automática</li>
+            <li>Fila por categoria</li>
+            <li>Acompanhamento em tempo real</li>
+          </ul>
         </div>
 
-        <div class="card mockup" aria-hidden="true">
-          <div class="mockup-topo"><span class="pontinho"></span>HelpBot</div>
-          <div class="balao balao-usuario">Meu computador não liga</div>
-          <div class="balao balao-bot">
-            <strong>Chamado #003 registrado</strong><br />
-            Categoria: Hardware · Fila: Suporte Técnico<br />
-            Status: Aguardando
+        <!-- Ilustração: conversa + ticket gerado -->
+        <div class="hero-visual" aria-hidden="true">
+          <div class="card mockup-chat">
+            <div class="mockup-topo"><span class="pontinho"></span>HelpBot <small>online</small></div>
+            <div class="balao balao-usuario">O setor financeiro está sem internet desde as 9h</div>
+            <div class="balao balao-bot">Entendi. Registrei com prioridade <b>alta</b> e enviei para Infraestrutura.</div>
+          </div>
+          <div class="mockup-ticket-sombra">
+          <div class="card ticket mockup-ticket" style="--corte: 112px">
+            <div class="mt-topo">
+              <span class="mt-rotulo">Chamado</span>
+              <span class="tag tag-alta">Alta</span>
+            </div>
+            <div class="mt-numero">#004</div>
+            <div class="mt-linha"><span>Categoria</span><b>Rede</b></div>
+            <span class="ticket-picote"></span>
+            <div class="mt-dados">
+              <div><span>Fila</span><b>Infraestrutura</b></div>
+              <div><span>Status</span><b class="mt-status">Aguardando</b></div>
+            </div>
+            <div class="codigo-barras"></div>
+          </div>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- FAIXA DE RECURSOS -->
+    <div class="faixa-alerta" aria-hidden="true"></div>
+    <section id="recursos" class="faixa-recursos">
+      <div class="container recursos-grid">
+        <div class="recurso">
+          <span class="recurso-icone" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </span>
+          <div><strong>Abertura por conversa</strong><p>Sem formulário longo: o HelpBot pergunta só o que falta.</p></div>
+        </div>
+        <div class="recurso">
+          <span class="recurso-icone" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M7 12h10M10 18h4"/></svg>
+          </span>
+          <div><strong>Triagem automática</strong><p>Categoria, fila e prioridade definidas na abertura.</p></div>
+        </div>
+        <div class="recurso">
+          <span class="recurso-icone" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          </span>
+          <div><strong>Painel do analista</strong><p>Fila por status, com destaque para o que é urgente.</p></div>
+        </div>
+        <div class="recurso">
+          <span class="recurso-icone" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </span>
+          <div><strong>Acesso por perfil</strong><p>Cada pessoa vê só a tela do seu papel.</p></div>
+        </div>
+      </div>
+    </section>
+
     <!-- PROBLEMA -->
-    <section class="secao-alt">
+    <section class="secao-alt textura-pontos">
       <div class="container">
         <div class="secao-titulo">
-          <h2>O problema</h2>
+          <span class="sobretitulo">O problema</span>
+          <h2>Pedido de suporte não pode depender de achar a pessoa certa</h2>
           <p>
-            Colaboradores não têm um canal padronizado para abrir chamados, e analistas perdem
-            tempo triando mensagens dispersas — gerando atrasos e retrabalho.
+            Sem um canal padronizado, os pedidos se espalham em conversas e o analista perde
+            tempo descobrindo o que é, de quem é e quem deve atender.
           </p>
         </div>
         <div class="problema-grid">
-          <div class="card">
-            <h3>😖 Antes</h3>
+          <div class="card comparativo comparativo-antes">
+            <h3>Antes</h3>
             <ul>
-              <li>Pedidos de suporte espalhados em conversas</li>
+              <li>Pedidos espalhados em mensagens e corredores</li>
               <li>Sem número, data ou status para acompanhar</li>
-              <li>Analista precisa descobrir quem deve atender</li>
+              <li>Triagem manual a cada pedido</li>
             </ul>
           </div>
-          <div class="card">
-            <h3>✨ Com o HelpIA</h3>
+          <div class="card comparativo comparativo-depois">
+            <h3>Com o HelpIA</h3>
             <ul>
-              <li>Um único canal: o chat com o HelpBot</li>
-              <li>Chamado registrado com número, data e hora</li>
+              <li>Um único canal: a conversa com o HelpBot</li>
+              <li>Chamado com número, data, hora e status</li>
               <li>Classificação automática e fila correta</li>
             </ul>
           </div>
@@ -87,112 +150,212 @@
       </div>
     </section>
 
-    <!-- JORNADA -->
-    <section id="jornada">
+    <!-- COMO FUNCIONA -->
+    <section id="como-funciona">
       <div class="container">
         <div class="secao-titulo">
-          <span class="selo">História de usuário</span>
-          <h2>Jornada: abrir uma solicitação</h2>
-          <p>
-            “Como colaborador, quero abrir uma solicitação pelo chat, para que meu problema seja
-            registrado formalmente e direcionado ao analista correto.”
-          </p>
+          <span class="sobretitulo">Como funciona</span>
+          <h2>Do relato ao chamado resolvido em quatro etapas</h2>
         </div>
         <ol class="passos">
-          <li class="card">
-            <div class="passo-num">1</div>
+          <li class="card passo">
+            <span class="passo-num">01</span>
             <h3>Descrever</h3>
             <p>O colaborador conta o problema ao HelpBot. Se faltar informação, o bot pede mais detalhes.</p>
-            <span class="tag tag-neutra">RN-01</span>
           </li>
-          <li class="card">
-            <div class="passo-num">2</div>
+          <li class="card passo">
+            <span class="passo-num">02</span>
             <h3>Registrar</h3>
             <p>O chamado recebe número único, data e hora de abertura.</p>
-            <span class="tag tag-neutra">CA-01</span>
           </li>
-          <li class="card">
-            <div class="passo-num">3</div>
+          <li class="card passo">
+            <span class="passo-num">03</span>
             <h3>Classificar</h3>
-            <p>A categoria e a prioridade são identificadas e o chamado vai para a fila certa.</p>
-            <span class="tag tag-neutra">CA-02</span>
+            <p>Categoria e prioridade são identificadas e o chamado vai para a fila certa.</p>
           </li>
-          <li class="card">
-            <div class="passo-num">4</div>
-            <h3>Confirmar</h3>
-            <p>O colaborador recebe o número e o status, e acompanha quando o analista assumir.</p>
-            <span class="tag tag-neutra">CA-03</span>
+          <li class="card passo">
+            <span class="passo-num">04</span>
+            <h3>Atender</h3>
+            <p>O analista assume pelo painel e o colaborador acompanha o status em tempo real.</p>
           </li>
         </ol>
       </div>
     </section>
 
-    <!-- TELAS -->
-    <section id="telas" class="secao-alt">
+    <!-- PERFIS -->
+    <section id="perfis" class="secao-alt textura-pontos">
       <div class="container">
         <div class="secao-titulo">
-          <span class="selo">Demonstração</span>
-          <h2>Experimente as telas do MVP</h2>
-          <p>Abra as duas telas lado a lado para ver o chamado passar do colaborador para o analista.</p>
+          <span class="sobretitulo">Perfis de acesso</span>
+          <h2>Cada pessoa entra direto na tela do seu papel</h2>
+          <p>O login identifica o perfil e leva cada usuário para a área certa da plataforma.</p>
         </div>
-        <div class="telas-grid">
-          <article class="card tela">
-            <div class="tela-icone">💬</div>
-            <h3>Chat do colaborador</h3>
-            <p>Conversa com o HelpBot, abertura do chamado e acompanhamento do status em tempo real.</p>
-            <a href="chat.html" class="btn btn-primary">Abrir chat</a>
+        <div class="perfis-grid">
+          <article class="card perfil">
+            <span class="perfil-icone" aria-hidden="true"><i class="ic ic-chat" aria-hidden="true"></i></span>
+            <h3>Colaborador</h3>
+            <p>Abre chamados conversando com o HelpBot e acompanha o andamento de cada um.</p>
+            <ul><li>Chat com o HelpBot</li><li>Lista "Meus chamados"</li><li>Aviso quando o analista assume</li></ul>
           </article>
-          <article class="card tela">
-            <div class="tela-icone">📋</div>
-            <h3>Painel do analista</h3>
-            <p>Fila de chamados por status e prioridade, com as ações de assumir e resolver.</p>
-            <a href="painel.html" class="btn btn-primary">Abrir painel</a>
+          <article class="card perfil perfil-destaque">
+            <span class="perfil-icone" aria-hidden="true"><i class="ic ic-ferramenta" aria-hidden="true"></i></span>
+            <h3>Analista</h3>
+            <p>Recebe os chamados já classificados e trabalha a fila pelo painel.</p>
+            <ul><li>Fila por status e prioridade</li><li>Assumir e resolver</li><li>Destaque para urgências</li></ul>
+          </article>
+          <article class="card perfil">
+            <span class="perfil-icone" aria-hidden="true"><i class="ic ic-predio" aria-hidden="true"></i></span>
+            <h3>Gestor da empresa</h3>
+            <p>Contrata o plano e cria as contas da equipe de suporte e dos colaboradores.</p>
+            <ul><li>Criação de contas</li><li>Acesso ao painel</li><li>Controle do limite do plano</li></ul>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- ARQUITETURA -->
-    <section id="arquitetura">
+    <!-- PLANOS -->
+    <section id="planos" class="planos-secao textura-grade">
       <div class="container">
         <div class="secao-titulo">
-          <span class="selo">Projeto</span>
+          <span class="sobretitulo">Planos para empresas</span>
+          <h2>Escolha o plano da sua equipe de suporte</h2>
+          <p>Contrate on-line e crie as contas da equipe logo em seguida.</p>
+        </div>
+
+        <div class="planos-grid">
+          <article class="card ticket plano" style="--corte: 196px">
+            <header class="plano-topo">
+              <span class="plano-nome">Essencial</span>
+              <p>Para equipes que estão organizando o suporte agora.</p>
+              <div class="plano-preco"><small>R$</small>149<span>/mês</span></div>
+            </header>
+            <span class="ticket-picote"></span>
+            <ul class="plano-itens">
+              <li>Até <b>3 analistas</b></li>
+              <li>Até 50 colaboradores</li>
+              <li>HelpBot com triagem automática</li>
+              <li>4 filas de atendimento</li>
+              <li>Suporte por e-mail</li>
+            </ul>
+            <a href="contratar.html?plano=essencial" class="btn btn-outline btn-bloco">Contratar Essencial</a>
+          </article>
+
+          <article class="card ticket plano plano-destaque" style="--corte: 196px">
+            <span class="plano-selo">Mais escolhido</span>
+            <header class="plano-topo">
+              <span class="plano-nome">Profissional</span>
+              <p>Para áreas de TI com fila diária e várias equipes.</p>
+              <div class="plano-preco"><small>R$</small>390<span>/mês</span></div>
+            </header>
+            <span class="ticket-picote"></span>
+            <ul class="plano-itens">
+              <li>Até <b>15 analistas</b></li>
+              <li>Colaboradores ilimitados</li>
+              <li>Prioridade por impacto</li>
+              <li>Painel com indicadores da fila</li>
+              <li>Suporte prioritário</li>
+            </ul>
+            <a href="contratar.html?plano=profissional" class="btn btn-primary btn-bloco">Contratar Profissional</a>
+          </article>
+
+          <article class="card ticket plano" style="--corte: 196px">
+            <header class="plano-topo">
+              <span class="plano-nome">Empresarial</span>
+              <p>Para operações grandes ou com necessidades específicas.</p>
+              <div class="plano-preco plano-consulta">Sob consulta</div>
+            </header>
+            <span class="ticket-picote"></span>
+            <ul class="plano-itens">
+              <li><b>Analistas ilimitados</b></li>
+              <li>Colaboradores ilimitados</li>
+              <li>Filas personalizadas</li>
+              <li>Integrações (ex.: Microsoft Teams)</li>
+              <li>Gerente de conta dedicado</li>
+            </ul>
+            <a href="contratar.html?plano=empresarial" class="btn btn-outline btn-bloco">Falar com vendas</a>
+          </article>
+        </div>
+        <p class="planos-nota">Valores ilustrativos. O HelpIA é um projeto acadêmico e não realiza cobranças.</p>
+      </div>
+    </section>
+
+    <!-- SOBRE O PROJETO -->
+    <section id="projeto" class="secao-alt textura-pontos">
+      <div class="container projeto-grid">
+        <div>
+          <span class="sobretitulo">Por dentro</span>
           <h2>Arquitetura em camadas</h2>
-          <p>Cada camada tem uma responsabilidade, como definido na análise de projeto.</p>
+          <p class="projeto-sub">Cada camada tem uma responsabilidade, como definido na análise de projeto.</p>
+          <div class="camadas">
+            <div class="camada"><strong>Interface</strong><span>Telas HTML/CSS/JS e rotas da API Flask</span></div>
+            <div class="camada"><strong>Aplicação</strong><span>Serviços de chamado e de contas</span></div>
+            <div class="camada"><strong>Domínio</strong><span>Chamado, Usuário, Empresa e regras de negócio</span></div>
+            <div class="camada"><strong>Persistência</strong><span>Repositórios de chamados e usuários</span></div>
+          </div>
         </div>
-        <div class="camadas">
-          <div class="card camada"><strong>Interface</strong><span>Telas HTML/CSS/JS e rotas da API Flask <code>backend/app.py</code></span></div>
-          <div class="card camada"><strong>Aplicação</strong><span>Coordena a jornada do chamado <code>backend/aplicacao/</code></span></div>
-          <div class="card camada"><strong>Domínio</strong><span>Entidade Chamado e regras CA-01, CA-02, RN-01 <code>backend/dominio/</code></span></div>
-          <div class="card camada"><strong>Persistência</strong><span>Repositório de chamados <code>backend/persistencia/</code></span></div>
+        <div>
+          <span class="sobretitulo">Equipe</span>
+          <h2>Quem constrói</h2>
+          <div class="equipe">
+            <div class="card membro">
+              <div class="avatar">JP</div>
+              <div>
+                <h3>João Pedro Marques Souza</h3>
+                <p>Requisitos, rastreabilidade, documentação, deploy, especificação do chatbot, testes e coordenação</p>
+              </div>
+            </div>
+            <div class="card membro">
+              <div class="avatar">MN</div>
+              <div>
+                <h3>Murilo do Nascimento Bezerra</h3>
+                <p>Modelagem, projeto e arquitetura</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- EQUIPE -->
-    <section id="equipe" class="secao-alt">
+    <!-- CHAMADA FINAL -->
+    <section class="cta">
       <div class="container">
-        <div class="secao-titulo">
-          <h2>Equipe</h2>
-        </div>
-        <div class="equipe">
-          <div class="card membro">
-            <div class="avatar">JP</div>
-            <h3>João Pedro Marques Souza</h3>
-            <p>Requisitos, rastreabilidade, documentação, deploy, especificação de produto (chatbot), testes e coordenação</p>
+        <div class="cta-caixa textura-grade">
+          <div>
+            <h2>Pronto para organizar o suporte da sua empresa?</h2>
+            <p>Contrate um plano, crie as contas da equipe e comece a receber chamados hoje.</p>
           </div>
-          <div class="card membro">
-            <div class="avatar">MN</div>
-            <h3>Murilo do Nascimento Bezerra</h3>
-            <p>Modelagem, projeto e arquitetura</p>
+          <div class="cta-acoes">
+            <a href="#planos" class="btn btn-primary btn-lg">Ver planos</a>
+            <a href="login.html" class="btn btn-outline btn-lg">Já tenho conta</a>
           </div>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="rodape">
-    HelpIA · Projeto acadêmico — Engenharia de Software · Análise e Desenvolvimento de Sistemas
+  <div class="faixa-alerta" aria-hidden="true"></div>
+  <footer class="rodape-site">
+    <div class="container rodape-grid">
+      <div>
+        <a href="index.html" class="brand"><img src="assets/logo.svg" alt="" />Help<b>IA</b></a>
+        <p>Service desk com triagem inteligente.</p>
+      </div>
+      <nav aria-label="Produto">
+        <strong>Produto</strong>
+        <a href="#recursos">Recursos</a>
+        <a href="#planos">Planos</a>
+        <a href="contratar.html">Contratar</a>
+      </nav>
+      <nav aria-label="Acesso">
+        <strong>Acesso</strong>
+        <a href="login.html">Entrar</a>
+        <a href="login.html?perfil=analista">Área do analista</a>
+        <a href="login.html?perfil=colaborador">Área do colaborador</a>
+      </nav>
+    </div>
+    <div class="container rodape-base">
+      HelpIA · Projeto acadêmico de Engenharia de Software · Análise e Desenvolvimento de Sistemas
+    </div>
   </footer>
 </body>
 </html>

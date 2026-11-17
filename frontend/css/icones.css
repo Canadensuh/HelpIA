@@ -1,0 +1,65 @@
+/* =========================================================
+   icones.css — ícones animados dos tipos de manutenção
+   (marcação SVG em js/catalogo.js). Animam sempre de leve e
+   aceleram quando o cartão está em foco/hover (.ativo-ico).
+   ========================================================= */
+
+.ico { width: 100%; height: 100%; overflow: visible; }
+.ico .ico-traco { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.ico .ico-ponto, .ico .ico-asteriscos circle { fill: currentColor; }
+.ico g, .ico path, .ico rect, .ico circle { transform-box: fill-box; transform-origin: center; }
+
+/* Computador: tela "respirando" e LED piscando */
+.ico-computador .ico-tela { fill: var(--primary); opacity: .18; animation: ico-tela 3s ease-in-out infinite; }
+.ico-computador .ico-led { fill: var(--primary); animation: ico-pisca 1.6s steps(2, jump-none) infinite; }
+@keyframes ico-tela { 50% { opacity: .45; } }
+@keyframes ico-pisca { 50% { opacity: .15; } }
+
+/* Senha: cadeado abre e os asteriscos digitam */
+.ico-senha .ico-argola { transform-origin: 50% 100%; animation: ico-argola 2.8s ease-in-out infinite; }
+.ico-senha .ico-corpo { fill: var(--primary-soft); }
+.ico-senha .ico-asteriscos circle { fill: var(--primary); animation: ico-digita 1.8s ease-in-out infinite; }
+.ico-senha .ico-asteriscos circle:nth-child(2) { animation-delay: .2s; }
+.ico-senha .ico-asteriscos circle:nth-child(3) { animation-delay: .4s; }
+@keyframes ico-argola { 0%, 60%, 100% { transform: translateY(0); } 75% { transform: translateY(-5px); } }
+@keyframes ico-digita { 0%, 100% { opacity: .25; transform: scale(.8); } 40% { opacity: 1; transform: scale(1.15); } }
+
+/* Internet: ondas acendendo em sequência */
+.ico-internet .onda { animation: ico-onda 2s ease-in-out infinite; }
+.ico-internet .o1 { animation-delay: 0s; }
+.ico-internet .o2 { animation-delay: .25s; }
+.ico-internet .o3 { animation-delay: .5s; }
+.ico-internet .ico-ponto { fill: var(--primary); }
+@keyframes ico-onda { 0%, 100% { opacity: .2; } 30%, 60% { opacity: 1; stroke: var(--primary); } }
+
+/* Setor parado: sirene girando a luz */
+.ico-setor .ico-sirene { fill: var(--danger); animation: ico-sirene 1s ease-in-out infinite; }
+.ico-setor .ico-raios { animation: ico-pisca .5s steps(2, jump-none) infinite; color: var(--danger); }
+@keyframes ico-sirene { 50% { fill: var(--primary); } }
+
+/* Impressora: papel saindo */
+.ico-impressora .ico-papel { fill: var(--surface); stroke: currentColor; stroke-width: 2.5; animation: ico-papel 2.6s ease-in-out infinite; }
+.ico-impressora .ico-corpo-imp { fill: var(--surface-2); }
+.ico-impressora .ico-led { fill: var(--success); animation: ico-pisca 1.3s steps(2, jump-none) infinite; }
+@keyframes ico-papel { 0% { transform: translateY(-14px); opacity: 0; } 20% { opacity: 1; } 70%, 100% { transform: translateY(2px); opacity: 1; } }
+
+/* Sistemas: engrenagem girando */
+.ico-sistemas .ico-engrenagem { color: var(--primary); animation: ico-gira 5s linear infinite; }
+.ico-sistemas .ico-engrenagem-miolo { fill: var(--surface); }
+@keyframes ico-gira { to { transform: rotate(360deg); } }
+
+/* Pedido: tampa da caixa pulando */
+.ico-pedido .ico-tampa { animation: ico-tampa 2.2s ease-in-out infinite; }
+.ico-pedido .ico-tampa-fundo { fill: var(--primary-soft); }
+@keyframes ico-tampa { 0%, 55%, 100% { transform: translateY(0) rotate(0); } 70% { transform: translateY(-6px) rotate(-6deg); } 82% { transform: translateY(-2px) rotate(3deg); } }
+
+/* Outro: interrogação balançando */
+.ico-outro .ico-interrogacao { color: var(--primary); animation: ico-balanca 2.4s ease-in-out infinite; }
+@keyframes ico-balanca { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+
+/* Hover/foco no cartão: tudo mais rápido */
+.ativo-ico .ico * { animation-duration: .9s !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ico * { animation: none !important; }
+}

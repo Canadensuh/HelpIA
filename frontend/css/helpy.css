@@ -1,0 +1,129 @@
+/* =========================================================
+   helpy.css — mascote Helpy, balões, toasts e confete
+   ========================================================= */
+
+/* ---------- Avatar ---------- */
+.helpy-avatar { width: 96px; height: 96px; flex: none; }
+.helpy-svg { width: 100%; height: 100%; overflow: visible; }
+.helpy-svg * { transform-box: fill-box; transform-origin: center; }
+.helpy-sombra { fill: rgba(0, 0, 0, .25); animation: helpy-sombra 3.2s ease-in-out infinite; }
+.helpy-corpo { animation: helpy-flutua 3.2s ease-in-out infinite; transform-box: view-box; transform-origin: 60px 60px; }
+.helpy-antena { stroke: #23291B; stroke-width: 3; stroke-linecap: round; }
+.helpy-luz { fill: #E8735C; animation: helpy-luz 1.8s ease-in-out infinite; }
+.helpy-orelha { fill: #23291B; }
+.helpy-visor { fill: #10140C; }
+.helpy-olho { fill: #A6F08A; animation: helpy-pisca 4.5s infinite; filter: drop-shadow(0 0 3px rgba(166, 240, 138, .9)); }
+.helpy-boca { fill: none; stroke: #A6F08A; stroke-width: 3; stroke-linecap: round; transition: d .3s; }
+.helpy-bochecha { fill: #E8735C; opacity: .55; }
+.helpy-tronco { fill: #6E8A3E; }
+.helpy-botao { fill: var(--primary); animation: helpy-luz 2.4s ease-in-out infinite; }
+.helpy-braco { fill: none; stroke: #23291B; stroke-width: 6; stroke-linecap: round; }
+.helpy-braco-dir { transform-origin: 0% 100%; }
+
+/* Humores */
+.helpy-avatar.pensando .helpy-olhos { transform: translate(4px, -3px); transition: transform .2s; }
+.helpy-avatar.pensando .helpy-luz { animation-duration: .5s; }
+.helpy-avatar.acenando .helpy-braco-dir { animation: helpy-aceno .5s ease-in-out 4; }
+.helpy-avatar.comemorando .helpy-corpo { animation: helpy-pulo .45s ease-in-out 4; }
+.helpy-avatar.comemorando .helpy-braco { animation: helpy-aceno .3s ease-in-out 6; }
+.helpy-avatar.alerta .helpy-luz { fill: var(--danger); animation-duration: .4s; }
+
+@keyframes helpy-flutua { 50% { transform: translateY(-5px); } }
+@keyframes helpy-sombra { 50% { transform: scaleX(.82); opacity: .6; } }
+@keyframes helpy-luz { 50% { fill: var(--primary); filter: drop-shadow(0 0 6px var(--primary)); } }
+@keyframes helpy-pisca { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+@keyframes helpy-aceno { 50% { transform: rotate(-28deg); } }
+@keyframes helpy-pulo { 50% { transform: translateY(-14px); } }
+
+/* ---------- Balões ---------- */
+.helpy-feed {
+  display: flex; flex-direction: column; gap: .65rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.helpy-msg {
+  position: relative;
+  padding: .8rem .95rem;
+  border-radius: 14px 14px 14px 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: .92rem;
+  line-height: 1.5;
+  animation: helpy-entra .3s cubic-bezier(.2, .9, .3, 1.3);
+}
+.helpy-msg p { margin: 0 0 .4rem; }
+.helpy-msg p:last-child { margin: 0; }
+.helpy-msg strong { color: var(--text); }
+.helpy-msg-dica { border-color: color-mix(in srgb, var(--primary) 55%, var(--border)); background: var(--primary-soft); }
+.helpy-msg-sucesso { border-color: var(--sucesso-borda); background: var(--sucesso-bg); }
+.helpy-msg-alerta { border-color: var(--alerta-borda); background: var(--alerta-bg); }
+.helpy-msg-memoria { border-color: color-mix(in srgb, var(--primary) 55%, var(--border)); border-left: 4px solid var(--primary); }
+.helpy-citacao {
+  margin: .5rem 0 0; padding: .55rem .7rem;
+  border-radius: 8px; background: var(--surface-2);
+  font-style: italic; font-size: .88rem;
+}
+.helpy-citacao small { display: block; font-style: normal; color: var(--muted); margin-top: .25rem; }
+
+.helpy-digitando { display: flex; gap: 5px; width: fit-content; padding: .75rem .9rem; }
+.helpy-digitando span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: helpy-digita 1s infinite; }
+.helpy-digitando span:nth-child(2) { animation-delay: .15s; }
+.helpy-digitando span:nth-child(3) { animation-delay: .3s; }
+@keyframes helpy-digita { 30% { transform: translateY(-5px); background: var(--primary); } }
+@keyframes helpy-entra { from { opacity: 0; transform: translateY(8px) scale(.96); } }
+
+.helpy-acoes { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .7rem; }
+.helpy-acao {
+  font: inherit; font-size: .82rem; font-weight: 600;
+  padding: .4rem .75rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2); color: var(--text);
+  cursor: pointer;
+  transition: border-color .15s, background .15s, transform .1s;
+}
+.helpy-acao:hover:not(:disabled) { border-color: var(--primary); transform: translateY(-1px); }
+.helpy-acao-destaque { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.helpy-acao:disabled { opacity: .45; cursor: default; }
+.helpy-acao.escolhida { opacity: 1; border-color: var(--primary); }
+
+/* ---------- Toasts ---------- */
+.toasts {
+  position: fixed; right: 18px; top: 18px; z-index: 990;
+  display: flex; flex-direction: column; gap: .5rem;
+  width: min(360px, calc(100vw - 36px));
+  pointer-events: none;
+}
+.toast {
+  display: flex; gap: .7rem; align-items: flex-start;
+  padding: .8rem 1rem;
+  border-radius: 12px;
+  background: var(--grafite); color: #f4f4f5;
+  border: 1px solid #2c2d31;
+  border-left: 4px solid var(--primary);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .35);
+  font-size: .9rem;
+  pointer-events: auto;
+  animation: toast-entra .4s cubic-bezier(.2, .9, .3, 1.3);
+}
+.toast-sucesso { border-left-color: var(--success-solid); }
+.toast-alerta { border-left-color: var(--danger); }
+.toast-icone { font-size: 1.2rem; line-height: 1.2; }
+.toast.saindo { animation: toast-sai .3s ease-in forwards; }
+@keyframes toast-entra { from { opacity: 0; transform: translateX(40px); } }
+@keyframes toast-sai { to { opacity: 0; transform: translateX(40px); } }
+
+/* ---------- Confete ---------- */
+.confete {
+  position: fixed; z-index: 999;
+  pointer-events: none;
+  border-radius: 2px;
+  animation: confete cubic-bezier(.2, .6, .4, 1) forwards;
+}
+@keyframes confete {
+  to { transform: translate(var(--dx), calc(var(--dy) + 340px)) rotate(var(--giro)); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .helpy-svg *, .helpy-msg, .toast { animation: none !important; }
+}

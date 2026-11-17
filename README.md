@@ -72,10 +72,35 @@ python -m pytest -v
 
 Os testes também rodam automaticamente no GitHub Actions a cada push (`.github/workflows/ci.yml`).
 
+### Só o frontend, sem Python (modo simulação)
+
+Abrindo a pasta `frontend` pelo **Live Server / Go Live** do VS Code, o `js/simulador.js` assume o
+lugar da API: imita as rotas do backend com as mesmas regras e guarda os dados no navegador.
+Uma faixa "Modo simulação" aparece no canto da tela, com o botão **Limpar dados**.
+
+- Forçar o simulador: `?simulador=1` na URL · Desligar: `?simulador=0` (a escolha fica salva).
+- Ele nunca liga no site publicado nem em `localhost:5000` (o Flask).
+- Tudo o que o front passar a usar e ainda não existir no backend deve ser anotado no topo de
+  `js/simulador.js`, para a reintegração.
+
+### Contas de demonstração
+
+Criadas ao iniciar o servidor (senha de todas: `demo123`):
+
+| Perfil | E-mail | Área de login | Abre em |
+|---|---|---|---|
+| Colaborador | `colaborador@demo.helpia` | Colaborador | `chat.html` |
+| Analista | `analista@demo.helpia` | Analista | `painel.html` |
+| Gestor | `gestor@demo.helpia` | Analista | `painel.html` + `criar-conta.html` |
+
+> A sessão fica guardada por aba do navegador, então dá para entrar como colaborador em uma aba
+> e como analista em outra. Em produção, defina a variável de ambiente `HELPIA_SECRET_KEY`
+> (sem ela, as sessões caem a cada reinício do servidor).
+
 ## Roteiro de apresentação (≈ 3 min)
 
-1. Abra a **página inicial** e apresente o problema e a jornada.
-2. Abra o **Chat do colaborador** e o **Painel do analista** lado a lado.
+1. Abra a **página inicial** e apresente o problema, os perfis e os planos.
+2. Em uma aba, entre como **colaborador**; em outra, como **analista** (contas acima).
 3. No chat, envie `ajuda` → o HelpBot pede mais detalhes (**RN-01**).
 4. Complemente com `meu computador não liga` → chamado registrado com número, data, categoria e fila (**CA-01, CA-02, CA-03**).
 5. No painel, o chamado aparece na fila. Clique em **Assumir** → o chat avisa o colaborador (**CA-04**).
@@ -92,17 +117,23 @@ HelpIA/
 │   ├── app.py                    # Interface: rotas da API e das telas
 │   ├── aplicacao/                # Aplicação: coordena a jornada
 │   │   ├── servico_chamado.py
+│   │   ├── servico_conta.py      # contratação, login e contas da equipe
 │   │   └── servico_notificacao.py
-│   ├── dominio/                  # Domínio: entidade e regras de negócio
-│   │   └── chamado.py
-│   └── persistencia/             # Persistência: armazenamento dos chamados
-│       └── repositorio_chamado.py
+│   ├── dominio/                  # Domínio: entidades e regras de negócio
+│   │   ├── chamado.py
+│   │   └── usuario.py            # Usuario, Empresa, perfis e planos
+│   └── persistencia/             # Persistência: armazenamento em memória
+│       ├── repositorio_chamado.py
+│       └── repositorio_usuario.py
 ├── frontend/                     # Telas (HTML, CSS e JavaScript puro)
-│   ├── index.html                # Página de apresentação
-│   ├── chat.html                 # Portal do colaborador: HelpBot e acompanhamento
-│   ├── painel.html               # Painel do analista
-│   ├── css/                      # base, landing, chat, painel
-│   ├── js/                       # api, chat, painel
+│   ├── index.html                # Landing: produto, perfis e planos
+│   ├── contratar.html            # Contratação de plano (cria empresa + gestor)
+│   ├── login.html                # Login por área: Colaborador | Analista
+│   ├── chat.html                 # Colaborador: HelpBot e acompanhamento
+│   ├── painel.html               # Analista/gestor: fila de chamados
+│   ├── criar-conta.html          # Gestor: contas da equipe
+│   ├── css/                      # base (identidade), landing, acesso, chat, painel, contas
+│   ├── js/                       # sessao, api, login, contratar, chat, painel, contas
 │   └── assets/logo.svg
 ├── tests/test_app.py             # Testes automatizados (pytest)
 ├── docs/                         # Documentação das entregas (ver abaixo)
@@ -115,6 +146,12 @@ HelpIA/
 | Método | Rota | Descrição | Situação |
 |---|---|---|---|
 | GET | `/api/status` | Verifica se o sistema está no ar | Implementado |
+| GET | `/api/planos` | Lista os planos para empresas | Implementado |
+| POST | `/api/empresas` | Contrata um plano: cria a empresa e o gestor — `{ "plano", "empresa": {"nome","cnpj"}, "responsavel": {"nome","email","senha"} }` | Implementado |
+| POST | `/api/auth/login` | Login por área — `{ "email", "senha", "perfil": "colaborador" \| "analista" }`. `401` senha errada, `403` área errada | Implementado |
+| GET | `/api/auth/eu` | Usuário da sessão (cabeçalho `Authorization: Bearer <token>`) | Implementado |
+| GET | `/api/contas` | Contas da empresa (somente gestor) | Implementado |
+| POST | `/api/contas` | Gestor cria analista ou colaborador — `{ "nome", "email", "perfil", "senha" }`. `409` no limite do plano | Implementado |
 | GET | `/api/chamados?status=&solicitante=` | Lista chamados (filtros opcionais) | Implementado |
 | POST | `/api/chamados` | Abre chamado — `{ "descricao", "solicitante" }`. Retorna `201`, ou `422` se faltar informação (RN-01) | Implementado |
 | GET | `/api/chamados/<numero>` | Detalhes de um chamado | Implementado |

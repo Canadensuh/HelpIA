@@ -3,70 +3,98 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HelpIA — Chat do colaborador</title>
+  <title>HelpIA — Abrir chamado</title>
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@400;500;600;700;800&display=swap" />
   <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/simbolos.css" />
   <script src="js/tema.js"></script>
+  <link rel="stylesheet" href="css/icones.css" />
+  <link rel="stylesheet" href="css/helpy.css" />
+  <link rel="stylesheet" href="css/painel.css" />
   <link rel="stylesheet" href="css/chat.css" />
+  <link rel="stylesheet" href="css/teclas.css" />
+  <link rel="stylesheet" href="css/papelaria.css" />
 </head>
-<body>
+<body class="tela-mesa tela-colab">
 
-  <header class="topbar">
-    <div class="container topbar-inner">
-      <a href="index.html" class="brand"><img src="assets/logo.svg" alt="" />HelpIA</a>
-      <nav class="nav" aria-label="Navegação">
-        <a href="index.html">Início</a>
-        <a href="chat.html" class="ativo">Chat do colaborador</a>
-        <a href="painel.html">Painel do analista</a>
-      </nav>
+  <header class="mesa-topo">
+    <a href="chat.html" class="brand"><img src="assets/logo.svg" alt="" />Help<b>IA</b></a>
+
+    <div class="placar" aria-label="Seus chamados">
+      <div class="placar-item"><span class="placar-valor" id="placarFila">0</span><span class="placar-rotulo">na fila</span></div>
+      <div class="placar-item"><span class="placar-valor" id="placarAtendimento">0</span><span class="placar-rotulo">em atendimento</span></div>
+      <div class="placar-item placar-destaque"><span class="placar-valor" id="placarResolvidos">0</span><span class="placar-rotulo">resolvidos</span></div>
+    </div>
+
+    <div class="topbar-acoes">
       <button type="button" class="btn-tema" aria-label="Alternar tema">
         <svg class="icone-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
         <svg class="icone-lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       </button>
+      <div class="usuario-menu">
+        <span class="usuario-avatar" data-usuario-iniciais aria-hidden="true"></span>
+        <span class="usuario-info"><strong data-usuario-nome></strong><span data-usuario-perfil></span></span>
+        <button type="button" class="btn-sair" data-acao="sair">Sair</button>
+      </div>
     </div>
   </header>
 
-  <main class="container chat-layout">
-    <p class="aviso-offline" id="avisoOffline" hidden></p>
-
-    <!-- CONVERSA -->
-    <section class="card conversa" aria-label="Conversa com o HelpBot">
-      <header class="conversa-topo">
-        <div class="bot-avatar" aria-hidden="true">🤖</div>
-        <div>
-          <strong>HelpBot</strong>
-          <div class="online">● Online</div>
-        </div>
-        <label class="campo campo-nome">
-          Você é
-          <input id="nome" type="text" maxlength="40" autocomplete="name" />
-        </label>
+  <main class="mesa">
+    <!-- Esquerda: chamados já resolvidos -->
+    <section class="bandeja" aria-labelledby="tituloResolvidos">
+      <header class="area-topo">
+        <h2 id="tituloResolvidos"><i class="ic ic-check-circulo" aria-hidden="true"></i> Resolvidos</h2>
+        <span class="contador" id="contadorResolvidos">0</span>
       </header>
-
-      <div class="mensagens" id="mensagens" role="log" aria-live="polite"></div>
-
-      <div class="sugestoes" id="sugestoes">
-        <button type="button" class="chip">Meu computador não liga</button>
-        <button type="button" class="chip">Esqueci a senha do sistema</button>
-        <button type="button" class="chip">Internet lenta / queda de internet</button>
-        <button type="button" class="chip">Setor parado</button>
+      <div class="bandeja-fundo">
+        <ul class="lista-tickets" id="listaResolvidos"></ul>
       </div>
-
-      <form class="envio" id="formMensagem" autocomplete="off">
-        <input id="entrada" class="input" type="text" placeholder="Descreva seu problema…" aria-label="Mensagem" required />
-        <button class="btn btn-primary" type="submit" aria-label="Enviar">Enviar ➤</button>
-      </form>
     </section>
 
-    <!-- MEUS CHAMADOS -->
-    <aside class="card meus" aria-label="Meus chamados">
-      <h2>Meus chamados</h2>
-      <p class="meus-sub">Atualiza automaticamente quando um analista assume.</p>
-      <ul class="lista-meus" id="listaMeus"></ul>
+    <!-- Centro: o desktop. Mostra os chamados pendentes e é aqui que um chamado novo é aberto. -->
+    <section class="tampo desktop" id="tampo" aria-labelledby="tituloTampo">
+      <header class="area-topo desktop-topo">
+        <h2 id="tituloTampo"></h2>
+        <ol class="passos-topo" id="passos" aria-label="Etapas do chamado" hidden></ol>
+        <div class="desktop-acao" id="desktopAcao"></div>
+      </header>
+      <div class="palco" id="palco" aria-live="polite"></div>
+    </section>
+
+    <!-- Direita: Helpy com o cafezinho -->
+    <aside class="lateral">
+      <div class="helpy-mesa" id="helpyRaiz">
+        <div class="helpy-feed helpy-balao" id="helpyFeed" role="log" aria-live="polite"></div>
+        <div id="helpyAvatar"></div>
+      </div>
+
+      <div class="decoracao" aria-hidden="true">
+        <div class="caneca"><span class="vapor"></span><span class="vapor"></span><span class="vapor"></span></div>
+        <div class="post-it">Atalho:<br><strong>teclas 1 a 8</strong><br>escolhem o tipo</div>
+      </div>
+
+      <div class="helpy-atalhos">
+        <span>Pergunte ao Helpy</span>
+        <div class="helpy-atalhos-lista">
+          <button type="button" class="atalho" data-atalho="nao-achei"><i class="ic ic-duvida" aria-hidden="true"></i> Não achei minha opção</button>
+          <button type="button" class="atalho" data-atalho="maquina"><i class="ic ic-etiqueta" aria-hidden="true"></i> Onde vejo o nº da máquina?</button>
+          <button type="button" class="atalho" data-atalho="tempo"><i class="ic ic-relogio" aria-hidden="true"></i> Quanto tempo demora?</button>
+          <button type="button" class="atalho" data-atalho="contato"><i class="ic ic-telefone" aria-hidden="true"></i> Por que pedem meu contato?</button>
+        </div>
+      </div>
     </aside>
   </main>
 
+  <p class="aviso-offline aviso-flutuante" id="avisoOffline" hidden></p>
+
+  <script src="js/catalogo.js"></script>
+  <script src="js/simulador.js"></script>
+  <script src="js/sessao.js"></script>
   <script src="js/api.js"></script>
+  <script src="js/helpy.js"></script>
   <script src="js/chat.js"></script>
 </body>
 </html>

@@ -1,0 +1,217 @@
+/* =========================================================
+   teclas.css — botões no formato de TECLA de teclado antigo
+   Trazido do Muhsic (components/keycaps.css) e adaptado ao HelpIA.
+   - Os botões existentes (.btn, .filtro, .atalho…) viram teclas
+     sem precisar mudar o HTML.
+   - Componente livre: <button class="key">…</button>
+     Variações: .key--accent .key--mod .key--green .key--red
+                .key--sm .key--lg .key--icon .key--block
+     Legenda no canto: data-legend="ESC" · LED ligado: .active
+   - "Selecionado" = tecla AFUNDADA (como os botões de um rádio).
+   ========================================================= */
+
+:root {
+  /* Tecla bege amarelada */
+  --key-top: #efe5ca;
+  --key-top-2: #ddd0ae;
+  --key-side: #b3a47c;
+  --key-edge: #85775a;
+  --key-text: #3a2e22;
+  --key-legend: #8a7657;
+}
+
+/* ---------- Base da tecla ---------- */
+.key,
+.btn:not(.btn-ghost),
+.btn-tema, .btn-meus, .atalho, .acao-poder, .filtro, .helpy-acao,
+.segmentado label {
+  --key-depth: 5px;
+  --k-top: var(--key-top);
+  --k-top-2: var(--key-top-2);
+  --k-side: var(--key-side);
+  --k-edge: var(--key-edge);
+  --k-text: var(--key-text);
+
+  --k-face:
+    linear-gradient(180deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, 0) 18%),
+    linear-gradient(180deg, var(--k-top) 0%, var(--k-top-2) 100%);
+
+  position: relative;
+  color: var(--k-text);
+  font-weight: 800;
+  letter-spacing: .02em;
+  text-decoration: none;
+  background: var(--k-face);
+  border: 1px solid var(--k-edge);
+  border-radius: 9px;
+  box-shadow:
+    0 var(--key-depth) 0 var(--k-side),
+    0 calc(var(--key-depth) + 1px) 0 var(--k-edge),
+    0 calc(var(--key-depth) + 8px) 16px rgba(0, 0, 0, .35),
+    inset 0 -3px 0 rgba(0, 0, 0, .07),
+    inset 0 1px 0 rgba(255, 255, 255, .9);
+  outline: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateY(0);
+  transition: transform .07s ease, box-shadow .07s ease, filter .15s ease;
+}
+/* Reserva o espaço da "profundidade" para a tecla não encostar no que vem abaixo */
+.btn:not(.btn-ghost), .key { margin-bottom: 6px; }
+
+.key:hover,
+.btn:not(.btn-ghost):hover,
+.btn-tema:hover, .btn-meus:hover, .atalho:hover, .acao-poder:hover, .filtro:hover,
+.helpy-acao:hover:not(:disabled), .segmentado label:hover {
+  filter: brightness(1.05);
+  color: var(--k-text);
+  border-color: var(--k-edge);
+  transform: translateY(0);
+}
+
+/* ---------- Pressionada / selecionada (afundada) ---------- */
+.key:active, .key.is-pressed,
+.btn:not(.btn-ghost):active,
+.btn-tema:active, .btn-meus:active, .atalho:active, .acao-poder:active, .filtro:active,
+.helpy-acao:active:not(:disabled), .helpy-acao.escolhida,
+.filtro.ativo,
+.segmentado input:checked + label {
+  transform: translateY(var(--key-depth));
+  box-shadow:
+    0 0 0 var(--k-side),
+    0 1px 0 var(--k-edge),
+    0 3px 8px rgba(0, 0, 0, .3),
+    inset 0 2px 4px rgba(0, 0, 0, .14),
+    inset 0 1px 0 rgba(255, 255, 255, .6);
+}
+
+/* Foco por teclado: anel oliva por fora da tecla */
+.key:focus-visible,
+.btn:not(.btn-ghost):focus-visible,
+.btn-tema:focus-visible, .btn-meus:focus-visible, .atalho:focus-visible, .acao-poder:focus-visible,
+.filtro:focus-visible, .helpy-acao:focus-visible,
+.segmentado input:focus-visible + label {
+  outline: 3px solid var(--oliva-clara);
+  outline-offset: 3px;
+}
+
+/* ---------- Cores de tecla ---------- */
+/* Oliva (o "Enter" dos teclados antigos): ação principal */
+.key--accent,
+.btn-primary,
+.helpy-acao-destaque,
+.filtro.ativo,
+.segmentado input:checked + label {
+  --k-top: #b4cd7c;
+  --k-top-2: #8fa858;
+  --k-side: #5f7536;
+  --k-edge: #3d4c22;
+  --k-text: #141a0d;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .25);
+}
+/* Bege escuro (Shift, Ctrl…) */
+.key--mod, .btn-tema {
+  --k-top: #cdbf9c;
+  --k-top-2: #b9aa84;
+  --k-side: #8f8160;
+  --k-edge: #6d6148;
+}
+/* Verde (confirmar) */
+.key--green, .btn-success {
+  --k-top: #7fcf6e;
+  --k-top-2: #4f9f43;
+  --k-side: #2f6a28;
+  --k-edge: #1f461a;
+  --k-text: #f4ffe9;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .3);
+}
+/* Vermelha (ações perigosas) */
+.key--red, .acao-poder.perigo {
+  --k-top: #e8735c;
+  --k-top-2: #c4452c;
+  --k-side: #85291a;
+  --k-edge: #5a1a10;
+  --k-text: #fff3ee;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .3);
+}
+
+/* Regras antigas pintavam fundo chapado nesses estados: a face da tecla
+   é reaplicada para o relevo nunca sumir. */
+.key:hover, .btn:not(.btn-ghost):hover, .btn-primary:hover, .btn-outline:hover, .btn-success:hover,
+.btn-tema:hover, .btn-meus:hover, .atalho:hover, .acao-poder:hover, .acao-poder.perigo:hover,
+.filtro:hover, .filtro.ativo, .helpy-acao:hover, .helpy-acao-destaque, .helpy-acao.escolhida,
+.segmentado input:checked + label, .segmentado label:hover {
+  background: var(--k-face);
+  color: var(--k-text);
+  border-color: var(--k-edge);
+}
+
+/* ---------- Tamanhos ---------- */
+.btn-sm, .key--sm, .atalho, .acao-poder, .filtro, .helpy-acao { --key-depth: 4px; border-radius: 7px; }
+.btn-lg, .key--lg { --key-depth: 6px; border-radius: 11px; }
+.key--icon, .btn-tema { --key-depth: 4px; padding: 0; width: 42px; min-width: 42px; height: 42px; }
+.key--block { display: flex; width: 100%; }
+
+/* Componentes que eram "pílula" passam a ter cantos de tecla */
+.btn-meus, .atalho, .filtro, .helpy-acao { border-radius: 8px; }
+.atalho { margin-bottom: 4px; }
+.segmentado { gap: 8px; padding: 6px 6px 10px; }
+.segmentado label { border-radius: 8px; }
+
+/* ---------- Desligada ---------- */
+.key:disabled, .btn:disabled, .helpy-acao:disabled:not(.escolhida) {
+  cursor: not-allowed;
+  opacity: .45;
+  filter: grayscale(.6);
+  transform: none;
+}
+
+/* ---------- Legenda e LED (componente .key) ---------- */
+.key[data-legend]::before {
+  content: attr(data-legend);
+  position: absolute; top: 3px; left: 7px;
+  font-size: 8px; font-weight: 700; letter-spacing: .06em;
+  color: var(--key-legend); opacity: .9;
+}
+.key::after {
+  content: '';
+  position: absolute; top: 6px; right: 7px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(0, 0, 0, .15);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .3);
+  opacity: 0;
+  transition: background .2s, box-shadow .2s;
+}
+.key.has-led::after, .key.active::after { opacity: 1; }
+.key.active::after { background: var(--fosforo); box-shadow: 0 0 8px var(--fosforo), 0 0 2px #fff inset; }
+
+/* ---------- Tecla desenhada (atalhos de teclado) ---------- */
+.kbd, .cartao-tecla {
+  display: inline-grid; place-items: center;
+  min-width: 26px; height: 24px; padding: 0 6px;
+  font-family: var(--font); font-size: .72rem; font-weight: 800;
+  color: var(--key-text);
+  background: linear-gradient(180deg, var(--key-top), var(--key-top-2));
+  border: 1px solid var(--key-edge);
+  border-radius: 6px;
+  box-shadow: 0 3px 0 var(--key-side), 0 4px 0 var(--key-edge), inset 0 1px 0 #fff;
+}
+
+/* ---------- Botão "segurar para autorizar" (gestor) ----------
+   Um botão redondo grande que AFUNDA enquanto você segura. */
+.segurar {
+  background: radial-gradient(circle at 35% 30%, #3b4a2a, #1b2115 70%);
+  color: var(--texto-lousa);
+  border: 2px solid #0a0d07;
+  box-shadow: 0 8px 0 #0a0d07, 0 0 0 8px var(--primary-soft), 0 18px 26px rgba(0, 0, 0, .35);
+  transition: transform .12s, box-shadow .12s, background .2s;
+}
+.segurar.perigo { box-shadow: 0 8px 0 #0a0d07, 0 0 0 8px var(--danger-soft), 0 18px 26px rgba(0, 0, 0, .35); }
+.segurar.segurando { transform: translateY(7px); box-shadow: 0 1px 0 #0a0d07, 0 0 0 8px var(--primary-soft), 0 6px 12px rgba(0, 0, 0, .3); }
+.segurar.autorizado { background: radial-gradient(circle at 35% 30%, #7fcf6e, #2f6a28 70%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .key, .btn, .btn-tema, .btn-meus, .atalho, .acao-poder, .filtro, .helpy-acao, .segmentado label, .segurar { transition: none; }
+}

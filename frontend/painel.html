@@ -3,69 +3,144 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HelpIA — Painel do analista</title>
+  <title>HelpIA — Mesa do analista</title>
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@400;500;600;700;800&display=swap" />
   <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/simbolos.css" />
   <script src="js/tema.js"></script>
+  <link rel="stylesheet" href="css/icones.css" />
+  <link rel="stylesheet" href="css/helpy.css" />
   <link rel="stylesheet" href="css/painel.css" />
+  <link rel="stylesheet" href="css/teclas.css" />
+  <link rel="stylesheet" href="css/papelaria.css" />
 </head>
-<body>
+<body class="tela-mesa">
 
-  <header class="topbar">
-    <div class="container topbar-inner">
-      <a href="index.html" class="brand"><img src="assets/logo.svg" alt="" />HelpIA</a>
-      <nav class="nav" aria-label="Navegação">
-        <a href="index.html">Início</a>
-        <a href="chat.html">Chat do colaborador</a>
-        <a href="painel.html" class="ativo">Painel do analista</a>
-      </nav>
+  <header class="mesa-topo">
+    <a href="painel.html" class="brand"><img src="assets/logo.svg" alt="" />Help<b>IA</b></a>
+    <nav class="nav" aria-label="Navegação">
+      <a href="painel.html" class="ativo">Minha mesa</a>
+      <a href="criar-conta.html" data-somente="gestor" hidden>Centro de comando</a>
+    </nav>
+
+    <div class="placar" aria-label="Seu placar de hoje">
+      <div class="placar-item"><span class="placar-valor" id="placarFila">0</span><span class="placar-rotulo">na bandeja</span></div>
+      <div class="placar-item"><span class="placar-valor" id="placarMaos">0</span><span class="placar-rotulo">na mesa</span></div>
+      <div class="placar-item placar-destaque"><span class="placar-valor" id="placarHoje">0</span><span class="placar-rotulo">resolvidos hoje</span></div>
+      <button type="button" class="placar-meta" id="placarMeta" title="Clique para mudar a meta do dia">
+        <svg viewBox="0 0 36 36" class="anel" aria-hidden="true">
+          <circle class="anel-fundo" cx="18" cy="18" r="15.5"/>
+          <circle class="anel-progresso" id="anelMeta" cx="18" cy="18" r="15.5" pathLength="100"/>
+        </svg>
+        <span class="placar-meta-texto"><strong id="metaTexto">0/5</strong><small>meta do dia</small></span>
+      </button>
+    </div>
+
+    <div class="topbar-acoes">
       <button type="button" class="btn-tema" aria-label="Alternar tema">
         <svg class="icone-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
         <svg class="icone-lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       </button>
+      <div class="usuario-menu">
+        <span class="usuario-avatar" data-usuario-iniciais aria-hidden="true"></span>
+        <span class="usuario-info"><strong data-usuario-nome></strong><span data-usuario-perfil></span></span>
+        <button type="button" class="btn-sair" data-acao="sair">Sair</button>
+      </div>
     </div>
   </header>
 
-  <main class="container painel">
-    <p class="aviso-offline" id="avisoOffline" hidden></p>
-
-    <div class="painel-topo">
-      <div>
-        <h1>Painel do analista</h1>
-        <p class="sub" id="resumo">Carregando fila…</p>
+  <main class="mesa">
+    <!-- Bandeja de entrada -->
+    <section class="bandeja" aria-labelledby="tituloBandeja">
+      <header class="area-topo">
+        <h2 id="tituloBandeja"><i class="ic ic-entrada" aria-hidden="true"></i> Bandeja de entrada</h2>
+        <span class="contador" id="contadorBandeja">0</span>
+      </header>
+      <div class="bandeja-fundo">
+        <ul class="lista-tickets" id="listaEntrada"></ul>
       </div>
-      <label class="campo">
-        Analista
-        <input id="analista" type="text" maxlength="40" autocomplete="name" />
-      </label>
-    </div>
-
-    <!-- Indicadores / filtros -->
-    <div class="indicadores" role="tablist" aria-label="Filtrar por status">
-      <button class="indicador ativo" role="tab" data-status="Aguardando">
-        <span class="ind-valor" data-contador="Aguardando">0</span>
-        <span class="ind-rotulo">Aguardando</span>
-      </button>
-      <button class="indicador" role="tab" data-status="Em atendimento">
-        <span class="ind-valor" data-contador="Em atendimento">0</span>
-        <span class="ind-rotulo">Em atendimento</span>
-      </button>
-      <button class="indicador" role="tab" data-status="Resolvido">
-        <span class="ind-valor" data-contador="Resolvido">0</span>
-        <span class="ind-rotulo">Resolvidos</span>
-      </button>
-      <button class="indicador" role="tab" data-status="">
-        <span class="ind-valor" data-contador="">0</span>
-        <span class="ind-rotulo">Todos</span>
-      </button>
-    </div>
-
-    <section class="card fila" aria-label="Fila de chamados">
-      <ul class="lista-chamados" id="listaChamados"></ul>
     </section>
+
+    <!-- Tampo da mesa -->
+    <section class="tampo" id="tampo" aria-labelledby="tituloTampo">
+      <header class="area-topo">
+        <h2 id="tituloTampo"><i class="ic ic-pastas" aria-hidden="true"></i> Na sua mesa</h2>
+        <span class="dica-arrastar">Arraste um ticket da bandeja para cá ou clique em “Assumir”</span>
+      </header>
+      <ul class="lista-tickets tampo-tickets" id="listaMesa"></ul>
+      <div class="colegas" id="colegas" hidden>
+        <span>Com outros analistas:</span>
+        <div class="colegas-lista" id="listaColegas"></div>
+      </div>
+    </section>
+
+    <!-- Lateral: Helpy, decoração e arquivo -->
+    <aside class="lateral">
+      <div class="helpy-mesa" id="helpyRaiz">
+        <div class="helpy-feed" id="helpyFeed" role="log" aria-live="polite"></div>
+        <div id="helpyAvatar"></div>
+      </div>
+
+      <div class="decoracao" aria-hidden="true">
+        <div class="caneca"><span class="vapor"></span><span class="vapor"></span><span class="vapor"></span></div>
+        <div class="post-it" id="postIt">Meta de hoje:<br><strong id="postItMeta">5 tickets</strong></div>
+      </div>
+
+      <button type="button" class="arquivo" id="arquivo">
+        <span class="arquivo-caixa" aria-hidden="true"><i class="ic ic-arquivo" aria-hidden="true"></i></span>
+        <span><strong>Arquivo de atendimentos</strong><small><span id="contadorArquivo">0</span> tickets carimbados</small></span>
+      </button>
+    </aside>
   </main>
 
+  <!-- Modal: nota do colaborador -->
+  <dialog class="modal" id="modalNota">
+    <div class="modal-conteudo" id="conteudoNota"></div>
+  </dialog>
+
+  <!-- Modal: carimbar e finalizar -->
+  <dialog class="modal modal-carimbo" id="modalCarimbo">
+    <form method="dialog" class="modal-conteudo" id="formCarimbo">
+      <header class="modal-topo">
+        <h2>Carimbar e finalizar</h2>
+        <button type="submit" value="cancelar" class="btn btn-ghost btn-sm" formnovalidate aria-label="Fechar"><i class="ic ic-x" aria-hidden="true"></i></button>
+      </header>
+      <div class="carimbo-ticket" id="carimboTicket"></div>
+      <label class="campo">
+        Nota de resolução <span class="campo-ajuda">Fica no arquivo e ajuda o próximo analista com o mesmo problema.</span>
+        <textarea id="notaResolucao" rows="4" maxlength="1000" placeholder="Ex.: Era só desconectar o cabo de rede e conectar novamente."></textarea>
+      </label>
+      <p class="aviso aviso-erro" id="erroCarimbo" hidden></p>
+      <div class="modal-acoes">
+        <button type="submit" value="cancelar" class="btn btn-ghost" formnovalidate>Cancelar</button>
+        <button type="button" class="btn btn-primary btn-lg" id="botaoCarimbar"><i class="ic ic-carimbo" aria-hidden="true"></i> Carimbar RESOLVIDO</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Gaveta: arquivo -->
+  <div class="gaveta-fundo" id="gavetaFundo" hidden></div>
+  <aside class="gaveta" id="gavetaArquivo" aria-label="Arquivo de atendimentos" aria-hidden="true">
+    <header class="gaveta-topo">
+      <h2><i class="ic ic-arquivo" aria-hidden="true"></i> Arquivo de atendimentos</h2>
+      <button type="button" class="btn btn-ghost btn-sm" id="fecharArquivo" aria-label="Fechar"><i class="ic ic-x" aria-hidden="true"></i></button>
+    </header>
+    <div class="gaveta-busca">
+      <input class="input" id="buscaArquivo" type="search" placeholder="Buscar por colaborador, máquina, problema ou nota…" />
+    </div>
+    <ul class="lista-arquivo" id="listaArquivo"></ul>
+  </aside>
+
+  <p class="aviso-offline aviso-flutuante" id="avisoOffline" hidden></p>
+
+  <script src="js/catalogo.js"></script>
+  <script src="js/simulador.js"></script>
+  <script src="js/sessao.js"></script>
   <script src="js/api.js"></script>
+  <script src="js/helpy.js"></script>
   <script src="js/painel.js"></script>
 </body>
 </html>

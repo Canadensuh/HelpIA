@@ -1,5 +1,5 @@
 /* =========================================================
-   tema.js — modo escuro (padrão) / modo claro
+   tema.js — fundo verde-quadro (padrão) / fundo papel kraft
    Carregado no <head> para aplicar o tema antes da página
    aparecer, evitando o "piscar" de cores.
    ========================================================= */
@@ -16,7 +16,7 @@
     raiz.setAttribute('data-theme', tema);
     try { localStorage.setItem(CHAVE, tema); } catch { /* armazenamento indisponível */ }
     document.querySelectorAll('.btn-tema').forEach((botao) => {
-      const rotulo = tema === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro';
+      const rotulo = tema === 'dark' ? 'Trocar para fundo kraft' : 'Trocar para fundo verde-quadro';
       botao.setAttribute('aria-label', rotulo);
       botao.title = rotulo;
     });

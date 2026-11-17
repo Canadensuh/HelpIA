@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HelpIA — Contratar</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/simbolos.css" />
+  <script src="js/tema.js"></script>
+  <link rel="stylesheet" href="css/acesso.css" />
+  <link rel="stylesheet" href="css/teclas.css" />
+  <link rel="stylesheet" href="css/papelaria.css" />
+</head>
+<body>
+  <div class="acesso">
+    <aside class="acesso-marca textura-grade">
+      <a href="index.html" class="brand"><img src="assets/logo.svg" alt="" />Help<b>IA</b></a>
+      <h2>Leve o HelpIA para a <span>sua empresa</span>.</h2>
+      <p>Em poucos minutos sua equipe de suporte recebe chamados já classificados e na fila certa.</p>
+      <ul class="acesso-lista">
+        <li>Escolha o plano e cadastre a empresa.</li>
+        <li>Quem contrata vira o gestor da conta.</li>
+        <li>O gestor cria as contas dos analistas e dos colaboradores.</li>
+        <li>Cada pessoa entra pelo login e vê só a tela do seu perfil.</li>
+      </ul>
+      <p class="acesso-rodape">Valores ilustrativos. Projeto acadêmico: nenhuma cobrança é feita.</p>
+      <div class="faixa-alerta" aria-hidden="true"></div>
+    </aside>
+
+    <main class="acesso-form">
+      <div class="acesso-topo">
+        <a href="index.html#planos" class="link-voltar">← Voltar aos planos</a>
+        <button type="button" class="btn-tema" aria-label="Alternar tema">
+          <svg class="icone-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <svg class="icone-lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+
+      <div class="acesso-caixa acesso-caixa-larga">
+        <h1>Contratar o HelpIA</h1>
+        <p class="acesso-sub">Preencha os dados abaixo. Ao concluir, você já entra como gestor da empresa.</p>
+
+        <form id="formContratar" novalidate>
+          <fieldset class="etapa">
+            <legend><span class="etapa-num">1</span>Plano</legend>
+            <div class="planos-opcoes">
+              <div class="plano-opcao">
+                <input type="radio" name="plano" id="planoEssencial" value="essencial" />
+                <label for="planoEssencial">
+                  <strong>Essencial</strong>
+                  <span class="preco">R$ 149/mês</span>
+                  <small>Até 3 analistas</small>
+                </label>
+              </div>
+              <div class="plano-opcao">
+                <input type="radio" name="plano" id="planoProfissional" value="profissional" checked />
+                <label for="planoProfissional">
+                  <strong>Profissional</strong>
+                  <span class="preco">R$ 390/mês</span>
+                  <small>Até 15 analistas</small>
+                </label>
+              </div>
+              <div class="plano-opcao">
+                <input type="radio" name="plano" id="planoEmpresarial" value="empresarial" />
+                <label for="planoEmpresarial">
+                  <strong>Empresarial</strong>
+                  <span class="preco">Sob consulta</span>
+                  <small>Analistas ilimitados</small>
+                </label>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="etapa">
+            <legend><span class="etapa-num">2</span>Empresa</legend>
+            <div class="form-grade">
+              <label class="campo">
+                Nome da empresa
+                <input id="empresaNome" type="text" maxlength="80" autocomplete="organization" placeholder="Acme Ltda" required />
+              </label>
+              <label class="campo">
+                CNPJ <span class="campo-ajuda">(opcional)</span>
+                <input id="empresaCnpj" type="text" maxlength="18" inputmode="numeric" placeholder="00.000.000/0000-00" />
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="etapa">
+            <legend><span class="etapa-num">3</span>Gestor responsável</legend>
+            <div class="form-grade">
+              <label class="campo">
+                Nome completo
+                <input id="respNome" type="text" maxlength="80" autocomplete="name" required />
+              </label>
+              <label class="campo">
+                E-mail corporativo
+                <input id="respEmail" type="email" autocomplete="email" placeholder="nome@empresa.com" required />
+              </label>
+              <label class="campo campo-senha">
+                Senha
+                <input id="respSenha" type="password" minlength="6" autocomplete="new-password" placeholder="Mínimo de 6 caracteres" required />
+                <button type="button" class="ver-senha" data-alvo="respSenha" aria-label="Mostrar senha">Mostrar</button>
+              </label>
+              <label class="campo">
+                Confirmar senha
+                <input id="respSenha2" type="password" autocomplete="new-password" required />
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="resumo-contratacao">
+            <span>Plano escolhido</span>
+            <strong id="resumoPlano">Profissional · R$ 390/mês</strong>
+          </div>
+
+          <p class="aviso" id="aviso" role="alert" hidden></p>
+
+          <button type="submit" class="btn btn-primary btn-lg btn-bloco" id="botaoContratar">Contratar e criar conta de gestor</button>
+          <p class="nota-legal">Ao continuar, a empresa é cadastrada e você poderá criar as contas da equipe em seguida.</p>
+        </form>
+
+        <p class="acesso-rodape-form">Já tem conta? <a href="login.html?perfil=analista">Entrar</a></p>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/catalogo.js"></script>
+  <script src="js/simulador.js"></script>
+  <script src="js/sessao.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/contratar.js"></script>
+</body>
+</html>
