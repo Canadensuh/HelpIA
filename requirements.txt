@@ -1,4 +1,4 @@
-flask 
-flask-cors 
-pytest 
-gunicorn
+flask>=3.0,<4
+flask-cors>=4.0
+gunicorn>=22.0
+pytest>=8.0

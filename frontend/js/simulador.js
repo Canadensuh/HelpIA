@@ -11,33 +11,14 @@
    - Nunca no site publicado nem em localhost:5000 (o próprio Flask).
    - Forçar: ?simulador=1   ·   Desligar: ?simulador=0 (fica salvo).
 
-   Dados: ficam no localStorage (chave helpia-simulador-db-v3), compartilhados
+   Dados: ficam no localStorage (chave helpia-simulador-db-v4), compartilhados
    entre abas — o ticket aberto pelo colaborador chega na mesa do analista.
    As senhas ficam em texto puro: são dados fictícios de teste.
    Depende de js/catalogo.js (tipos de manutenção).
 
-   ATENÇÃO — REINTEGRAÇÃO COM O PYTHON — o que o front usa e o backend ainda NÃO tem:
-   1. Catálogo (js/catalogo.js): gênero → subgênero define categoria, fila e
-      prioridade. Levar para o backend (ex.: GET /api/catalogo).
-   2. POST /api/chamados passa a receber { genero, subgenero, impacto, maquina,
-      nota, contato: { tipo, valor } } em vez de { descricao }.
-      - nota obrigatória (mín. 15 caracteres) — substitui o RN-01 por palavras.
-      - contato obrigatório: whatsapp (10 a 13 dígitos), teams ou email (e-mail).
-      - prioridade: "Alta" se o gênero exige (setor parado) ou impacto ≠ "eu".
-      - descricao vira "Gênero › Subgênero"; guardar solicitante_id da sessão.
-   3. Chamado ganha: genero, subgenero, genero_titulo, subgenero_titulo, impacto,
-      maquina, nota, contato, solicitante_id, assumido_em, resolvido_em, resolucao.
-   4. POST /api/chamados/<n>/assumir usa o nome do usuário da sessão.
-   5. POST /api/chamados/<n>/resolver exige { nota } (mín. 10 caracteres) e só
-      quem assumiu (ou o gestor) pode finalizar — 403 caso contrário (RN-02).
-   6. Usuario ganha "ativo". Conta suspensa não entra (403) e sessão cai (401).
-   7. PATCH /api/contas/<id> { ativo?, perfil? } e POST /api/contas/<id>/senha
-      { senha } — só o gestor, na própria empresa, nunca na própria conta.
-   8. Dados de exemplo (ver DEMO e popularExemplos), senha 1234 em todas:
-      gestores Murilo e João Pedro (donos do projeto), analistas Carlos e
-      Beatriz, colaboradores João Silva e Maria, e histórico de chamados.
-      A senha 1234 só existe na demonstração (contas novas: mínimo 6).
-   9. Usuario ganha "foto" (URL https). Sem foto, o front mostra o ícone do cargo.
+   O backend Python (pasta backend/) tem as mesmas rotas e regras. O que mudar
+   aqui precisa mudar lá também (e o contrário): rotas, mensagens de erro,
+   códigos HTTP e os dados de demonstração (senha 1234 em todas as contas).
    ========================================================= */
 
 (function () {

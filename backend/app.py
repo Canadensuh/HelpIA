@@ -1,30 +1,38 @@
+"""HelpIA — servidor Flask (API + o site do frontend).
+
+As rotas aqui são as mesmas que o simulador do frontend (js/simulador.js)
+imita: com o backend no ar, o front fala com /api e o simulador fica
+desligado. Cada rota só lê o pedido, chama a camada de aplicação e devolve
+JSON; as regras ficam em backend/aplicacao e backend/dominio.
+"""
+from __future__ import annotations
+
 import os
 import secrets
 from pathlib import Path
 
-from flask import Flask, jsonify, request
+from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
+from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 
-from backend.aplicacao.servico_chamado import ChamadoNaoEncontrado, ServicoChamado
-from backend.aplicacao.servico_conta import (
-    AcessoNegado,
-    CredenciaisInvalidas,
-    EmailJaCadastrado,
-    LimiteDoPlano,
-    ServicoConta,
-)
-from backend.aplicacao.servico_notificacao import mensagem_confirmacao
-from backend.dominio.chamado import DescricaoInsuficiente
-from backend.dominio.usuario import PLANOS, DadosInvalidos
-from backend.persistencia.repositorio_chamado import RepositorioChamadoMemoria
-from backend.persistencia.repositorio_usuario import RepositorioUsuarioMemoria
+from backend.aplicacao.servico_anexos import LIMITE_ARQUIVO, ServicoAnexos
+from backend.aplicacao.servico_chamado import ServicoChamado
+from backend.aplicacao.servico_chat import ServicoChat
+from backend.aplicacao.servico_conta import ServicoConta
+from backend.aplicacao.servico_metas import ServicoMetas
+from backend.aplicacao.servico_simulacao import ServicoSimulacao
+from backend.dominio.erros import ErroHelpIA, NaoAutenticado
+from backend.dominio.usuario import PLANOS
+from backend.persistencia.banco import BancoMemoria
 
 PASTA_FRONTEND = Path(__file__).resolve().parent.parent / "frontend"
+VERSAO = "2.0"
 
 
 def criar_app(com_exemplos: bool = True, chave_secreta: str | None = None) -> Flask:
     app = Flask(__name__, static_folder=str(PASTA_FRONTEND), static_url_path="")
     app.json.ensure_ascii = False
+    app.config["MAX_CONTENT_LENGTH"] = LIMITE_ARQUIVO + 1024 * 1024   # anexo + folga do formulário
 
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
@@ -32,132 +40,229 @@ def criar_app(com_exemplos: bool = True, chave_secreta: str | None = None) -> Fl
     # reiniciar, assim como os dados em memória). Em produção, defina a variável.
     chave = chave_secreta or os.environ.get("HELPIA_SECRET_KEY") or secrets.token_hex(32)
 
-    servico = ServicoChamado(RepositorioChamadoMemoria())
-    contas = ServicoConta(RepositorioUsuarioMemoria(), chave)
+    banco = BancoMemoria()
+    contas = ServicoConta(banco, chave)
+    chat = ServicoChat(banco)
+    chamados = ServicoChamado(banco, chat)
+    metas = ServicoMetas(banco, chat)
+    simulacao = ServicoSimulacao(banco, contas, chat, metas)
+    anexos = ServicoAnexos(banco)
 
     if com_exemplos:
-        servico.popular_exemplos()
-        contas.popular_exemplos()
+        simulacao.popular_exemplos()
 
-    def usuario_logado():
+    # Deixa os serviços à mão para os testes
+    app.extensions["helpia"] = {"banco": banco, "contas": contas, "chat": chat, "chamados": chamados,
+                                "metas": metas, "simulacao": simulacao, "anexos": anexos}
+
+    def dados() -> dict:
+        corpo = request.get_json(silent=True)
+        return corpo if isinstance(corpo, dict) else {}
+
+    def logado():
         cabecalho = request.headers.get("Authorization", "")
         if not cabecalho.startswith("Bearer "):
-            raise CredenciaisInvalidas("Faça login para continuar.")
+            raise NaoAutenticado("Faça login para continuar.")
         return contas.usuario_do_token(cabecalho.removeprefix("Bearer ").strip())
 
+    # ---------- Site ----------
     @app.get("/")
     def inicio():
         return app.send_static_file("index.html")
 
     @app.get("/api/status")
     def status():
-        return jsonify({"sistema": "HelpIA", "status": "online", "versao": "1.1"})
+        return jsonify({"sistema": "HelpIA", "status": "online", "versao": VERSAO})
 
-    # ---------- Planos, contratação e contas ----------
+    # ---------- Planos, contratação e login ----------
     @app.get("/api/planos")
     def listar_planos():
-        return jsonify([{"id": chave_plano, **dados} for chave_plano, dados in PLANOS.items()])
+        return jsonify([{"id": id_plano, **plano} for id_plano, plano in PLANOS.items()])
 
     @app.post("/api/empresas")
     def contratar():
-        dados = request.get_json(silent=True) or {}
-        empresa = dados.get("empresa") or {}
-        responsavel = dados.get("responsavel") or {}
-        sessao = contas.contratar(
-            plano=dados.get("plano", ""),
-            nome_empresa=empresa.get("nome", ""),
-            cnpj=empresa.get("cnpj", ""),
-            nome_responsavel=responsavel.get("nome", ""),
-            email=responsavel.get("email", ""),
-            senha=responsavel.get("senha", ""),
-        )
-        return jsonify(sessao), 201
+        corpo = dados()
+        return jsonify(contas.contratar(corpo.get("plano", ""), corpo.get("empresa") or {}, corpo.get("responsavel") or {})), 201
 
     @app.post("/api/auth/login")
     def login():
-        dados = request.get_json(silent=True) or {}
-        sessao = contas.autenticar(dados.get("email", ""), dados.get("senha", ""), dados.get("perfil"))
-        return jsonify(sessao)
+        corpo = dados()
+        return jsonify(contas.autenticar(corpo.get("email", ""), corpo.get("senha", ""), corpo.get("perfil")))
 
     @app.get("/api/auth/eu")
     def eu():
-        return jsonify(contas.perfil_publico(usuario_logado()))
+        return jsonify(contas.perfil_publico(logado()))
 
+    @app.post("/api/auth/senha")
+    def trocar_senha():
+        corpo = dados()
+        contas.trocar_propria_senha(logado(), corpo.get("atual", ""), corpo.get("nova", ""))
+        return jsonify({"ok": True})
+
+    # ---------- Contas da equipe (gestor) ----------
     @app.get("/api/contas")
     def listar_contas():
-        return jsonify([u.to_dict() for u in contas.listar_contas(usuario_logado())])
+        return jsonify([u.to_dict() for u in contas.listar_contas(logado())])
 
     @app.post("/api/contas")
     def criar_conta():
-        gestor = usuario_logado()
-        dados = request.get_json(silent=True) or {}
-        usuario = contas.criar_conta(
-            gestor,
-            nome=dados.get("nome", ""),
-            email=dados.get("email", ""),
-            perfil=dados.get("perfil", ""),
-            senha=dados.get("senha", ""),
-        )
+        corpo = dados()
+        usuario = contas.criar_conta(logado(), corpo.get("nome", ""), corpo.get("email", ""),
+                                     corpo.get("perfil", ""), corpo.get("senha", ""))
         return jsonify(usuario.to_dict()), 201
 
-    # ---------- Chamados ----------
+    @app.patch("/api/contas/<int:id_conta>")
+    def atualizar_conta(id_conta):
+        return jsonify(contas.atualizar_conta(logado(), id_conta, dados()).to_dict())
+
+    @app.post("/api/contas/<int:id_conta>/senha")
+    def redefinir_senha(id_conta):
+        return jsonify(contas.redefinir_senha(logado(), id_conta, dados().get("senha", "")).to_dict())
+
+    # ---------- Chamados (tickets) ----------
     @app.get("/api/chamados")
     def listar_chamados():
-        chamados = servico.listar(
-            status=request.args.get("status"),
-            solicitante=request.args.get("solicitante"),
-        )
-        return jsonify([c.to_dict() for c in chamados])
+        lista = chamados.listar(logado(), request.args.get("status"), request.args.get("solicitante"))
+        return jsonify([c.to_dict() for c in lista])
 
     @app.post("/api/chamados")
     def abrir_chamado():
-        dados = request.get_json(silent=True) or {}
-        try:
-            chamado = servico.abrir(dados.get("descricao", ""), dados.get("solicitante", ""))
-        except DescricaoInsuficiente as erro:
-            return jsonify({"precisa_complemento": True, "mensagem": str(erro)}), 422
-        return jsonify({"chamado": chamado.to_dict(), "mensagem": mensagem_confirmacao(chamado)}), 201
+        return jsonify(chamados.abrir(logado(), dados())), 201
 
     @app.get("/api/chamados/<int:numero>")
     def obter_chamado(numero):
-        return jsonify(servico.obter(numero).to_dict())
+        return jsonify(chamados.obter(logado(), numero).to_dict())
+
+    @app.patch("/api/chamados/<int:numero>")
+    def mudar_prioridade(numero):
+        return jsonify(chamados.mudar_prioridade(logado(), numero, dados()).to_dict())
+
+    @app.delete("/api/chamados/<int:numero>")
+    def excluir_chamado(numero):
+        return jsonify(chamados.excluir(logado(), numero))
+
+    @app.post("/api/chamados/<int:numero>/ocultar")
+    def ocultar_chamado(numero):
+        return jsonify(chamados.ocultar(logado(), numero).to_dict())
 
     @app.post("/api/chamados/<int:numero>/assumir")
     def assumir_chamado(numero):
-        dados = request.get_json(silent=True) or {}
-        return jsonify(servico.assumir(numero, dados.get("analista", "")).to_dict())
+        return jsonify(chamados.assumir(logado(), numero).to_dict())
 
     @app.post("/api/chamados/<int:numero>/resolver")
     def resolver_chamado(numero):
-        return jsonify(servico.resolver(numero).to_dict())
+        return jsonify(chamados.resolver(logado(), numero, dados().get("nota", "")).to_dict())
+
+    @app.post("/api/chamados/<int:numero>/atribuir")
+    def atribuir_chamado(numero):
+        return jsonify(chamados.atribuir(logado(), numero, dados().get("analista_id")).to_dict())
+
+    # ---------- HelpIA Chat ----------
+    @app.get("/api/chat/conversas")
+    def listar_conversas():
+        return jsonify(chat.listar_conversas(logado()))
+
+    @app.post("/api/chat/conversas")
+    def abrir_conversa():
+        usuario = logado()
+        corpo = dados()
+        try:
+            com = int(corpo.get("com"))
+        except (TypeError, ValueError):
+            com = 0
+        ticket = int(corpo["ticket"]) if corpo.get("ticket") else None
+        return jsonify(chat.conversa_dict(chat.abrir_direta(usuario, com, ticket), usuario)), 201
+
+    @app.patch("/api/chat/conversas/<int:id_conversa>")
+    def atualizar_conversa(id_conversa):
+        return jsonify(chat.atualizar(logado(), id_conversa, dados()))
+
+    @app.get("/api/chat/nao-lidas")
+    def nao_lidas():
+        return jsonify({"total": chat.nao_lidas(logado())})
+
+    @app.get("/api/chat/contatos")
+    def contatos_chat():
+        return jsonify(chat.contatos(logado()))
+
+    @app.get("/api/chat/conversas/<int:id_conversa>/mensagens")
+    def mensagens(id_conversa):
+        return jsonify(chat.mensagens(logado(), id_conversa))
+
+    @app.post("/api/chat/conversas/<int:id_conversa>/mensagens")
+    def enviar_mensagem(id_conversa):
+        return jsonify(chat.enviar(logado(), id_conversa, dados())), 201
+
+    @app.delete("/api/chat/conversas/<int:id_conversa>/mensagens")
+    def limpar_conversa(id_conversa):
+        chat.limpar(logado(), id_conversa)
+        return jsonify({"ok": True})
+
+    @app.post("/api/chat/conversas/<int:id_conversa>/lida")
+    def marcar_lida(id_conversa):
+        chat.marcar_lida(logado(), id_conversa)
+        return jsonify({"ok": True})
+
+    # ---------- Anexos do chat ----------
+    @app.post("/api/anexos")
+    def enviar_anexo():
+        usuario = logado()
+        arquivo = request.files.get("arquivo")
+        if arquivo is None:
+            return jsonify({"erro": "Escolha um arquivo para anexar."}), 422
+        meta = anexos.salvar(usuario, arquivo.filename or "", arquivo.mimetype or "", arquivo.read())
+        return jsonify(meta), 201
+
+    @app.get("/api/anexos/<id_anexo>")
+    def baixar_anexo(id_anexo):
+        anexo = anexos.obter(logado(), id_anexo)
+        return Response(anexo["dados"], mimetype=anexo["tipo"],
+                        headers={"Cache-Control": "private, max-age=86400"})
+
+    # ---------- Metas ----------
+    @app.get("/api/metas")
+    def ver_metas():
+        return jsonify(metas.ver(logado()))
+
+    @app.patch("/api/metas")
+    def salvar_metas():
+        return jsonify(metas.salvar(logado(), dados()))
+
+    @app.post("/api/metas/motivacionais")
+    def adicionar_motivacional():
+        return jsonify(metas.adicionar_motivacional(logado(), dados().get("texto", ""))), 201
+
+    @app.delete("/api/metas/motivacionais/<int:id_mensagem>")
+    def remover_motivacional(id_mensagem):
+        return jsonify(metas.remover_motivacional(logado(), id_mensagem))
+
+    # ---------- Modo simulação e Limpar dados (gestor) ----------
+    @app.get("/api/simulacao")
+    def estado_simulacao():
+        return jsonify(simulacao.estado(logado()))
+
+    @app.post("/api/simulacao")
+    def definir_simulacao():
+        return jsonify(simulacao.definir(logado(), dados().get("ativo")))
+
+    @app.post("/api/simulacao/limpar")
+    def limpar_dados():
+        return jsonify(simulacao.limpar(logado()))
 
     # ---------- Erros ----------
-    # O Flask escolhe o tratador da classe mais específica, então as
-    # subclasses de ValueError abaixo não caem no 409 genérico.
-    @app.errorhandler(ChamadoNaoEncontrado)
-    def nao_encontrado(erro):
-        return jsonify({"erro": str(erro)}), 404
+    @app.errorhandler(ErroHelpIA)
+    def erro_de_regra(erro: ErroHelpIA):
+        return jsonify({"erro": erro.mensagem, **erro.extra}), erro.status
 
-    @app.errorhandler(CredenciaisInvalidas)
-    def nao_autenticado(erro):
-        return jsonify({"erro": str(erro)}), 401
+    @app.errorhandler(RequestEntityTooLarge)
+    def arquivo_grande(_erro):
+        return jsonify({"erro": "O arquivo passa de 25 MB."}), 413
 
-    @app.errorhandler(AcessoNegado)
-    def sem_permissao(erro):
-        return jsonify({"erro": str(erro)}), 403
-
-    @app.errorhandler(EmailJaCadastrado)
-    @app.errorhandler(LimiteDoPlano)
-    def conflito_conta(erro):
-        return jsonify({"erro": str(erro)}), 409
-
-    @app.errorhandler(DadosInvalidos)
-    def dados_invalidos(erro):
-        return jsonify({"erro": str(erro)}), 422
-
-    @app.errorhandler(ValueError)
-    def transicao_invalida(erro):
-        return jsonify({"erro": str(erro)}), 409
+    @app.errorhandler(HTTPException)
+    def erro_http(erro: HTTPException):
+        if request.path.startswith("/api/"):
+            return jsonify({"erro": erro.description or erro.name}), erro.code
+        return erro
 
     return app
 

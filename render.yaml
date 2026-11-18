@@ -1,0 +1,17 @@
+# Deploy do HelpIA no Render (Blueprint).
+# O Flask serve a API (/api) e o site (pasta frontend/) no mesmo endereço.
+# Os dados ficam em memória: é preciso UM processo só (--workers 1),
+# senão cada processo teria os seus próprios tickets e contas.
+services:
+  - type: web
+    name: helpia
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --workers 1 --threads 1 --timeout 120 --bind 0.0.0.0:$PORT backend.app:app
+    healthCheckPath: /api/status
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: HELPIA_SECRET_KEY
+        generateValue: true

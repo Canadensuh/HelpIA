@@ -1,11 +1,12 @@
 /* =========================================================
    anexos.js — anexos do HelpIA Chat (documentos, prints,
    imagens, vídeos, áudios…)
-   No modo simulação os arquivos ficam no IndexedDB do navegador
-   (compartilhado entre as abas, então o analista e o colaborador
-   abertos em abas diferentes veem os mesmos anexos). A mensagem
-   guarda só { id, nome, tipo, tamanho }. Com o backend, o
-   salvar() vira um upload e o url() aponta para o servidor.
+   - Com o backend: o arquivo é enviado para /api/anexos e qualquer
+     pessoa da empresa abre (o colaborador manda a foto do celular e o
+     analista vê no computador).
+   - No modo simulação: os arquivos ficam no IndexedDB do navegador
+     (compartilhado entre as abas do mesmo navegador).
+   A mensagem guarda só { id, nome, tipo, tamanho }.
    ========================================================= */
 
 const Anexos = {
@@ -36,19 +37,43 @@ const Anexos = {
     });
   },
 
+  /** Com o backend no ar, os arquivos vão para o servidor (todos da empresa veem). */
+  _noServidor() { return !window.Simulador?.ativo; },
+  _cabecalhos() {
+    const token = window.Sessao?.token();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  },
+
   /** Guarda o arquivo e devolve os dados que vão na mensagem. */
   async salvar(arquivo) {
     if (arquivo.size > this.LIMITE) throw new Error(`“${arquivo.name}” passa de ${this.tamanho(this.LIMITE)}.`);
+    const nome = arquivo.name || `print-${new Date().toLocaleTimeString('pt-BR').replace(/:/g, '-')}.png`;
+    if (this._noServidor()) {
+      const formulario = new FormData();
+      formulario.append('arquivo', arquivo, nome);
+      const resposta = await fetch(`${CONFIG.API_BASE_URL}/anexos`, { method: 'POST', headers: this._cabecalhos(), body: formulario });
+      const dados = await resposta.json().catch(() => ({}));
+      if (!resposta.ok) throw new Error(dados.erro || `Não foi possível enviar “${nome}”.`);
+      return dados;
+    }
     const id = `a${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
     await this._operar('readwrite', (loja) => loja.put(arquivo, id));
-    const nome = arquivo.name || `print-${new Date().toLocaleTimeString('pt-BR').replace(/:/g, '-')}.png`;
     return { id, nome, tipo: arquivo.type || 'application/octet-stream', tamanho: arquivo.size };
   },
 
   /** Endereço local (blob:) para mostrar ou baixar o anexo. */
   async url(id) {
     if (this._urls.has(id)) return this._urls.get(id);
-    const arquivo = await this._operar('readonly', (loja) => loja.get(id));
+    let arquivo = null;
+    if (this._noServidor()) {
+      // O <img> não manda o token: baixa com o cabeçalho e mostra como blob
+      try {
+        const resposta = await fetch(`${CONFIG.API_BASE_URL}/anexos/${encodeURIComponent(id)}`, { headers: this._cabecalhos() });
+        if (resposta.ok) arquivo = await resposta.blob();
+      } catch { arquivo = null; }
+    } else {
+      arquivo = await this._operar('readonly', (loja) => loja.get(id));
+    }
     if (!arquivo) return null;
     const url = URL.createObjectURL(arquivo);
     this._urls.set(id, url);
@@ -94,7 +119,7 @@ const Anexos = {
   async hidratar(raiz) {
     for (const el of raiz.querySelectorAll('[data-anexo-src]:not([src])')) {
       const url = await this.url(el.dataset.anexoSrc);
-      if (url) el.src = url; else el.replaceWith(Object.assign(document.createElement('span'), { className: 'anexo-sumiu', textContent: 'Anexo indisponível neste navegador' }));
+      if (url) el.src = url; else el.replaceWith(Object.assign(document.createElement('span'), { className: 'anexo-sumiu', textContent: 'Anexo indisponível' }));
     }
     for (const el of raiz.querySelectorAll('[data-anexo-baixar][href="#"]')) {
       const url = await this.url(el.dataset.anexoBaixar);

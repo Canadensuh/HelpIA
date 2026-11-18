@@ -1,24 +1,27 @@
-"""Camada de Domínio — usuários do portal, empresas clientes e planos.
+"""Camada de Domínio — empresas clientes, planos e usuários.
 
 Perfis:
-- colaborador: abre chamados pelo HelpBot e acompanha o andamento.
-- analista: atende a fila de chamados no painel.
-- gestor: responsável pela empresa contratante; acessa o painel e cria as
-  contas de analistas e colaboradores (dentro do limite do plano).
+- colaborador: abre chamados com o Helpy e acompanha o andamento.
+- analista: atende a fila na mesa de atendimento.
+- gestor: responsável pela empresa; acompanha o painel, define metas e
+  emite os crachás (contas) da equipe, dentro do limite do plano.
 """
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass, field
-from datetime import datetime
 
 from werkzeug.security import check_password_hash, generate_password_hash
+
+from backend.dominio.erros import DadosInvalidos
+from backend.dominio.relogio import agora
 
 COLABORADOR = "colaborador"
 ANALISTA = "analista"
 GESTOR = "gestor"
 PERFIS = (COLABORADOR, ANALISTA, GESTOR)
-PERFIS_CRIAVEIS = (COLABORADOR, ANALISTA)   # o gestor cria contas destes perfis
+PERFIS_CRIAVEIS = (COLABORADOR, ANALISTA, GESTOR)   # o gestor também pode nomear outro gestor
 
 MIN_SENHA = 6
 _EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -31,23 +34,15 @@ PLANOS = {
 }
 
 
-class DadosInvalidos(ValueError):
-    """Dados de cadastro ou de login fora das regras."""
-
-
-def agora() -> str:
-    return datetime.now().isoformat(timespec="seconds")
-
-
 def validar_nome(nome: str, campo: str = "Nome") -> str:
-    nome = " ".join((nome or "").split())
+    nome = " ".join(str(nome or "").split())
     if len(nome) < 2:
         raise DadosInvalidos(f"{campo} deve ter pelo menos 2 caracteres.")
     return nome[:80]
 
 
 def validar_email(email: str) -> str:
-    email = (email or "").strip().lower()
+    email = str(email or "").strip().lower()
     if not _EMAIL.match(email):
         raise DadosInvalidos("Informe um e-mail válido.")
     return email
@@ -60,10 +55,16 @@ def validar_senha(senha: str) -> str:
 
 
 def validar_plano(plano: str) -> str:
-    plano = (plano or "").strip().lower()
+    plano = str(plano or "").strip().lower()
     if plano not in PLANOS:
         raise DadosInvalidos("Escolha um dos planos disponíveis.")
     return plano
+
+
+def chave_email(email: str) -> str:
+    """E-mail comparado sem caixa e sem acento: "JoãoPM@…" e "joaopm@…" são a mesma conta."""
+    texto = unicodedata.normalize("NFD", str(email or "").strip().lower())
+    return "".join(c for c in texto if not unicodedata.combining(c))
 
 
 @dataclass
@@ -72,6 +73,7 @@ class Empresa:
     nome: str
     plano: str
     cnpj: str = ""
+    simulacao: bool = False          # Modo simulação ligado pelo gestor
     criada_em: str = field(default_factory=agora)
 
     @property
@@ -96,10 +98,14 @@ class Usuario:
     perfil: str
     empresa_id: int
     senha_hash: str = field(repr=False)
+    ativo: bool = True
+    foto: str | None = None          # URL https (ex.: foto do GitHub); sem foto, o front mostra o ícone do cargo
+    trocar_senha: bool = False
     criado_em: str = field(default_factory=agora)
 
     @classmethod
-    def criar(cls, id: int, nome: str, email: str, perfil: str, empresa_id: int, senha: str) -> "Usuario":
+    def criar(cls, id: int, nome: str, email: str, perfil: str, empresa_id: int,
+              senha: str, criado_em: str | None = None) -> "Usuario":
         if perfil not in PERFIS:
             raise DadosInvalidos("Perfil inválido.")
         return cls(
@@ -109,26 +115,26 @@ class Usuario:
             perfil=perfil,
             empresa_id=empresa_id,
             senha_hash=generate_password_hash(validar_senha(senha)),
+            criado_em=criado_em or agora(),
         )
+
+    def definir_senha(self, senha: str) -> None:
+        self.senha_hash = generate_password_hash(senha)
 
     def confere_senha(self, senha: str) -> bool:
         return check_password_hash(self.senha_hash, senha or "")
 
     @property
-    def acessa_painel(self) -> bool:
+    def eh_equipe(self) -> bool:
+        """Analistas e gestores: a equipe de TI."""
         return self.perfil in (ANALISTA, GESTOR)
 
-    @property
-    def pode_criar_contas(self) -> bool:
-        return self.perfil == GESTOR
-
     def entra_como(self, area: str) -> bool:
-        """A tela de login tem duas áreas: 'colaborador' e 'analista'.
-        O gestor entra pela área do analista."""
+        """A tela de login tem as áreas 'colaborador' e 'analista'; o gestor entra pela do analista."""
         if area == COLABORADOR:
             return self.perfil == COLABORADOR
         if area == ANALISTA:
-            return self.acessa_painel
+            return self.eh_equipe
         return False
 
     def to_dict(self) -> dict:
@@ -138,5 +144,12 @@ class Usuario:
             "email": self.email,
             "perfil": self.perfil,
             "empresa_id": self.empresa_id,
+            "ativo": self.ativo,
             "criado_em": self.criado_em,
+            "trocar_senha": self.trocar_senha,
+            "foto": self.foto,
         }
+
+    def resumo(self) -> dict:
+        """Como a pessoa aparece no chat (participantes)."""
+        return {"id": self.id, "nome": self.nome, "perfil": self.perfil, "foto": self.foto}
