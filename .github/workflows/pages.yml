@@ -1,10 +1,13 @@
 name: Deploy Frontend to GitHub Pages
 
+# Branch "github-pages" = plano B da apresentação: só o frontend, com o
+# simulador (js/simulador.js) no lugar do backend. Não precisa de API.
 on:
   push:
-    branches: [main]
+    branches: [github-pages]
     paths:
       - 'frontend/**'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -22,15 +25,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Inject API URL into api.js
-        run: |
-          sed -i "s|__API_BASE_URL__|${{ secrets.API_BASE_URL }}|g" frontend/js/api.js
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

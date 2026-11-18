@@ -54,7 +54,9 @@
 
   const pref = lerPref();
   const local = ['localhost', '127.0.0.1'].includes(location.hostname) || location.protocol === 'file:';
-  const ativo = pref === 'on' || (pref !== 'off' && local && location.port !== '5000');
+  // Plano B: no GitHub Pages não tem backend, então o site roda sempre com o simulador
+  const githubPages = location.hostname.endsWith('github.io');
+  const ativo = githubPages || pref === 'on' || (pref !== 'off' && local && location.port !== '5000');
 
   if (!ativo) {
     window.Simulador = { ativo: false };
