@@ -36,9 +36,9 @@ function mostrarAviso(texto, tipo = 'erro') {
 /** Só aceita voltar para páginas internas conhecidas (evita redirecionamento aberto). */
 function destinoDepoisDoLogin(usuario) {
   const permitidas = {
-    colaborador: ['chat.html'],
-    analista: ['painel.html'],
-    gestor: ['painel.html', 'criar-conta.html'],
+    colaborador: ['chat.html', 'conversas.html', 'historico.html'],
+    analista: ['painel.html', 'metas.html', 'conversas.html', 'tickets.html', 'historico.html'],
+    gestor: ['controle.html', 'criar-conta.html', 'metas.html', 'conversas.html', 'tickets.html', 'historico.html', 'painel.html'],
   };
   const volta = params.get('volta');
   return volta && (permitidas[usuario.perfil] || []).includes(volta) ? volta : Sessao.destino(usuario);

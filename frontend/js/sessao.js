@@ -37,7 +37,7 @@ const Sessao = {
 
   /** Tela inicial de cada perfil depois do login. */
   destino(usuario) {
-    return { colaborador: 'chat.html', analista: 'painel.html', gestor: 'criar-conta.html' }[usuario.perfil] || 'login.html';
+    return { colaborador: 'chat.html', analista: 'painel.html', gestor: 'controle.html' }[usuario.perfil] || 'login.html';
   },
 
   /**
@@ -89,6 +89,8 @@ const Sessao = {
     document.querySelectorAll('[data-acao="sair"]').forEach((botao) => {
       botao.addEventListener('click', () => this.sair());
     });
+    document.querySelectorAll('[data-inicio]').forEach((link) => { link.href = this.destino(usuario); });
+    window.Navegacao?.montar(usuario);          // trilho lateral com as abas (js/navegacao.js)
   },
 };
 

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HelpIA — Histórico de Tickets</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/simbolos.css" />
+  <link rel="stylesheet" href="css/icones.css" />
+  <link rel="stylesheet" href="css/helpy.css" />
+  <link rel="stylesheet" href="css/painel.css" />
+  <link rel="stylesheet" href="css/mesa.css" />
+  <link rel="stylesheet" href="css/paginas.css" />
+  <link rel="stylesheet" href="css/teclas.css" />
+  <link rel="stylesheet" href="css/papelaria.css" />
+</head>
+<body class="tela-mesa tela-pagina tela-historico">
+
+  <header class="mesa-topo">
+    <a href="index.html" class="brand" data-inicio><img src="assets/logo.svg" alt="" /><span class="brand-nome">Help<b>IA</b></span></a>
+    <div class="topbar-acoes">
+      <div class="usuario-menu">
+        <span class="usuario-avatar" data-usuario-iniciais aria-hidden="true"></span>
+        <span class="usuario-info"><strong data-usuario-nome></strong><span data-usuario-perfil></span></span>
+        <button type="button" class="btn-sair" data-acao="sair">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mesa pagina-cheia">
+    <header class="area-topo centro-topo">
+      <h2 id="tituloPagina"><i class="ic ic-arquivo" aria-hidden="true"></i> Histórico de Tickets <span class="contador" id="contador">0</span></h2>
+      <span class="pagina-sub" id="subtitulo"></span>
+    </header>
+    <section class="tampo pagina-tampo" aria-labelledby="tituloPagina">
+      <div class="filtros-barra">
+        <label class="busca-campo"><i class="ic ic-olho" aria-hidden="true"></i>
+          <input id="busca" class="input" type="search" placeholder="Buscar por #ID, pessoa ou problema…" autocomplete="off" /></label>
+        <select id="filtroAnalista" class="input" aria-label="Filtrar por analista"></select>
+        <select id="filtroSolicitante" class="input" aria-label="Filtrar por colaborador"></select>
+        <select id="filtroProblema" class="input" aria-label="Filtrar por problema"></select>
+        <div class="acao-lado acao-dir">
+          <button type="button" class="btn key--red" id="limparHistorico" hidden><i class="ic ic-x" aria-hidden="true"></i> Limpar histórico</button>
+        </div>
+      </div>
+      <div class="grade-rolagem"><ul class="lista-tickets desktop-tickets" id="lista"></ul></div>
+    </section>
+  </main>
+
+  <dialog class="modal modal-confirmar" id="modalLimpar">
+    <form method="dialog" class="modal-conteudo">
+      <header class="modal-topo"><h2>Limpar o histórico?</h2>
+        <button type="submit" value="cancelar" class="btn btn-ghost btn-sm" aria-label="Fechar"><i class="ic ic-x" aria-hidden="true"></i></button></header>
+      <p id="textoLimpar"></p>
+      <p class="aviso aviso-erro" id="erroLimpar" hidden></p>
+      <div class="modal-acoes">
+        <button type="submit" value="cancelar" class="btn">Manter</button>
+        <button type="button" class="btn key--red" id="confirmarLimpar"><i class="ic ic-x" aria-hidden="true"></i> Limpar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <p class="aviso-offline aviso-flutuante" id="avisoOffline" hidden></p>
+
+  <script src="js/catalogo.js"></script>
+  <script src="js/simulador.js"></script>
+  <script src="js/sessao.js"></script>
+  <script src="js/navegacao.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/helpy.js"></script>
+  <script src="js/ticket-ui.js"></script>
+  <script src="js/historico.js"></script>
+</body>
+</html>

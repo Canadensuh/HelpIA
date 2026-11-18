@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HelpIA — Painel de Controle</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/simbolos.css" />
+  <link rel="stylesheet" href="css/icones.css" />
+  <link rel="stylesheet" href="css/helpy.css" />
+  <link rel="stylesheet" href="css/painel.css" />
+  <link rel="stylesheet" href="css/mesa.css" />
+  <link rel="stylesheet" href="css/paginas.css" />
+  <link rel="stylesheet" href="css/teclas.css" />
+  <link rel="stylesheet" href="css/papelaria.css" />
+</head>
+<body class="tela-mesa tela-pagina tela-controle">
+
+  <header class="mesa-topo">
+    <a href="controle.html" class="brand"><img src="assets/logo.svg" alt="" /><span class="brand-nome">Help<b>IA</b></span></a>
+    <div class="topbar-acoes">
+      <div class="usuario-menu">
+        <span class="usuario-avatar" data-usuario-iniciais aria-hidden="true"></span>
+        <span class="usuario-info"><strong data-usuario-nome></strong><span data-usuario-perfil></span></span>
+        <button type="button" class="btn-sair" data-acao="sair">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mesa">
+    <!-- Centro: o dashboard (só visualização) -->
+    <section class="centro" aria-labelledby="tituloPainel">
+      <header class="area-topo centro-topo">
+        <h2 id="tituloPainel"><i class="ic ic-grafico" aria-hidden="true"></i> Painel de Controle</h2>
+        <span class="pagina-sub" id="subtitulo">Como a equipe está indo, em tempo real.</span>
+      </header>
+      <div class="tampo pagina-tampo">
+        <p class="aviso-offline" id="avisoOffline" hidden></p>
+        <div class="grade-rolagem">
+          <div class="painel-grade" id="painel"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Direita: o Helpy no escritório -->
+    <aside class="lateral">
+      <div class="helpy-mesa" id="helpyRaiz">
+        <div class="helpy-feed helpy-balao" id="helpyFeed" role="log" aria-live="polite"></div>
+        <div class="escritorio">
+          <div class="escritorio-parede">
+            <a class="quadro-aviso quadro-meta" href="metas.html" title="Editar a regra do dia e as metas">Regra do dia:<br><strong id="postItRegra">nenhuma</strong></a>
+          </div>
+          <div id="helpyAvatar"></div>
+          <div class="escritorio-mesinha" aria-hidden="true">
+            <div class="caneca"><span class="vapor"></span><span class="vapor"></span><span class="vapor"></span></div>
+          </div>
+          <button type="button" class="btn-config" id="botaoConfig" aria-label="Configurações do Helpy" aria-expanded="false" aria-controls="painelConfig" title="Configurações do Helpy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+        </div>
+        <div class="painel-config" id="painelConfig" role="dialog" aria-label="Configurações do Helpy" hidden>
+          <strong>Configurações do Helpy</strong>
+          <label class="config-opcao">
+            <input type="checkbox" id="configFoco" />
+            <span class="config-caixa" aria-hidden="true"><i class="ic ic-check" aria-hidden="true"></i></span>
+            <span>Focar no Helpy quando ele der um aviso importante <small>Desfoca o resto da tela por 3 segundos. Desmarcado, ele continua avisando sem desfocar.</small></span>
+          </label>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <div class="dica-grafico" id="dicaGrafico" role="tooltip" hidden></div>
+
+  <!-- Véu do foco no Helpy -->
+  <div class="foco-veu" id="focoVeu" aria-hidden="true"></div>
+
+  <script src="js/catalogo.js"></script>
+  <script src="js/simulador.js"></script>
+  <script src="js/sessao.js"></script>
+  <script src="js/navegacao.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/helpy.js"></script>
+  <script src="js/escritorio.js"></script>
+  <script src="js/ticket-ui.js"></script>
+  <script src="js/controle.js"></script>
+</body>
+</html>

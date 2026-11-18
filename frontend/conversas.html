@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HelpIA — HelpIA Chat</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/simbolos.css" />
+  <link rel="stylesheet" href="css/icones.css" />
+  <link rel="stylesheet" href="css/helpy.css" />
+  <link rel="stylesheet" href="css/painel.css" />
+  <link rel="stylesheet" href="css/mesa.css" />
+  <link rel="stylesheet" href="css/paginas.css" />
+  <link rel="stylesheet" href="css/teclas.css" />
+  <link rel="stylesheet" href="css/papelaria.css" />
+</head>
+<body class="tela-mesa tela-pagina tela-conversas">
+
+  <header class="mesa-topo">
+    <a href="index.html" class="brand" data-inicio><img src="assets/logo.svg" alt="" /><span class="brand-nome">Help<b>IA</b></span></a>
+    <div class="topbar-acoes">
+      <div class="usuario-menu">
+        <span class="usuario-avatar" data-usuario-iniciais aria-hidden="true"></span>
+        <span class="usuario-info"><strong data-usuario-nome></strong><span data-usuario-perfil></span></span>
+        <button type="button" class="btn-sair" data-acao="sair">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mesa">
+    <!-- Esquerda: conversas (grupo da equipe e diretas) -->
+    <section class="bandeja" aria-labelledby="tituloConversas">
+      <header class="area-topo">
+        <h2 id="tituloConversas"><i class="ic ic-chat" aria-hidden="true"></i> Conversas</h2>
+        <button type="button" class="btn btn-sm btn-primary" id="novaConversa" hidden><i class="ic ic-mais" aria-hidden="true"></i> Nova</button>
+      </header>
+      <div class="bandeja-fundo">
+        <ul class="lista-conversas" id="listaConversas"></ul>
+      </div>
+    </section>
+
+    <!-- Centro: a conversa aberta -->
+    <section class="centro" aria-labelledby="tituloConversa">
+      <header class="area-topo centro-topo">
+        <h2 id="tituloConversa"><i class="ic ic-chat" aria-hidden="true"></i> HelpIA Chat</h2>
+        <span class="pagina-sub" id="subConversa"></span>
+      </header>
+      <div class="tampo tampo-chat" id="tampoChat">
+        <ol class="mensagens" id="mensagens" aria-live="polite"></ol>
+        <form class="compositor" id="compositor" hidden>
+          <div class="compositor-anexo" id="anexo" hidden></div>
+          <ul class="compositor-arquivos" id="arquivosPendentes" aria-label="Arquivos para enviar" hidden></ul>
+          <div class="compositor-linha">
+            <button type="button" class="btn btn-mencionar" id="mencionar" title="Mencionar um ticket" aria-label="Mencionar um ticket">#</button>
+            <button type="button" class="btn btn-icone-chat" id="anexar" title="Anexar documentos, prints, imagens ou vídeos" aria-label="Anexar arquivos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg></button>
+            <button type="button" class="btn btn-icone-chat" id="abrirEmojis" title="Emojis" aria-label="Escolher um emoji" aria-expanded="false" aria-controls="painelEmojis"><span aria-hidden="true">😊</span></button>
+            <textarea id="texto" class="input" rows="1" maxlength="1000" placeholder="Escreva uma mensagem… (use #007 para mencionar um ticket)"></textarea>
+            <button type="submit" class="btn key--green" id="enviar"><i class="ic ic-enviar" aria-hidden="true"></i> Enviar</button>
+          </div>
+          <input type="file" id="arquivoInput" multiple hidden />
+          <div class="painel-emojis" id="painelEmojis" role="dialog" aria-label="Emojis" hidden></div>
+        </form>
+        <div class="soltar-aqui" id="soltarAqui" aria-hidden="true" hidden><span>📎 Solte aqui para anexar</span></div>
+      </div>
+    </section>
+
+    <!-- Direita: quem está na conversa e o ticket do assunto (o Helpy não participa dos chats) -->
+    <aside class="lateral lateral-chat" aria-label="Detalhes da conversa">
+      <div class="chat-detalhes" id="detalhes"></div>
+    </aside>
+  </main>
+
+  <dialog class="modal" id="modalNova">
+    <div class="modal-conteudo">
+      <header class="modal-topo"><h2><i class="ic ic-chat" aria-hidden="true"></i> Nova conversa</h2>
+        <button type="button" class="btn btn-ghost btn-sm" data-fechar aria-label="Fechar"><i class="ic ic-x" aria-hidden="true"></i></button></header>
+      <input class="input" id="buscaContato" type="search" placeholder="Buscar pessoa…" />
+      <div class="lista-contatos" id="listaContatos"></div>
+    </div>
+  </dialog>
+
+  <dialog class="modal modal-imagem" id="modalImagem">
+    <div class="modal-conteudo">
+      <header class="modal-topo"><h2 id="tituloImagem">Imagem</h2>
+        <div class="modal-topo-acoes">
+          <a class="btn btn-sm" id="baixarImagem" download><i class="ic ic-seta-baixo" aria-hidden="true"></i> Baixar</a>
+          <button type="button" class="btn btn-ghost btn-sm" data-fechar aria-label="Fechar"><i class="ic ic-x" aria-hidden="true"></i></button>
+        </div></header>
+      <img id="imagemGrande" alt="" />
+    </div>
+  </dialog>
+
+  <dialog class="modal" id="modalMencionar">
+    <div class="modal-conteudo">
+      <header class="modal-topo"><h2>Mencionar um ticket</h2>
+        <button type="button" class="btn btn-ghost btn-sm" data-fechar aria-label="Fechar"><i class="ic ic-x" aria-hidden="true"></i></button></header>
+      <input class="input" id="buscaMencao" type="search" placeholder="Buscar por #ID, pessoa ou problema…" />
+      <ul class="lista-tickets lista-mencao" id="listaMencao"></ul>
+    </div>
+  </dialog>
+
+  <p class="aviso-offline aviso-flutuante" id="avisoOffline" hidden></p>
+
+  <script src="js/catalogo.js"></script>
+  <script src="js/simulador.js"></script>
+  <script src="js/sessao.js"></script>
+  <script src="js/navegacao.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/helpy.js"></script>
+  <script src="js/ticket-ui.js"></script>
+  <script src="js/anexos.js"></script>
+  <script src="js/conversas.js"></script>
+</body>
+</html>

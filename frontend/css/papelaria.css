@@ -10,7 +10,7 @@
    :where() = especificidade zero, então as regras próprias de cada
    componente (cores de destaque, estados) continuam valendo. */
 :where(
-  .card, .cartao, .opcao, .tk, .tkm, .meu, .gaveta, .modal, .toast,
+  .card, .cartao, .opcao, .tk, .tkm, .tkp, .meu, .gaveta, .modal, .toast,
   .helpy-msg, .cracha, .kpi, .demo-conta, .plano-opcao label, .tampo,
   .camada, .credencial, .nota-papel
 ) {

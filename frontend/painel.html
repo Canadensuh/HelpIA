@@ -10,40 +10,19 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@400;500;600;700;800&display=swap" />
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/simbolos.css" />
-  <script src="js/tema.js"></script>
   <link rel="stylesheet" href="css/icones.css" />
   <link rel="stylesheet" href="css/helpy.css" />
   <link rel="stylesheet" href="css/painel.css" />
+  <link rel="stylesheet" href="css/mesa.css" />
+  <link rel="stylesheet" href="css/paginas.css" />
   <link rel="stylesheet" href="css/teclas.css" />
   <link rel="stylesheet" href="css/papelaria.css" />
 </head>
-<body class="tela-mesa">
+<body class="tela-mesa tela-analista tela-retratil">
 
   <header class="mesa-topo">
-    <a href="painel.html" class="brand"><img src="assets/logo.svg" alt="" />Help<b>IA</b></a>
-    <nav class="nav" aria-label="Navegação">
-      <a href="painel.html" class="ativo">Minha mesa</a>
-      <a href="criar-conta.html" data-somente="gestor" hidden>Centro de comando</a>
-    </nav>
-
-    <div class="placar" aria-label="Seu placar de hoje">
-      <div class="placar-item"><span class="placar-valor" id="placarFila">0</span><span class="placar-rotulo">na bandeja</span></div>
-      <div class="placar-item"><span class="placar-valor" id="placarMaos">0</span><span class="placar-rotulo">na mesa</span></div>
-      <div class="placar-item placar-destaque"><span class="placar-valor" id="placarHoje">0</span><span class="placar-rotulo">resolvidos hoje</span></div>
-      <button type="button" class="placar-meta" id="placarMeta" title="Clique para mudar a meta do dia">
-        <svg viewBox="0 0 36 36" class="anel" aria-hidden="true">
-          <circle class="anel-fundo" cx="18" cy="18" r="15.5"/>
-          <circle class="anel-progresso" id="anelMeta" cx="18" cy="18" r="15.5" pathLength="100"/>
-        </svg>
-        <span class="placar-meta-texto"><strong id="metaTexto">0/5</strong><small>meta do dia</small></span>
-      </button>
-    </div>
-
+    <a href="painel.html" class="brand"><img src="assets/logo.svg" alt="" /><span class="brand-nome">Help<b>IA</b></span></a>
     <div class="topbar-acoes">
-      <button type="button" class="btn-tema" aria-label="Alternar tema">
-        <svg class="icone-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-        <svg class="icone-lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
       <div class="usuario-menu">
         <span class="usuario-avatar" data-usuario-iniciais aria-hidden="true"></span>
         <span class="usuario-info"><strong data-usuario-nome></strong><span data-usuario-perfil></span></span>
@@ -53,46 +32,82 @@
   </header>
 
   <main class="mesa">
-    <!-- Bandeja de entrada -->
-    <section class="bandeja" aria-labelledby="tituloBandeja">
+    <!-- Esquerda: bandeja de entrada (tickets chegando). Começa recolhida: só a alça -->
+    <section class="bandeja coluna-retratil" aria-labelledby="tituloBandeja">
+      <button type="button" class="coluna-alca" id="alcaBandeja" data-alternar-coluna aria-expanded="false" aria-controls="painelBandeja" title="Abrir a bandeja de entrada">
+        <span class="alca-seta" aria-hidden="true">›</span>
+        <i class="ic ic-entrada" aria-hidden="true"></i>
+        <span class="alca-rotulo">Bandeja de entrada</span>
+        <span class="contador" id="contadorAlca">0</span>
+      </button>
       <header class="area-topo">
-        <h2 id="tituloBandeja"><i class="ic ic-entrada" aria-hidden="true"></i> Bandeja de entrada</h2>
-        <span class="contador" id="contadorBandeja">0</span>
+        <h2 id="tituloBandeja"><i class="ic ic-entrada" aria-hidden="true"></i> Bandeja de entrada <span class="contador" id="contadorBandeja">0</span></h2>
+        <a class="btn btn-sm btn-ver-tudo" href="tickets.html" title="Ver todos os tickets em aberto em tela cheia"><i class="ic ic-janela" aria-hidden="true"></i> Exibir tudo</a>
+        <button type="button" class="btn btn-sm btn-recolher" data-alternar-coluna aria-label="Recolher a bandeja" title="Recolher a bandeja">‹</button>
       </header>
-      <div class="bandeja-fundo">
+      <div class="bandeja-fundo" id="painelBandeja">
         <ul class="lista-tickets" id="listaEntrada"></ul>
       </div>
     </section>
 
-    <!-- Tampo da mesa -->
-    <section class="tampo" id="tampo" aria-labelledby="tituloTampo">
-      <header class="area-topo">
-        <h2 id="tituloTampo"><i class="ic ic-pastas" aria-hidden="true"></i> Na sua mesa</h2>
-        <span class="dica-arrastar">Arraste um ticket da bandeja para cá ou clique em “Assumir”</span>
+    <!-- Centro: título FORA da mesa; dentro, só os botões e os tickets assumidos -->
+    <section class="centro" aria-labelledby="tituloTampo">
+      <header class="area-topo centro-topo">
+        <h2 id="tituloTampo"><i class="ic ic-pastas" aria-hidden="true"></i> Minha mesa <span class="contador" id="contadorMesa">0</span></h2>
+        <span class="dica-arrastar">Segure um ticket da bandeja e arraste até a mesa, ou clique em “Assumir”</span>
       </header>
-      <ul class="lista-tickets tampo-tickets" id="listaMesa"></ul>
-      <div class="colegas" id="colegas" hidden>
-        <span>Com outros analistas:</span>
-        <div class="colegas-lista" id="listaColegas"></div>
+      <div class="tampo" id="tampo">
+        <div class="desktop-acao">
+          <div class="acao-lado"></div>
+          <div class="acao-lado acao-dir">
+            <button type="button" class="btn btn-arquivo" id="arquivo" title="Atendimentos já carimbados">
+              <i class="ic ic-arquivo" aria-hidden="true"></i> Arquivo <span class="excluir-qtd arquivo-qtd" id="contadorArquivo">0</span>
+            </button>
+          </div>
+        </div>
+        <ul class="lista-tickets desktop-tickets" id="listaMesa"></ul>
+        <div class="colegas" id="colegas" hidden>
+          <span>Com outros analistas:</span>
+          <div class="colegas-lista" id="listaColegas"></div>
+        </div>
       </div>
     </section>
 
-    <!-- Lateral: Helpy, decoração e arquivo -->
+    <!-- Direita: placar (score) no alto e, embaixo, o escritoriozinho do Helpy -->
     <aside class="lateral">
+      <div class="score" aria-label="Seu placar de hoje">
+        <span class="score-titulo">Score</span>
+        <div class="score-item"><span class="score-valor" id="placarFila">0</span><span class="score-rotulo">na bandeja</span></div>
+        <div class="score-item"><span class="score-valor" id="placarMaos">0</span><span class="score-rotulo">na mesa</span></div>
+        <div class="score-item score-destaque"><span class="score-valor" id="placarHoje">0</span><span class="score-rotulo">resolvidos hoje</span></div>
+      </div>
+
       <div class="helpy-mesa" id="helpyRaiz">
-        <div class="helpy-feed" id="helpyFeed" role="log" aria-live="polite"></div>
-        <div id="helpyAvatar"></div>
+        <div class="helpy-feed helpy-balao" id="helpyFeed" role="log" aria-live="polite"></div>
+        <div class="escritorio">
+          <div class="escritorio-parede">
+            <!-- Post-it da meta do dia: clique para mudar -->
+            <button type="button" class="quadro-aviso quadro-meta" id="placarMeta" title="Meta definida pelo gestor (clique para ver as metas)">
+              Meta de hoje:<br><strong id="postItMeta">5 tickets</strong><br><span id="metaTexto">0/5</span>
+            </button>
+          </div>
+          <div id="helpyAvatar"></div>
+          <div class="escritorio-mesinha" aria-hidden="true">
+            <div class="caneca"><span class="vapor"></span><span class="vapor"></span><span class="vapor"></span></div>
+          </div>
+          <button type="button" class="btn-config" id="botaoConfig" aria-label="Configurações do Helpy" aria-expanded="false" aria-controls="painelConfig" title="Configurações do Helpy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+        </div>
+        <div class="painel-config" id="painelConfig" role="dialog" aria-label="Configurações do Helpy" hidden>
+          <strong>Configurações do Helpy</strong>
+          <label class="config-opcao">
+            <input type="checkbox" id="configFoco" />
+            <span class="config-caixa" aria-hidden="true"><i class="ic ic-check" aria-hidden="true"></i></span>
+            <span>Focar no Helpy quando ele lembrar de um caso <small>Desfoca o resto da tela por 3 segundos. Desmarcado, ele continua avisando sem desfocar.</small></span>
+          </label>
+        </div>
       </div>
-
-      <div class="decoracao" aria-hidden="true">
-        <div class="caneca"><span class="vapor"></span><span class="vapor"></span><span class="vapor"></span></div>
-        <div class="post-it" id="postIt">Meta de hoje:<br><strong id="postItMeta">5 tickets</strong></div>
-      </div>
-
-      <button type="button" class="arquivo" id="arquivo">
-        <span class="arquivo-caixa" aria-hidden="true"><i class="ic ic-arquivo" aria-hidden="true"></i></span>
-        <span><strong>Arquivo de atendimentos</strong><small><span id="contadorArquivo">0</span> tickets carimbados</small></span>
-      </button>
     </aside>
   </main>
 
@@ -134,13 +149,20 @@
     <ul class="lista-arquivo" id="listaArquivo"></ul>
   </aside>
 
+  <!-- Véu do foco no Helpy -->
+  <div class="foco-veu" id="focoVeu" aria-hidden="true"></div>
+
   <p class="aviso-offline aviso-flutuante" id="avisoOffline" hidden></p>
 
   <script src="js/catalogo.js"></script>
   <script src="js/simulador.js"></script>
   <script src="js/sessao.js"></script>
+  <script src="js/navegacao.js"></script>
   <script src="js/api.js"></script>
   <script src="js/helpy.js"></script>
+  <script src="js/ticket-ui.js"></script>
+  <script src="js/arrastar.js"></script>
+  <script src="js/escritorio.js"></script>
   <script src="js/painel.js"></script>
 </body>
 </html>

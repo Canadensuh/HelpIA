@@ -22,7 +22,8 @@ const elGaveta = document.getElementById('gavetaArquivo');
 const elGavetaFundo = document.getElementById('gavetaFundo');
 
 document.getElementById('helpyAvatar').outerHTML = Helpy.avatar('acenando');
-const helpy = new Helpy(document.getElementById('helpyRaiz'), document.getElementById('helpyFeed'), { maxMensagens: 4 });
+const helpy = new Helpy(document.getElementById('helpyRaiz'), document.getElementById('helpyFeed'), { balao: true });
+const escritorio = Escritorio.montar();    // foco nas lembranças + configurações (js/escritorio.js)
 
 const esc = (texto) => escaparHtml(String(texto ?? ''));
 const primeiroNome = () => (usuario?.nome || '').split(' ')[0];
@@ -69,14 +70,16 @@ const AO_ASSUMIR = [
 const DICAS_OCIOSAS = [
   'Tickets com <i class="ic ic-chama" aria-hidden="true"></i> prioridade alta ficam sempre no topo da bandeja.',
   'Lembrete amigo: beba uma água. <i class="ic ic-gota" aria-hidden="true"></i>',
-  'Se precisar falar com o colaborador com urgência, o contato está na nota do ticket. <i class="ic ic-envelope" aria-hidden="true"></i>',
+  'Precisa falar com o colaborador? Use o botão de mensagem no ticket: a conversa abre no HelpIA Chat. <i class="ic ic-chat" aria-hidden="true"></i>',
   'Uma boa nota de resolução ajuda o próximo analista. Capriche! <i class="ic ic-caneta" aria-hidden="true"></i>',
   'Você sabia? Dá para arrastar o ticket da bandeja direto para a mesa. <i class="ic ic-mao" aria-hidden="true"></i>',
 ];
 const sortear = (lista) => lista[Math.floor(Math.random() * lista.length)];
 
-function falar(html, opcoes) {
+function falar(html, opcoes = {}) {
   ultimaFala = Date.now();
+  // Quando o Helpy lembra de um caso, ele ganha o foco (como as dicas do colaborador)
+  if (opcoes.tipo === 'memoria') opcoes = { ...opcoes, aoMostrar: () => escritorio.focar(3000) };
   return helpy.dizer(html, opcoes);
 }
 
@@ -118,43 +121,45 @@ function textoLembranca(l) {
     : `<p><strong>${esc(primeiroNome())}</strong>, um outro analista que resolveu esse problema carimbou essa nota:</p>${citacao}`;
 }
 
-// ---------- Ticket (cartão da mesa) ----------
+// ---------- Ticket (tamanho padrão, igual ao do colaborador) ----------
+// Só a faixa do topo muda de cor: verde = baixa · azul = normal · amarelo = média · vermelho = alta (pisca).
+function seloPrioridade(nivel) {
+  return `<span class="tkp-pri">${nivel.id === 'alta' ? ic('chama') : ''}${nivel.rotulo}</span>`;
+}
+
 function ticketMesa(c, { naMesa = false, comAcoes = true, indice = 0, novo = false } = {}) {
   const l = lembranca(c);
-  const giro = ((c.numero * 37) % 5 - 2) * .7;     // cada ticket "jogado" na mesa num ângulo
-  const contato = Catalogo.contatos.find((k) => k.id === c.contato?.tipo);
+  const nivel = Catalogo.nivel(c);
+  const giro = naMesa ? ((c.numero * 37) % 5 - 2) * .6 : 0;     // na mesa, cada ticket "jogado" num ângulo
   return `
-    <li class="tkm-sombra ${naMesa ? 'em-mesa' : ''} ${novo ? 'chegando' : ''}" style="--i:${indice}; transform: rotate(${naMesa ? giro : 0}deg)"
-        data-numero="${c.numero}" ${!naMesa && comAcoes ? 'draggable="true"' : ''}>
+    <li class="tkp-item tkp-analista ${naMesa ? 'em-mesa' : ''} ${novo ? 'chegando' : ''}" style="--i:${indice}; --giro:${giro}deg"
+        data-numero="${c.numero}" ${!naMesa && comAcoes ? 'data-arrastavel title="Segure e arraste até a mesa"' : ''}>
       ${l && comAcoes ? '<span class="tkm-lembra"><i class="ic ic-lampada" aria-hidden="true"></i> Helpy lembra</span>' : ''}
-      <article class="tkm ticket ${c.prioridade === 'Alta' ? 'alta' : ''}">
-        <div class="tkm-topo">
-          <span class="tkm-codigo">${esc(c.codigo)}</span>
-          <span class="tkm-tags">
-            <span class="tag tag-${c.prioridade.toLowerCase()}">${c.prioridade === 'Alta' ? '<i class="ic ic-chama" aria-hidden="true"></i> ' : ''}${esc(c.prioridade)}</span>
-            <span class="tag ${classeStatus(c.status)}">${esc(c.status)}</span>
-          </span>
-        </div>
-        <div class="tkm-tipo">
-          <span class="mini-ico">${Catalogo.icone(c.genero)}</span>
-          <div><strong>${esc(c.genero_titulo || c.categoria)}</strong><span>${esc(c.subgenero_titulo || c.descricao)}</span></div>
-        </div>
-        <span class="ticket-picote"></span>
-        <div class="tkm-meta">
-          <span><i class="ic ic-usuario" aria-hidden="true"></i> <b>${esc(c.solicitante)}</b></span>
-          ${c.maquina ? `<span><i class="ic ic-etiqueta" aria-hidden="true"></i> <b>${esc(c.maquina)}</b></span>` : ''}
-          <span><i class="ic ic-pasta" aria-hidden="true"></i> ${esc(c.fila)}</span>
-          <span data-tempo="${c.aberto_em}"><i class="ic ic-relogio" aria-hidden="true"></i> ${Efeitos.tempoDesde(c.aberto_em)}</span>
-          ${contato ? `<span>${ic(contato.ic)} anexado</span>` : ''}
-        </div>
-        ${comAcoes ? `
-          <div class="tkm-acoes">
-            <button type="button" class="btn btn-outline btn-sm btn-nota ${notasLidas.has(c.numero) ? '' : 'nova'}" data-acao="nota" data-numero="${c.numero}" title="Ler a nota do colaborador"><i class="ic ic-envelope" aria-hidden="true"></i> Nota</button>
-            ${naMesa
-              ? `<button type="button" class="btn btn-primary btn-sm" data-acao="carimbar" data-numero="${c.numero}"><i class="ic ic-carimbo" aria-hidden="true"></i> Carimbar</button>`
-              : `<button type="button" class="btn btn-primary btn-sm" data-acao="assumir" data-numero="${c.numero}">Assumir →</button>`}
-          </div>` : ''}
-      </article>
+      <div class="tkp-sombra">
+        <article class="tkp ticket pri-${nivel.id}">
+          <header class="tkp-faixa">
+            <span class="tkp-codigo">${esc(c.codigo)}</span>
+            ${seloPrioridade(nivel)}
+          </header>
+          <div class="tkp-corpo">
+            <span class="mini-ico">${Catalogo.icone(c.genero)}</span>
+            <div class="tkp-tipo"><strong>${esc(c.genero_titulo || c.categoria)}</strong><span>${esc(c.subgenero_titulo || c.descricao)}</span></div>
+          </div>
+          <span class="ticket-picote"></span>
+          <footer class="tkp-rodape">
+            <span>${ic('usuario')} <b>${esc(c.solicitante)}</b>${c.maquina ? ` · ${ic('etiqueta')} ${esc(c.maquina)}` : ''}
+              · <span class="tkp-tempo" data-tempo="${c.aberto_em}">${Efeitos.tempoDesde(c.aberto_em)}</span></span>
+            ${comAcoes ? `
+              <span class="tkp-acoes">
+                <button type="button" class="btn btn-sm btn-nota ${notasLidas.has(c.numero) ? '' : 'nova'}" data-acao="nota" data-numero="${c.numero}" title="Ler a nota do colaborador"><i class="ic ic-envelope" aria-hidden="true"></i> Nota</button>
+                ${naMesa && c.solicitante_id ? `<button type="button" class="btn btn-sm btn-mensagem" data-acao="mensagem" data-numero="${c.numero}" title="Mandar mensagem para ${esc(c.solicitante)} pelo HelpIA Chat" aria-label="Mandar mensagem para ${esc(c.solicitante)}"><i class="ic ic-chat" aria-hidden="true"></i></button>` : ''}
+                ${naMesa
+                  ? `<button type="button" class="btn btn-sm key--green" data-acao="carimbar" data-numero="${c.numero}"><i class="ic ic-carimbo" aria-hidden="true"></i> Carimbar</button>`
+                  : `<button type="button" class="btn btn-sm btn-primary" data-acao="assumir" data-numero="${c.numero}">Assumir →</button>`}
+              </span>` : `<span>${ic('pasta')} ${esc(c.fila)}</span>`}
+          </footer>
+        </article>
+      </div>
     </li>`;
 }
 
@@ -179,7 +184,8 @@ async function carregar(forcar = false) {
 }
 
 function renderizar() {
-  const peso = (c) => (c.prioridade === 'Alta' ? 0 : 1);
+  const ORDEM = { alta: 0, media: 1, normal: 2, baixa: 3 };
+  const peso = (c) => ORDEM[Catalogo.nivel(c).id];
   const entrada = todos.filter((c) => c.status === 'Aguardando')
     .sort((a, b) => peso(a) - peso(b) || a.aberto_em.localeCompare(b.aberto_em));
   const minhaMesa = todos.filter((c) => c.status === 'Em atendimento' && c.analista === usuario.nome);
@@ -197,7 +203,9 @@ function renderizar() {
 
   elMesa.innerHTML = minhaMesa.length
     ? minhaMesa.map((c, i) => ticketMesa(c, { naMesa: true, indice: i })).join('')
-    : `<li class="mesa-vazia"><span><i class="ic ic-cafe" aria-hidden="true"></i></span><strong>Mesa limpa</strong>Arraste um ticket da bandeja para começar.</li>`;
+    : `<li class="mesa-vazia mesa-vazia-centro"><span class="mesa-vazia-ico"><i class="ic ic-cafe" aria-hidden="true"></i></span><strong>Mesa limpa</strong><span>Arraste um ticket da bandeja para cá ou clique em “Assumir”.</span></li>`;
+  elMesa.classList.toggle('vazia', !minhaMesa.length);
+  document.getElementById('contadorMesa').textContent = minhaMesa.length;
 
   elColegas.hidden = comColegas.length === 0;
   elListaColegas.innerHTML = comColegas.map((c) =>
@@ -215,7 +223,7 @@ function renderizar() {
 
 function atualizarTempos() {
   document.querySelectorAll('[data-tempo]').forEach((el) => {
-    el.innerHTML = `<i class="ic ic-relogio" aria-hidden="true"></i> ${Efeitos.tempoDesde(el.dataset.tempo)}`;
+    el.textContent = Efeitos.tempoDesde(el.dataset.tempo);
   });
 }
 
@@ -230,12 +238,12 @@ function atualizarPlacar(fila, maos, hoje) {
   const contador = document.getElementById('contadorBandeja');
   if (contador.textContent !== String(fila)) { contador.classList.remove('pulo'); void contador.offsetWidth; contador.classList.add('pulo'); }
   contador.textContent = fila;
+  document.getElementById('contadorAlca').textContent = fila;
 
+  // Meta do dia fica no post-it da parede do escritório do Helpy
   const batida = hoje >= meta;
-  document.getElementById('anelMeta').style.strokeDasharray = `${Math.min(100, (hoje / meta) * 100)} 100`;
-  document.getElementById('metaTexto').textContent = `${hoje}/${meta}`;
+  document.getElementById('metaTexto').textContent = `${hoje}/${meta} feitos`;
   document.getElementById('placarMeta').classList.toggle('batida', batida);
-  document.getElementById('postIt').classList.toggle('batida', batida);
   document.getElementById('postItMeta').innerHTML = batida ? 'BATIDA! <i class="ic ic-trofeu" aria-hidden="true"></i>' : `${meta} tickets`;
   return batida;
 }
@@ -247,9 +255,16 @@ function boasVindas(entrada, minhaMesa) {
   falar(`<p>${saudacao}, <strong>${esc(primeiroNome())}</strong>! <i class="ic ic-cafe" aria-hidden="true"></i></p>
     <p>${entrada.length ? `Tem <strong>${entrada.length}</strong> ticket(s) na bandeja` : 'A bandeja está vazia'}${minhaMesa.length ? ` e <strong>${minhaMesa.length}</strong> na sua mesa` : ''}. Bora?</p>
     ${conhecido ? `<p><i class="ic ic-olho" aria-hidden="true"></i> Já conheço o caso do <strong>${esc(conhecido.codigo)}</strong>. Abre a nota que eu te conto.</p>` : ''}`, { humor: 'acenando' });
+  if (muralGestor?.regra_do_dia) {
+    falar(`<p>${ic('alvo')} <strong>Regra do dia</strong> (${esc(muralGestor.regra_do_dia.autor)}):</p><p>“${esc(muralGestor.regra_do_dia.texto)}”</p>`, { humor: 'feliz', atraso: 900 });
+  }
 }
 
 function anunciarChegada(novos) {
+  const alca = document.getElementById('alcaBandeja');
+  alca.classList.remove('chegou');
+  void alca.offsetWidth;
+  alca.classList.add('chegou');
   elBandeja.classList.remove('recebendo');
   void elBandeja.offsetWidth;
   elBandeja.classList.add('recebendo');
@@ -422,40 +437,54 @@ document.querySelector('.mesa').addEventListener('click', (e) => {
   if (botao.dataset.acao === 'nota') abrirNota(numero);
   if (botao.dataset.acao === 'assumir') { botao.disabled = true; assumir(numero, botao.closest('li')); }
   if (botao.dataset.acao === 'carimbar') abrirCarimbo(numero);
+  if (botao.dataset.acao === 'mensagem') falarComColaborador(numero);
 });
 
-// ---------- Arrastar da bandeja para a mesa ----------
-elEntrada.addEventListener('dragstart', (e) => {
-  const li = e.target.closest('li[draggable]');
-  if (!li) return;
-  arrastando = true;
-  e.dataTransfer.setData('text/plain', li.dataset.numero);
-  e.dataTransfer.effectAllowed = 'move';
-  setTimeout(() => li.classList.add('arrastando'), 0);
-});
-elEntrada.addEventListener('dragend', (e) => {
-  arrastando = false;
-  e.target.closest('li')?.classList.remove('arrastando');
-  elTampo.classList.remove('alvo');
-});
-elTampo.addEventListener('dragover', (e) => { e.preventDefault(); elTampo.classList.add('alvo'); });
-elTampo.addEventListener('dragleave', (e) => { if (!elTampo.contains(e.relatedTarget)) elTampo.classList.remove('alvo'); });
-elTampo.addEventListener('drop', (e) => {
-  e.preventDefault();
-  elTampo.classList.remove('alvo');
-  arrastando = false;
-  const numero = e.dataTransfer.getData('text/plain');
-  if (numero) assumir(numero, null);
+/** Abre o HelpIA Chat com o colaborador do ticket, já com o ticket anexado. */
+function falarComColaborador(numero) {
+  const c = buscar(numero);
+  if (!c?.solicitante_id) return;
+  const q = new URLSearchParams({ com: c.solicitante_id, ticket: c.numero, texto: `Oi ${c.solicitante.split(' ')[0]}! Sobre o seu ticket ${c.codigo}: ` });
+  location.href = `conversas.html?${q}`;
+}
+
+// ---------- Arrastar da bandeja para a mesa (o ticket acompanha o cursor, balançando) ----------
+Arrastar.ligar(elEntrada, {
+  item: '.tkp-item',
+  ignorar: 'input, label, a, button',
+  aoMover({ alvo }) {
+    arrastando = true;
+    elTampo.classList.toggle('alvo', !!alvo?.closest('#tampo'));
+  },
+  async aoSoltar({ el, alvo }) {
+    elTampo.classList.remove('alvo');
+    if (!alvo?.closest('#tampo')) return null;                 // soltou fora da mesa: volta para a bandeja
+    arrastando = false;
+    await assumir(el.dataset.numero, null);
+    return elMesa.querySelector(`[data-numero="${el.dataset.numero}"]`);
+  },
+  aoTerminar() { arrastando = false; elTampo.classList.remove('alvo'); },
 });
 
-// ---------- Meta do dia ----------
-document.getElementById('placarMeta').addEventListener('click', () => {
-  const opcoes = [3, 5, 8, 10, 15];
-  meta = opcoes[(opcoes.indexOf(meta) + 1) % opcoes.length];
-  salvarPreferencia(CHAVE_META, String(meta));
-  carregar(true);
-  Efeitos.toast(`Meta do dia: <strong>${meta} tickets</strong>`, { icone: '<i class="ic ic-alvo" aria-hidden="true"></i>', duracao: 2200 });
-});
+// ---------- Bandeja retrátil (começa recolhida, para a mesa ficar em destaque) ----------
+const elAlca = document.getElementById('alcaBandeja');
+function alternarBandeja(abrir = !document.body.classList.contains('coluna-aberta')) {
+  document.body.classList.toggle('coluna-aberta', abrir);
+  elAlca.setAttribute('aria-expanded', String(abrir));
+}
+document.addEventListener('click', (e) => { if (e.target.closest('[data-alternar-coluna]')) alternarBandeja(); });
+
+// ---------- Meta do dia, regra do dia e mensagens: definidas pelo gestor (tela de Metas) ----------
+let muralGestor = null;
+document.getElementById('placarMeta').addEventListener('click', () => { location.href = 'metas.html'; });
+async function carregarMetas() {
+  try {
+    const { ok, dados } = await API.metas();
+    if (!ok) return;
+    muralGestor = dados;
+    if (dados.minha_meta && dados.minha_meta !== meta) { meta = dados.minha_meta; carregar(true); }
+  } catch { /* sem conexão: segue com a meta que já tinha */ }
+}
 
 // ---------- Arquivo ----------
 function renderizarArquivo() {
@@ -495,9 +524,13 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharArqu
 // ---------- Início ----------
 if (usuario) {
   Sessao.montarMenu(usuario);
-  carregar(true);
+  carregarMetas().finally(() => carregar(true));
+  setInterval(carregarMetas, 30000);
   setInterval(carregar, 3000);
   setInterval(() => {
-    if (Date.now() - ultimaFala > 70000 && !document.hidden) falar(sortear(DICAS_OCIOSAS), { humor: 'feliz' });
+    if (Date.now() - ultimaFala > 70000 && !document.hidden) {
+      const doGestor = (muralGestor?.motivacionais || []).map((m) => `${ic('brilho')} ${esc(m.texto)}`);
+      falar(sortear([...DICAS_OCIOSAS, ...doGestor, ...doGestor]), { humor: 'feliz' });
+    }
   }, 15000);
 }

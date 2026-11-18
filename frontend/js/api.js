@@ -60,6 +60,27 @@ const API = {
   abrir(dados) { return this.enviar('/chamados', dados); },
   assumir(numero, analista) { return this.enviar(`/chamados/${numero}/assumir`, { analista }); },
   resolver(numero, nota) { return this.enviar(`/chamados/${numero}/resolver`, { nota }); },
+  /** Só tickets "Aguardando" do próprio colaborador. */
+  excluir(numero) { return this.requisitar(`/chamados/${numero}`, { method: 'DELETE' }); },
+  /** Esconde um ticket resolvido do histórico do colaborador (o analista continua vendo). */
+  removerDoHistorico(numero) { return this.enviar(`/chamados/${numero}/ocultar`); },
+
+  // ---------- HelpIA Chat ----------
+  chatConversas() { return this.requisitar('/chat/conversas'); },
+  chatNaoLidas() { return this.requisitar('/chat/nao-lidas'); },
+  chatContatos() { return this.requisitar('/chat/contatos'); },
+  /** Abre (ou reaproveita) a conversa direta com a pessoa; ticket = contexto opcional. */
+  chatAbrir(com, ticket = null) { return this.enviar('/chat/conversas', { com, ticket }); },
+  chatMensagens(id) { return this.requisitar(`/chat/conversas/${id}/mensagens`); },
+  /** anexos: [{ id, nome, tipo, tamanho }] — os arquivos são guardados antes por Anexos.salvar() */
+  chatEnviar(id, texto, ticket = null, anexos = []) { return this.enviar(`/chat/conversas/${id}/mensagens`, { texto, ticket, anexos }); },
+  chatLida(id) { return this.enviar(`/chat/conversas/${id}/lida`); },
+
+  // ---------- Metas (definidas pelo gestor) ----------
+  metas() { return this.requisitar('/metas'); },
+  salvarMetas(dados) { return this.requisitar('/metas', { method: 'PATCH', body: JSON.stringify(dados) }); },
+  adicionarMotivacional(texto) { return this.enviar('/metas/motivacionais', { texto }); },
+  removerMotivacional(id) { return this.requisitar(`/metas/motivacionais/${id}`, { method: 'DELETE' }); },
 
   // ---------- Utilitários de tela ----------
   escaparHtml(texto) {

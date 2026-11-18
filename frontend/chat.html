@@ -10,30 +10,20 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@400;500;600;700;800&display=swap" />
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/simbolos.css" />
-  <script src="js/tema.js"></script>
   <link rel="stylesheet" href="css/icones.css" />
   <link rel="stylesheet" href="css/helpy.css" />
   <link rel="stylesheet" href="css/painel.css" />
   <link rel="stylesheet" href="css/chat.css" />
+  <link rel="stylesheet" href="css/mesa.css" />
+  <link rel="stylesheet" href="css/paginas.css" />
   <link rel="stylesheet" href="css/teclas.css" />
   <link rel="stylesheet" href="css/papelaria.css" />
 </head>
-<body class="tela-mesa tela-colab">
+<body class="tela-mesa tela-colab tela-retratil">
 
   <header class="mesa-topo">
-    <a href="chat.html" class="brand"><img src="assets/logo.svg" alt="" />Help<b>IA</b></a>
-
-    <div class="placar" aria-label="Seus chamados">
-      <div class="placar-item"><span class="placar-valor" id="placarFila">0</span><span class="placar-rotulo">na fila</span></div>
-      <div class="placar-item"><span class="placar-valor" id="placarAtendimento">0</span><span class="placar-rotulo">em atendimento</span></div>
-      <div class="placar-item placar-destaque"><span class="placar-valor" id="placarResolvidos">0</span><span class="placar-rotulo">resolvidos</span></div>
-    </div>
-
+    <a href="chat.html" class="brand"><img src="assets/logo.svg" alt="" /><span class="brand-nome">Help<b>IA</b></span></a>
     <div class="topbar-acoes">
-      <button type="button" class="btn-tema" aria-label="Alternar tema">
-        <svg class="icone-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-        <svg class="icone-lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
       <div class="usuario-menu">
         <span class="usuario-avatar" data-usuario-iniciais aria-hidden="true"></span>
         <span class="usuario-info"><strong data-usuario-nome></strong><span data-usuario-perfil></span></span>
@@ -43,58 +33,106 @@
   </header>
 
   <main class="mesa">
-    <!-- Esquerda: chamados já resolvidos -->
-    <section class="bandeja" aria-labelledby="tituloResolvidos">
+    <!-- Esquerda: histórico (tickets já resolvidos, com o carimbo do analista). Clique para rever no centro. -->
+    <!-- Começa recolhido (só a alça); some de vez enquanto um chamado está sendo aberto -->
+    <section class="bandeja historico coluna-retratil" aria-labelledby="tituloResolvidos">
+      <button type="button" class="coluna-alca" data-alternar-coluna aria-expanded="false" aria-controls="painelHistorico" title="Abrir o histórico">
+        <span class="alca-seta" aria-hidden="true">›</span>
+        <i class="ic ic-arquivo" aria-hidden="true"></i>
+        <span class="alca-rotulo">Histórico</span>
+        <span class="contador" id="contadorAlca">0</span>
+      </button>
       <header class="area-topo">
-        <h2 id="tituloResolvidos"><i class="ic ic-check-circulo" aria-hidden="true"></i> Resolvidos</h2>
-        <span class="contador" id="contadorResolvidos">0</span>
+        <h2 id="tituloResolvidos"><i class="ic ic-arquivo" aria-hidden="true"></i> Histórico <span class="contador" id="contadorResolvidos">0</span>
+          <a class="btn btn-sm btn-ver-tudo" href="historico.html" title="Ver todo o histórico em tela cheia, com busca e filtros" aria-label="Ver todo o histórico"><i class="ic ic-janela" aria-hidden="true"></i></a></h2>
+        <button type="button" class="btn key--red btn-sm btn-excluir-marcados" id="excluirHist" data-excluir-hist hidden
+          aria-label="Remover tickets marcados do histórico"><i class="ic ic-x" aria-hidden="true"></i></button>
+        <button type="button" class="btn btn-sm btn-recolher" data-alternar-coluna aria-label="Recolher o histórico" title="Recolher o histórico">‹</button>
       </header>
-      <div class="bandeja-fundo">
+      <div class="bandeja-fundo" id="painelHistorico">
         <ul class="lista-tickets" id="listaResolvidos"></ul>
       </div>
     </section>
 
-    <!-- Centro: o desktop. Mostra os chamados pendentes e é aqui que um chamado novo é aberto. -->
-    <section class="tampo desktop" id="tampo" aria-labelledby="tituloTampo">
-      <header class="area-topo desktop-topo">
+    <!-- Centro: título e trilha de etapas FORA da mesa; dentro da mesa só os tickets e os botões. -->
+    <section class="centro" aria-labelledby="tituloTampo">
+      <header class="area-topo centro-topo">
         <h2 id="tituloTampo"></h2>
         <ol class="passos-topo" id="passos" aria-label="Etapas do chamado" hidden></ol>
-        <div class="desktop-acao" id="desktopAcao"></div>
       </header>
-      <div class="palco" id="palco" aria-live="polite"></div>
+      <div class="tampo desktop" id="tampo">
+        <div class="desktop-acao" id="desktopAcao"></div>
+        <div class="palco" id="palco" aria-live="polite"></div>
+      </div>
     </section>
 
-    <!-- Direita: Helpy com o cafezinho -->
+    <!-- Direita: placar (score) no alto e, embaixo, o escritoriozinho do Helpy -->
     <aside class="lateral">
+      <div class="score" aria-label="Seus chamados">
+        <span class="score-titulo">Score</span>
+        <div class="score-item"><span class="score-valor" id="placarFila">0</span><span class="score-rotulo">na fila</span></div>
+        <div class="score-item"><span class="score-valor" id="placarAtendimento">0</span><span class="score-rotulo">em atendimento</span></div>
+        <div class="score-item score-destaque"><span class="score-valor" id="placarResolvidos">0</span><span class="score-rotulo">resolvidos</span></div>
+      </div>
+
       <div class="helpy-mesa" id="helpyRaiz">
         <div class="helpy-feed helpy-balao" id="helpyFeed" role="log" aria-live="polite"></div>
-        <div id="helpyAvatar"></div>
-      </div>
-
-      <div class="decoracao" aria-hidden="true">
-        <div class="caneca"><span class="vapor"></span><span class="vapor"></span><span class="vapor"></span></div>
-        <div class="post-it">Atalho:<br><strong>teclas 1 a 8</strong><br>escolhem o tipo</div>
-      </div>
-
-      <div class="helpy-atalhos">
-        <span>Pergunte ao Helpy</span>
-        <div class="helpy-atalhos-lista">
-          <button type="button" class="atalho" data-atalho="nao-achei"><i class="ic ic-duvida" aria-hidden="true"></i> Não achei minha opção</button>
-          <button type="button" class="atalho" data-atalho="maquina"><i class="ic ic-etiqueta" aria-hidden="true"></i> Onde vejo o nº da máquina?</button>
-          <button type="button" class="atalho" data-atalho="tempo"><i class="ic ic-relogio" aria-hidden="true"></i> Quanto tempo demora?</button>
-          <button type="button" class="atalho" data-atalho="contato"><i class="ic ic-telefone" aria-hidden="true"></i> Por que pedem meu contato?</button>
+        <div class="escritorio">
+          <div class="escritorio-parede" aria-hidden="true">
+            <div class="quadro-aviso">Lembrete:<br><strong>reiniciar resolve</strong><br>muita coisa!</div>
+          </div>
+          <div id="helpyAvatar"></div>
+          <div class="escritorio-mesinha" aria-hidden="true">
+            <div class="caneca"><span class="vapor"></span><span class="vapor"></span><span class="vapor"></span></div>
+          </div>
+          <!-- Configurações do Helpy, numa parte da mesinha -->
+          <button type="button" class="btn-config" id="botaoConfig" aria-label="Configurações do Helpy" aria-expanded="false" aria-controls="painelConfig" title="Configurações do Helpy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+        </div>
+        <div class="painel-config" id="painelConfig" role="dialog" aria-label="Configurações do Helpy" hidden>
+          <strong>Configurações do Helpy</strong>
+          <label class="config-opcao">
+            <input type="checkbox" id="configFoco" />
+            <span class="config-caixa" aria-hidden="true"><i class="ic ic-check" aria-hidden="true"></i></span>
+            <span>Focar no Helpy quando ele der uma dica <small>Desfoca o resto da tela por 3 segundos. Desmarcado, ele continua dando as dicas sem desfocar.</small></span>
+          </label>
         </div>
       </div>
     </aside>
   </main>
+
+  <!-- Modal: confirmar exclusão de um ticket -->
+  <dialog class="modal modal-excluir" id="modalExcluir">
+    <form method="dialog" class="modal-conteudo">
+      <header class="modal-topo">
+        <h2>Excluir este ticket?</h2>
+        <button type="submit" value="cancelar" class="btn btn-ghost btn-sm" aria-label="Fechar"><i class="ic ic-x" aria-hidden="true"></i></button>
+      </header>
+      <div id="excluirTicket"></div>
+      <p class="excluir-aviso" id="excluirAviso"></p>
+      <p class="aviso aviso-erro" id="erroExcluir" hidden></p>
+      <div class="modal-acoes">
+        <button type="submit" value="cancelar" class="btn btn-ghost">Manter ticket</button>
+        <button type="button" class="btn key--red" id="confirmarExcluir"><i class="ic ic-x" aria-hidden="true"></i> Excluir ticket</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Véu do foco no Helpy (dicas) -->
+  <div class="foco-veu" id="focoVeu" aria-hidden="true"></div>
 
   <p class="aviso-offline aviso-flutuante" id="avisoOffline" hidden></p>
 
   <script src="js/catalogo.js"></script>
   <script src="js/simulador.js"></script>
   <script src="js/sessao.js"></script>
+  <script src="js/navegacao.js"></script>
   <script src="js/api.js"></script>
   <script src="js/helpy.js"></script>
+  <script src="js/ticket-ui.js"></script>
+  <script src="js/arrastar.js"></script>
+  <script src="js/escritorio.js"></script>
   <script src="js/chat.js"></script>
 </body>
 </html>

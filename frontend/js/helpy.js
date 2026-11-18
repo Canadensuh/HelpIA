@@ -74,16 +74,17 @@ class Helpy {
    * Fala em fila (uma mensagem depois da outra), com indicador de digitação.
    * segurar: no modo balão, a fala fica na tela até o usuário escolher uma ação
    * (usado nas dicas), e só então a próxima fala aparece.
+   * aoMostrar: chamado quando o balão aparece na tela (ex.: pôr o Helpy em foco).
    */
-  dizer(html, { acoes = [], tipo = '', humor = 'feliz', atraso = 550, segurar = false } = {}) {
+  dizer(html, { acoes = [], tipo = '', humor = 'feliz', atraso = 550, segurar = false, aoMostrar = null } = {}) {
     const geracao = this.geracao;
     this.fila = this.fila.then(() => (geracao === this.geracao
-      ? this._falar(html, acoes, tipo, humor, atraso, segurar, geracao)
+      ? this._falar(html, acoes, tipo, humor, atraso, segurar, geracao, aoMostrar)
       : null));
     return this.fila;
   }
 
-  _falar(html, acoes, tipo, humor, atraso, segurar, geracao) {
+  _falar(html, acoes, tipo, humor, atraso, segurar, geracao, aoMostrar) {
     return new Promise((resolver) => {
       this.desativarAcoes();
       if (this.balao) this.feed.replaceChildren();
@@ -122,6 +123,7 @@ class Helpy {
         while (this.feed.children.length > this.maxMensagens) this.feed.firstElementChild.remove();
         this._rolar();
         this.humor(humor);
+        aoMostrar?.(msg);
         if (this.balao && segurar && acoes.length) {
           this._soltar = () => { this._soltar = null; resolver(msg); };
         } else {

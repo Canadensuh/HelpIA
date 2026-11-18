@@ -70,7 +70,7 @@
   const ANALISTA = 'analista';
   const GESTOR = 'gestor';
   const PERFIS = [COLABORADOR, ANALISTA, GESTOR];
-  const PERFIS_CRIAVEIS = [COLABORADOR, ANALISTA];
+  const PERFIS_CRIAVEIS = [COLABORADOR, ANALISTA, GESTOR];   // o gestor também pode nomear outro gestor
   const MIN_SENHA = 6;
   const PLANOS = {
     essencial: { nome: 'Essencial', preco_mensal: 149, limite_analistas: 3 },
@@ -139,10 +139,15 @@
   function lerDb() {
     try {
       const bruto = localStorage.getItem(CHAVE_DB);
-      if (bruto) return JSON.parse(bruto);
+      if (bruto) {
+        const salvo = JSON.parse(bruto);
+        if (garantirExtras(salvo)) salvarDb(salvo);       // bancos antigos ganham chat e metas
+        return salvo;
+      }
     } catch {}
     const db = { proximoChamado: 1, proximoUsuario: 1, proximaEmpresa: 1, chamados: [], usuarios: [], empresas: [] };
     popularExemplos(db);
+    garantirExtras(db);
     salvarDb(db);
     return db;
   }
@@ -159,7 +164,7 @@
   });
   const usuarioDict = (u) => ({
     id: u.id, nome: u.nome, email: u.email, perfil: u.perfil, empresa_id: u.empresa_id,
-    ativo: u.ativo !== false, criado_em: u.criado_em,
+    ativo: u.ativo !== false, criado_em: u.criado_em, trocar_senha: !!u.trocar_senha,
   });
   const chamadoDict = (c) => ({ ...c, codigo: codigo(c.numero) });
 
@@ -227,7 +232,7 @@
 
   function criarConta(db, gestor, { nome, email, perfil, senha }, criadoEm) {
     exigirGestor(gestor);
-    if (!PERFIS_CRIAVEIS.includes(perfil)) throw dadosInvalidos('O perfil deve ser analista ou colaborador.');
+    if (!PERFIS_CRIAVEIS.includes(perfil)) throw dadosInvalidos('O cargo deve ser analista, colaborador ou gestor.');
     garantirEmailLivre(db, email);
     if (perfil === ANALISTA) garantirLimiteAnalistas(db, gestor.empresa_id);
     return criarUsuario(db, nome, email, perfil, gestor.empresa_id, senha, criadoEm);
@@ -241,10 +246,16 @@
     return conta;
   }
 
-  function atualizarConta(db, gestor, id, { ativo, perfil }) {
+  function atualizarConta(db, gestor, id, { ativo, perfil, nome, email, trocar_senha }) {
     const conta = contaDaEmpresa(db, gestor, id);
+    if (nome !== undefined) conta.nome = validarNome(nome);
+    if (email !== undefined && validarEmail(email) !== conta.email) {
+      garantirEmailLivre(db, email);
+      conta.email = validarEmail(email);
+    }
+    if (trocar_senha !== undefined) conta.trocar_senha = Boolean(trocar_senha);
     if (perfil !== undefined && perfil !== conta.perfil) {
-      if (!PERFIS_CRIAVEIS.includes(perfil)) throw dadosInvalidos('O perfil deve ser analista ou colaborador.');
+      if (!PERFIS_CRIAVEIS.includes(perfil)) throw dadosInvalidos('O cargo deve ser analista, colaborador ou gestor.');
       if (perfil === ANALISTA) garantirLimiteAnalistas(db, gestor.empresa_id);
       conta.perfil = perfil;
     }
@@ -271,7 +282,7 @@
         { precisa_complemento: true },
       );
     }
-    const contato = validarContato(dados.contato);
+    const contato = dados.contato?.valor ? validarContato(dados.contato) : null;   // opcional: o canal é o HelpIA Chat
     const impacto = cat.impactos.some((i) => i.id === dados.impacto) ? dados.impacto : 'eu';
     return {
       numero: db.proximoChamado++,
@@ -397,9 +408,271 @@
     return chamado;
   }
 
+
+  // =========================================================
+  // HelpIA Chat e Metas (só no simulador por enquanto)
+  // - Grupo da equipe: analistas e gestores da empresa (sem colaboradores, sem o Helpy).
+  // - Conversas diretas: analista ↔ analista/gestor/colaborador. O colaborador só responde.
+  // - Mensagens do sistema ("HelpIA") mencionam tickets no grupo.
+  // - Metas por empresa: meta diária, regra do dia e mensagens motivacionais.
+  // =========================================================
+  const usuarioPorId = (db, id) => db.usuarios.find((u) => u.id === id) || null;
+  const ehEquipe = (u) => u && (u.perfil === ANALISTA || u.perfil === GESTOR);
+
+  function garantirExtras(db) {
+    let mudou = false;
+    if (!db.conversas) {
+      Object.assign(db, { conversas: [], mensagens: [], leituras: {}, proximaConversa: 1, proximaMensagem: 1 });
+      mudou = true;
+    }
+    if (!db.metas) { db.metas = {}; mudou = true; }
+    if (!db.extrasSemeados && db.usuarios.length) { db.extrasSemeados = true; semearExtras(db); mudou = true; }
+    return mudou;
+  }
+
+  function grupoDaEmpresa(db, empresaId) {
+    let grupo = db.conversas.find((c) => c.tipo === 'grupo' && c.empresa_id === empresaId);
+    if (!grupo) {
+      const empresa = db.empresas.find((e) => e.id === empresaId);
+      grupo = { id: db.proximaConversa++, tipo: 'grupo', empresa_id: empresaId, nome: `Equipe ${empresa?.nome || 'HelpIA'}`, criada_em: agora() };
+      db.conversas.push(grupo);
+    }
+    return grupo;
+  }
+  function participantes(db, conversa) {
+    if (conversa.tipo === 'grupo') {
+      return db.usuarios.filter((u) => u.empresa_id === conversa.empresa_id && ehEquipe(u) && u.ativo !== false);
+    }
+    return conversa.membros.map((id) => usuarioPorId(db, id)).filter(Boolean);
+  }
+  function podeVerConversa(usuario, conversa) {
+    if (conversa.tipo === 'grupo') return ehEquipe(usuario) && usuario.empresa_id === conversa.empresa_id;
+    return conversa.membros.includes(usuario.id);
+  }
+  function conversaDoUsuario(db, usuario, id) {
+    const conversa = db.conversas.find((c) => c.id === id);
+    if (!conversa || !podeVerConversa(usuario, conversa)) throw naoEncontrado('Conversa não encontrada.');
+    return conversa;
+  }
+
+  function mensagemDict(db, m) {
+    const autor = m.autor_id ? usuarioPorId(db, m.autor_id) : null;
+    const ticket = m.ticket ? db.chamados.find((c) => c.numero === m.ticket) : null;
+    return {
+      id: m.id, conversa_id: m.conversa_id, texto: m.texto, em: m.em, anexos: m.anexos || [],
+      sistema: !m.autor_id,
+      autor_id: m.autor_id, autor_nome: autor ? autor.nome : 'HelpIA', autor_perfil: autor ? autor.perfil : 'sistema',
+      ticket: ticket ? chamadoDict(ticket) : null,
+    };
+  }
+  function conversaDict(db, conversa, usuario) {
+    const mensagens = db.mensagens.filter((m) => m.conversa_id === conversa.id);
+    const lida = db.leituras[`${conversa.id}:${usuario.id}`] || 0;
+    const pessoas = participantes(db, conversa);
+    const outro = conversa.tipo === 'direta' ? pessoas.find((u) => u.id !== usuario.id) : null;
+    const ultima = mensagens[mensagens.length - 1];
+    return {
+      id: conversa.id, tipo: conversa.tipo,
+      nome: conversa.tipo === 'grupo' ? conversa.nome : (outro?.nome || 'Conversa'),
+      outro: outro ? usuarioDict(outro) : null,
+      participantes: pessoas.map((u) => ({ id: u.id, nome: u.nome, perfil: u.perfil })),
+      ticket: conversa.ticket ? chamadoDict(db.chamados.find((c) => c.numero === conversa.ticket) || { numero: conversa.ticket }) : null,
+      ultima: ultima ? mensagemDict(db, ultima) : null,
+      atividade: ultima ? ultima.em : conversa.criada_em,
+      nao_lidas: mensagens.filter((m) => m.id > lida && m.autor_id !== usuario.id).length,
+    };
+  }
+  function postar(db, conversa, autorId, texto, ticket = null, em = agora(), anexos = []) {
+    const m = { id: db.proximaMensagem++, conversa_id: conversa.id, autor_id: autorId, texto, ticket, em, anexos };
+    db.mensagens.push(m);
+    if (autorId) db.leituras[`${conversa.id}:${autorId}`] = m.id;      // quem escreve já leu
+    return m;
+  }
+  function abrirDireta(db, usuario, outroId, ticket = null) {
+    const outro = usuarioPorId(db, outroId);
+    if (!outro || outro.empresa_id !== usuario.empresa_id || outro.id === usuario.id) throw naoEncontrado('Pessoa não encontrada.');
+    if (!ehEquipe(usuario)) throw acessoNegado('Colaboradores respondem às mensagens dos analistas, mas não iniciam conversas.');
+    let conversa = db.conversas.find((c) => c.tipo === 'direta' && c.membros.includes(usuario.id) && c.membros.includes(outro.id));
+    if (!conversa) {
+      conversa = { id: db.proximaConversa++, tipo: 'direta', empresa_id: usuario.empresa_id, membros: [usuario.id, outro.id], ticket: null, criada_em: agora() };
+      db.conversas.push(conversa);
+    }
+    if (ticket) conversa.ticket = ticket;
+    return conversa;
+  }
+  /** Aviso automático do HelpIA no grupo da equipe, mencionando o ticket. */
+  function avisarGrupo(db, empresaId, texto, ticket) {
+    if (!empresaId) return;
+    postar(db, grupoDaEmpresa(db, empresaId), null, texto, ticket);
+  }
+
+  function metasDaEmpresa(db, empresaId) {
+    if (!db.metas[empresaId]) {
+      db.metas[empresaId] = { meta_padrao: 5, por_analista: {}, regra_do_dia: null, motivacionais: [], proximoMotivacional: 1 };
+    }
+    return db.metas[empresaId];
+  }
+  function metasDict(db, usuario) {
+    const metas = metasDaEmpresa(db, usuario.empresa_id);
+    const analistas = db.usuarios.filter((u) => u.empresa_id === usuario.empresa_id && u.perfil === ANALISTA);
+    const hoje = agora().slice(0, 10);
+    const feitosHoje = (u) => db.chamados.filter((c) => c.status === RESOLVIDO && c.analista === u.nome && (c.resolvido_em || '').startsWith(hoje)).length;
+    return {
+      meta_padrao: metas.meta_padrao,
+      regra_do_dia: metas.regra_do_dia,
+      motivacionais: metas.motivacionais,
+      analistas: analistas.map((u) => ({
+        id: u.id, nome: u.nome, ativo: u.ativo !== false,
+        meta: metas.por_analista[u.id] ?? metas.meta_padrao,
+        personalizada: metas.por_analista[u.id] != null,
+        feitos_hoje: feitosHoje(u),
+        total: db.chamados.filter((c) => c.status === RESOLVIDO && c.analista === u.nome).length,
+      })),
+      minha_meta: usuario.perfil === ANALISTA ? (metas.por_analista[usuario.id] ?? metas.meta_padrao) : null,
+    };
+  }
+
+  function semearExtras(db) {
+    for (const empresa of db.empresas) {
+      const pessoa = (email) => db.usuarios.find((u) => u.email === email && u.empresa_id === empresa.id);
+      const ana = pessoa('gestor@demo.helpia');
+      const carlos = pessoa('analista@demo.helpia');
+      const beatriz = pessoa('beatriz@demo.helpia');
+      const joao = pessoa('colaborador@demo.helpia');
+      const grupo = grupoDaEmpresa(db, empresa.id);
+      if (!ana || !carlos || !beatriz) continue;
+      postar(db, grupo, ana.id, 'Bom dia, time! Hoje o foco é zerar a bandeja antes do almoço. Bora?', null, minutosAtras(70));
+      postar(db, grupo, beatriz.id, 'Peguei a impressora do 2º andar, a equipe toda está parada lá.', 4, minutosAtras(41));
+      postar(db, grupo, null, 'Ticket #007 · Setor parado chegou com prioridade ALTA. Quem pode assumir?', 7, minutosAtras(4));
+      postar(db, grupo, carlos.id, 'Deixa comigo o #007 assim que eu fechar o que estou fazendo.', null, minutosAtras(3));
+      const direta = abrirDireta(db, carlos, beatriz.id);
+      postar(db, direta, beatriz.id, 'Carlos, aquele computador 043 do Lúcio voltou a dar problema. Acho que é o estabilizador.', 5, minutosAtras(15));
+      if (joao) {
+        const comJoao = abrirDireta(db, carlos, joao.id, 6);
+        postar(db, comJoao, carlos.id, 'Oi João! Vi seu ticket #006. Enquanto eu não chego aí: o cabo de rede está bem encaixado atrás do computador?', 6, minutosAtras(6));
+      }
+      const metas = metasDaEmpresa(db, empresa.id);
+      metas.regra_do_dia = { texto: 'Prioridade ALTA primeiro, sempre. Ninguém fica mais de 30 minutos esperando na bandeja.', autor: ana.nome, em: minutosAtras(80) };
+      metas.motivacionais = [
+        { id: metas.proximoMotivacional++, texto: 'Cada ticket fechado é alguém voltando a trabalhar. Obrigada, time!' },
+        { id: metas.proximoMotivacional++, texto: 'Uma boa nota de resolução hoje economiza meia hora amanhã.' },
+        { id: metas.proximoMotivacional++, texto: 'Respira, toma um café e bora pro próximo! ☕' },
+      ];
+    }
+  }
+
+  function rotasExtras(db, metodo, rota, params, corpo, token) {
+    let m;
+    const chave = `${metodo} ${rota}`;
+
+    // ---------- Chat ----------
+    if (chave === 'GET /chat/conversas') {
+      const usuario = usuarioLogado(db, token);
+      if (ehEquipe(usuario)) grupoDaEmpresa(db, usuario.empresa_id);
+      return [200, db.conversas.filter((c) => c.empresa_id === usuario.empresa_id && podeVerConversa(usuario, c))
+        .map((c) => conversaDict(db, c, usuario))
+        .filter((c) => c.tipo === 'grupo' || c.ultima || ehEquipe(usuario))
+        .sort((a, b) => b.atividade.localeCompare(a.atividade))];
+    }
+    if (chave === 'GET /chat/nao-lidas') {
+      const usuario = usuarioLogado(db, token);
+      const total = db.conversas.filter((c) => c.empresa_id === usuario.empresa_id && podeVerConversa(usuario, c))
+        .reduce((soma, c) => soma + conversaDict(db, c, usuario).nao_lidas, 0);
+      return [200, { total }];
+    }
+    if (chave === 'GET /chat/contatos') {
+      const usuario = usuarioLogado(db, token);
+      if (!ehEquipe(usuario)) return [200, []];
+      const alvo = usuario.perfil === GESTOR ? [ANALISTA, GESTOR] : [ANALISTA, GESTOR, COLABORADOR];
+      return [200, db.usuarios.filter((u) => u.empresa_id === usuario.empresa_id && u.id !== usuario.id && u.ativo !== false && alvo.includes(u.perfil))
+        .map(usuarioDict).sort((a, b) => a.nome.localeCompare(b.nome))];
+    }
+    if (chave === 'POST /chat/conversas') {
+      const usuario = usuarioLogado(db, token);
+      const ticket = corpo.ticket ? Number(corpo.ticket) : null;
+      return [201, conversaDict(db, abrirDireta(db, usuario, Number(corpo.com), ticket), usuario)];
+    }
+    if (metodo === 'GET' && (m = rota.match(/^\/chat\/conversas\/(\d+)\/mensagens$/))) {
+      const usuario = usuarioLogado(db, token);
+      const conversa = conversaDoUsuario(db, usuario, Number(m[1]));
+      return [200, db.mensagens.filter((x) => x.conversa_id === conversa.id).map((x) => mensagemDict(db, x))];
+    }
+    if (metodo === 'POST' && (m = rota.match(/^\/chat\/conversas\/(\d+)\/mensagens$/))) {
+      const usuario = usuarioLogado(db, token);
+      const conversa = conversaDoUsuario(db, usuario, Number(m[1]));
+      const texto = String(corpo.texto || '').trim();
+      // Anexos: só os dados do arquivo (o arquivo em si fica no IndexedDB do navegador, ver js/anexos.js)
+      const anexos = (Array.isArray(corpo.anexos) ? corpo.anexos : []).slice(0, 10).map((a) => ({
+        id: String(a.id || '').slice(0, 40), nome: String(a.nome || 'arquivo').slice(0, 200),
+        tipo: String(a.tipo || 'application/octet-stream').slice(0, 100), tamanho: Number(a.tamanho) || 0,
+      })).filter((a) => a.id);
+      if (!texto && !anexos.length) throw dadosInvalidos('Escreva uma mensagem ou anexe um arquivo.');
+      const ticket = corpo.ticket ? Number(corpo.ticket) : null;
+      if (ticket && !db.chamados.some((c) => c.numero === ticket)) throw dadosInvalidos('Ticket não encontrado.');
+      return [201, mensagemDict(db, postar(db, conversa, usuario.id, texto.slice(0, 1000), ticket, agora(), anexos))];
+    }
+    if (metodo === 'POST' && (m = rota.match(/^\/chat\/conversas\/(\d+)\/lida$/))) {
+      const usuario = usuarioLogado(db, token);
+      const conversa = conversaDoUsuario(db, usuario, Number(m[1]));
+      const ultima = db.mensagens.filter((x) => x.conversa_id === conversa.id).pop();
+      if (ultima) db.leituras[`${conversa.id}:${usuario.id}`] = ultima.id;
+      return [200, { ok: true }];
+    }
+
+    // ---------- Metas ----------
+    if (chave === 'GET /metas') {
+      const usuario = usuarioLogado(db, token);
+      if (!ehEquipe(usuario)) throw acessoNegado('Metas são da equipe de TI.');
+      return [200, metasDict(db, usuario)];
+    }
+    if (chave === 'PATCH /metas') {
+      const gestor = usuarioLogado(db, token);
+      exigirGestor(gestor);
+      const metas = metasDaEmpresa(db, gestor.empresa_id);
+      if (corpo.meta_padrao !== undefined) {
+        const n = Number(corpo.meta_padrao);
+        if (!Number.isInteger(n) || n < 1 || n > 100) throw dadosInvalidos('A meta diária deve ser entre 1 e 100 tickets.');
+        metas.meta_padrao = n;
+      }
+      if (corpo.por_analista) {
+        for (const [id, valor] of Object.entries(corpo.por_analista)) {
+          if (valor === null || valor === '') { delete metas.por_analista[id]; continue; }
+          const n = Number(valor);
+          if (!Number.isInteger(n) || n < 1 || n > 100) throw dadosInvalidos('A meta deve ser entre 1 e 100 tickets.');
+          metas.por_analista[id] = n;
+        }
+      }
+      if (corpo.regra_do_dia !== undefined) {
+        const texto = String(corpo.regra_do_dia || '').trim().slice(0, 280);
+        metas.regra_do_dia = texto ? { texto, autor: gestor.nome, em: agora() } : null;
+        if (texto) avisarGrupo(db, gestor.empresa_id, `Nova regra do dia: “${texto}”`, null);
+      }
+      return [200, metasDict(db, gestor)];
+    }
+    if (chave === 'POST /metas/motivacionais') {
+      const gestor = usuarioLogado(db, token);
+      exigirGestor(gestor);
+      const texto = String(corpo.texto || '').trim().slice(0, 200);
+      if (texto.length < 3) throw dadosInvalidos('Escreva a mensagem motivacional.');
+      const metas = metasDaEmpresa(db, gestor.empresa_id);
+      metas.motivacionais.push({ id: metas.proximoMotivacional++, texto });
+      return [201, metasDict(db, gestor)];
+    }
+    if (metodo === 'DELETE' && (m = rota.match(/^\/metas\/motivacionais\/(\d+)$/))) {
+      const gestor = usuarioLogado(db, token);
+      exigirGestor(gestor);
+      const metas = metasDaEmpresa(db, gestor.empresa_id);
+      metas.motivacionais = metas.motivacionais.filter((x) => x.id !== Number(m[1]));
+      return [200, metasDict(db, gestor)];
+    }
+    return null;
+  }
+
   function rotear(db, metodo, rota, params, corpo, token) {
     let m;
     const chave = `${metodo} ${rota}`;
+    const extra = rotasExtras(db, metodo, rota, params, corpo, token);
+    if (extra) return extra;
 
     if (chave === 'GET /status') return [200, { sistema: 'HelpIA', status: 'online', versao: '1.2 (simulador)' }];
     if (chave === 'GET /planos') return [200, Object.entries(PLANOS).map(([id, p]) => ({ id, ...p }))];
@@ -431,6 +704,7 @@
     if (metodo === 'POST' && (m = rota.match(/^\/contas\/(\d+)\/senha$/))) {
       const conta = contaDaEmpresa(db, usuarioLogado(db, token), Number(m[1]));
       conta.senha = validarSenha(corpo.senha);
+      conta.trocar_senha = false;
       return [200, usuarioDict(conta)];
     }
 
@@ -442,7 +716,7 @@
       if (STATUS_VALIDOS.includes(status)) lista = lista.filter((c) => c.status === status);
       if (solicitante) {
         const alvo = solicitante.trim().toLowerCase();
-        lista = lista.filter((c) => c.solicitante.toLowerCase() === alvo);
+        lista = lista.filter((c) => c.solicitante.toLowerCase() === alvo && !c.oculto_solicitante);
       }
       return [200, lista.map(chamadoDict)];
     }
@@ -454,10 +728,36 @@
         solicitante_id: usuario?.id ?? null,
       });
       db.chamados.push(chamado);
+      if (catalogo().nivel(chamado).id === 'alta') {
+        avisarGrupo(db, usuario?.empresa_id, `Ticket ${codigo(chamado.numero)} · ${chamado.genero_titulo} chegou com prioridade ALTA. Quem pode assumir?`, chamado.numero);
+      }
       return [201, { chamado: chamadoDict(chamado), mensagem: mensagemConfirmacao(chamado) }];
     }
     if (metodo === 'GET' && (m = rota.match(/^\/chamados\/(\d+)$/))) {
       return [200, chamadoDict(buscarChamado(db, Number(m[1])))];
+    }
+    // Colaborador tira um ticket resolvido do próprio histórico (o registro continua para a TI)
+    if (metodo === 'POST' && (m = rota.match(/^\/chamados\/(\d+)\/ocultar$/))) {
+      const chamado = buscarChamado(db, Number(m[1]));
+      if (chamado.status !== RESOLVIDO) throw conflito(`Só tickets resolvidos podem sair do histórico.`);
+      chamado.oculto_solicitante = true;
+      return [200, chamadoDict(chamado)];
+    }
+    // Colaborador exclui um ticket próprio que ainda está na fila
+    if (metodo === 'DELETE' && (m = rota.match(/^\/chamados\/(\d+)$/))) {
+      const chamado = buscarChamado(db, Number(m[1]));
+      const usuario = usuarioLogado(db, token, false);
+      const dono = chamado.solicitante_id != null
+        ? chamado.solicitante_id === usuario?.id
+        : chamado.solicitante === usuario?.nome;
+      if (usuario && usuario.perfil === COLABORADOR && !dono) {
+        throw acessoNegado('Você só pode excluir os tickets que você abriu.');
+      }
+      if (chamado.status !== AGUARDANDO) {
+        throw conflito(`O ticket ${codigo(chamado.numero)} já está com ${chamado.analista || 'um analista'} e não pode mais ser excluído.`);
+      }
+      db.chamados = db.chamados.filter((c) => c !== chamado);
+      return [200, { excluido: chamado.numero }];
     }
     if (metodo === 'POST' && (m = rota.match(/^\/chamados\/(\d+)\/assumir$/))) {
       const chamado = buscarChamado(db, Number(m[1]));
@@ -466,6 +766,9 @@
       chamado.analista = usuario?.nome || (corpo.analista || '').trim() || 'Analista';
       chamado.status = EM_ATENDIMENTO;
       chamado.assumido_em = agora();
+      if (catalogo().nivel(chamado).id === 'alta') {
+        avisarGrupo(db, usuario?.empresa_id, `${chamado.analista} assumiu o ticket ${codigo(chamado.numero)} (prioridade ALTA).`, chamado.numero);
+      }
       return [200, chamadoDict(chamado)];
     }
     if (metodo === 'POST' && (m = rota.match(/^\/chamados\/(\d+)\/resolver$/))) {

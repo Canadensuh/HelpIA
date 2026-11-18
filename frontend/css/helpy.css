@@ -39,7 +39,6 @@
 .helpy-feed {
   display: flex; flex-direction: column; gap: .65rem;
   overflow-y: auto;
-  scrollbar-width: thin;
 }
 .helpy-msg {
   position: relative;

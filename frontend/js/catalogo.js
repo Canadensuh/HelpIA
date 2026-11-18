@@ -212,14 +212,46 @@ const CONTATOS_HELPIA = [
   { id: 'email', titulo: 'E-mail', ic: 'envelope', placeholder: 'nome@empresa.com' },
 ];
 
+/* Níveis de prioridade: cada um pinta a faixa do topo do ticket.
+   verde = baixa · azul = normal · amarelo = média · vermelho = alta (pisca). */
+const NIVEIS_PRIORIDADE = {
+  baixa:  { id: 'baixa',  rotulo: 'Baixa',  descricao: 'Não é tão urgente' },
+  normal: { id: 'normal', rotulo: 'Normal', descricao: 'Prioridade normal' },
+  media:  { id: 'media',  rotulo: 'Média',  descricao: 'Um pouco mais de prioridade' },
+  alta:   { id: 'alta',   rotulo: 'Alta',   descricao: 'Alta prioridade' },
+};
+
+/* Pedidos e dúvidas que não travam o trabalho de ninguém ('*' = o gênero inteiro). */
+const SUBS_BAIXA = {
+  pedido: '*',
+  outro: ['duvida', 'sugestao'],
+  impressora: ['toner', 'instalar'],
+  sistemas: ['instalar', 'atualizacao'],
+};
+
 const Catalogo = {
   generos: CATALOGO_HELPIA,
   impactos: IMPACTOS_HELPIA,
   contatos: CONTATOS_HELPIA,
+  niveis: NIVEIS_PRIORIDADE,
   icone(id) { return ICONES_HELPIA[id] || ICONES_HELPIA.outro; },
   genero(id) { return CATALOGO_HELPIA.find((g) => g.id === id) || null; },
   subgenero(generoId, subId) {
     return this.genero(generoId)?.subgeneros.find((s) => s.id === subId) || null;
+  },
+
+  /**
+   * Nível de prioridade de um chamado (ou rascunho): { id, rotulo, descricao }.
+   * Recebe { genero, subgenero, impacto, prioridade } — os mesmos campos da API.
+   * Chamados antigos, sem impacto, usam a prioridade "Alta"/"Normal" que vier do backend.
+   */
+  nivel({ genero, subgenero, impacto, prioridade } = {}) {
+    if (this.genero(genero)?.prioridade === 'Alta' || impacto === 'setor') return NIVEIS_PRIORIDADE.alta;
+    if (impacto === 'equipe') return NIVEIS_PRIORIDADE.media;
+    if (!impacto && prioridade === 'Alta') return NIVEIS_PRIORIDADE.alta;
+    const baixas = SUBS_BAIXA[genero];
+    if (baixas === '*' || baixas?.includes(subgenero)) return NIVEIS_PRIORIDADE.baixa;
+    return NIVEIS_PRIORIDADE.normal;
   },
 };
 
