@@ -722,3 +722,20 @@ body.tela-colab.abrindo-chamado .mesa { grid-template-columns: 0px 1fr minmax(26
 @media (prefers-reduced-motion: reduce) {
   .item-caixa, .aparelho-palco .btn-info { animation: none; }
 }
+
+/* Contato extra (opcional) na revisão do ticket */
+.contato-extra {
+  width: min(560px, 100%); margin: 1.2rem auto 0; display: grid; gap: .65rem;
+  padding: 1rem 1.1rem; border-radius: 14px;
+  background: #FFFCF2; color: #23291B; outline: 2px solid var(--tinta); box-shadow: 4px 4px 0 var(--sombra);
+}
+.contato-extra header { display: grid; gap: .15rem; }
+.contato-extra header strong { display: flex; align-items: center; gap: .4rem; font-family: var(--font-display); }
+.contato-extra header small { padding: .05rem .45rem; border-radius: 6px; background: #E6EDD3; color: #3E6B2A; font: 800 .66rem var(--font); letter-spacing: .08em; text-transform: uppercase; }
+.contato-extra header span { font-size: .82rem; color: #625E4A; }
+.contato-tipos { display: flex; flex-wrap: wrap; gap: .45rem; }
+.contato-tipos .btn { margin-bottom: 4px; }
+.contato-tipos .btn.ativo {
+  --k-top: #b4cd7c; --k-top-2: #8fa858; --k-side: #5f7536; --k-edge: #3d4c22; --k-text: #141a0d;
+  transform: translateY(var(--key-depth)); box-shadow: 0 0 0 var(--k-side), inset 0 2px 4px rgba(0, 0, 0, .14);
+}

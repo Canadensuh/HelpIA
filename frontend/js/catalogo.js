@@ -260,7 +260,8 @@ const Catalogo = {
    * Recebe { genero, subgenero, impacto, prioridade } — os mesmos campos da API.
    * Chamados antigos, sem impacto, usam a prioridade "Alta"/"Normal" que vier do backend.
    */
-  nivel({ genero, subgenero, impacto, prioridade } = {}) {
+  nivel({ genero, subgenero, impacto, prioridade, nivel_manual } = {}) {
+    if (nivel_manual && NIVEIS_PRIORIDADE[nivel_manual]) return NIVEIS_PRIORIDADE[nivel_manual];   // o gestor trocou a prioridade
     if (this.genero(genero)?.prioridade === 'Alta' || impacto === 'setor') return NIVEIS_PRIORIDADE.alta;
     if (impacto === 'equipe') return NIVEIS_PRIORIDADE.media;
     if (!impacto && prioridade === 'Alta') return NIVEIS_PRIORIDADE.alta;

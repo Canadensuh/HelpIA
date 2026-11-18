@@ -329,3 +329,115 @@ if (usuario) {
   carregar();
   setInterval(() => { if (!document.hidden) carregar(); }, 8000);
 }
+
+// =========================================================
+// Exportar dados do painel: baixar em CSV (abre no Excel) ou
+// mandar o resumo no grupo do HelpIA Chat.
+// =========================================================
+const RECORTES = {
+  geral: 'Resumo geral da equipe',
+  analistas: 'Desempenho dos analistas',
+  tickets: 'Lista de todos os tickets',
+};
+
+function dadosDoRecorte(recorte, analista = '') {
+  const abertos = chamados.filter((c) => c.status !== 'Resolvido');
+  const hoje = isoDia(new Date());
+  const doAnalista = (c) => !analista || c.analista === analista;
+  if (recorte === 'geral') {
+    const resolvidos = chamados.filter((c) => c.status === 'Resolvido');
+    const porNivel = ['alta', 'media', 'normal', 'baixa'].map((n) => [Catalogo.niveis[n].rotulo, abertos.filter((c) => Catalogo.nivel(c).id === n).length]);
+    const problemas = Object.entries(chamados.reduce((m, c) => { m[c.genero_titulo] = (m[c.genero_titulo] || 0) + 1; return m; }, {}))
+      .sort((a, b) => b[1] - a[1]).slice(0, 5);
+    return {
+      colunas: ['Indicador', 'Valor'],
+      linhas: [
+        ['Em aberto', abertos.length],
+        ['Na fila', abertos.filter((c) => c.status === 'Aguardando').length],
+        ['Em atendimento', abertos.filter((c) => c.status === 'Em atendimento').length],
+        ['Resolvidos hoje', resolvidos.filter((c) => dia(c.resolvido_em) === hoje).length],
+        ['Resolvidos no total', resolvidos.length],
+        [`Parados há +${DEMORA_MIN} min`, abertos.filter((c) => TicketUI.minutosParado(c) >= DEMORA_MIN).length],
+        ...porNivel.map(([n, v]) => [`Em aberto · prioridade ${n}`, v]),
+        ...problemas.map(([p, v]) => [`Problema · ${p}`, v]),
+      ],
+    };
+  }
+  if (recorte === 'analistas') {
+    const lista = (metas?.analistas || []).filter((a) => !analista || a.nome === analista);
+    return {
+      colunas: ['Analista', 'Feitos hoje', 'Meta do dia', 'Na mesa agora', 'Resolvidos no total'],
+      linhas: lista.map((a) => [a.nome, a.feitos_hoje, a.meta, chamados.filter((c) => c.status === 'Em atendimento' && c.analista === a.nome).length, a.total]),
+    };
+  }
+  return {
+    colunas: ['Ticket', 'Tipo', 'Problema', 'Prioridade', 'Status', 'Solicitante', 'Analista', 'Aberto em', 'Resolvido em'],
+    linhas: chamados.filter(doAnalista).sort((a, b) => a.numero - b.numero).map((c) => [
+      c.codigo, c.genero_titulo, c.subgenero_titulo, Catalogo.nivel(c).rotulo, c.status, c.solicitante, c.analista || '',
+      (c.aberto_em || '').replace('T', ' ').slice(0, 16), (c.resolvido_em || '').replace('T', ' ').slice(0, 16)]),
+  };
+}
+
+function baixarCsv(nome, { colunas, linhas }) {
+  const celula = (v) => { const t = String(v ?? ''); return /[;"\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+  const csv = '﻿' + [colunas, ...linhas].map((l) => l.map(celula).join(';')).join('\r\n');   // ; e BOM: o Excel em português abre certinho
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const a = Object.assign(document.createElement('a'), { href: url, download: nome });
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/** Resumo em texto para o chat (até 12 linhas; o resto vai no CSV). */
+function textoParaChat(titulo, { colunas, linhas }) {
+  const corpo = linhas.slice(0, 12).map((l) => (colunas.length === 2 ? `• ${l[0]}: ${l[1]}` : `• ${l.filter((x) => x !== '').join(' · ')}`));
+  const resto = linhas.length > 12 ? [`… e mais ${linhas.length - 12} linha(s) no arquivo exportado.`] : [];
+  return [`📊 ${titulo} (${new Date().toLocaleDateString('pt-BR')})`, ...corpo, ...resto].join('\n');
+}
+
+function abrirExportar() {
+  const analistas = (metas?.analistas || []).map((a) => a.nome);
+  const d = document.createElement('dialog');
+  d.className = 'modal modal-exportar';
+  d.innerHTML = `<div class="modal-conteudo">
+    <header class="modal-topo"><h2>${ic('seta-baixo')} Exportar dados do painel</h2>
+      <button type="button" class="btn btn-ghost btn-sm" data-fechar-exportar aria-label="Fechar">${ic('x')}</button></header>
+    <fieldset class="exportar-recortes"><legend>O que exportar</legend>
+      ${Object.entries(RECORTES).map(([id, rotulo], i) => `<label class="exportar-opcao">
+        <input type="radio" name="recorte" value="${id}" ${i === 0 ? 'checked' : ''} /><span>${rotulo}</span></label>`).join('')}
+    </fieldset>
+    <label class="campo">Analista
+      <select class="input" data-exportar-analista>
+        <option value="">Todos os analistas</option>${analistas.map((n) => `<option>${esc(n)}</option>`).join('')}
+      </select><span class="campo-ajuda">Vale para "Desempenho dos analistas" e "Lista de todos os tickets".</span></label>
+    <div class="exportar-previa" data-previa></div>
+    <div class="modal-acoes">
+      <button type="button" class="btn" data-exportar-chat>${ic('chat')} Mencionar no HelpIA Chat</button>
+      <button type="button" class="btn btn-primary" data-exportar-csv>${ic('seta-baixo')} Baixar planilha (CSV)</button>
+    </div></div>`;
+  document.body.appendChild(d);
+  const recorte = () => d.querySelector('input[name="recorte"]:checked').value;
+  const analista = () => d.querySelector('[data-exportar-analista]').value;
+  const titulo = () => `${RECORTES[recorte()]}${analista() && recorte() !== 'geral' ? ` · ${analista()}` : ''}`;
+  const previa = () => {
+    const dados = dadosDoRecorte(recorte(), analista());
+    d.querySelector('[data-previa]').innerHTML = `<strong>${dados.linhas.length} linha(s) · prévia</strong>
+      <div class="exportar-tabela"><table><thead><tr>${dados.colunas.map((c) => `<th>${esc(c)}</th>`).join('')}</tr></thead>
+      <tbody>${dados.linhas.slice(0, 5).map((l) => `<tr>${l.map((v) => `<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  };
+  d.addEventListener('change', previa);
+  d.addEventListener('click', (e) => { if (e.target === d || e.target.closest('[data-fechar-exportar]')) d.close(); });
+  d.addEventListener('close', () => d.remove());
+  d.querySelector('[data-exportar-csv]').addEventListener('click', () => {
+    const sufixo = analista() ? `-${analista().toLowerCase().normalize('NFD').replace(/[^\w]+/g, '-')}` : '';
+    const nome = `helpia-${recorte()}${sufixo}-${isoDia(new Date())}.csv`;
+    baixarCsv(nome, dadosDoRecorte(recorte(), analista()));
+    Efeitos.toast(`Planilha <strong>${esc(nome)}</strong> baixada.`, { icone: ic('check'), tipo: 'sucesso' });
+  });
+  d.querySelector('[data-exportar-chat]').addEventListener('click', () => {
+    const texto = textoParaChat(titulo(), dadosDoRecorte(recorte(), analista()));
+    location.href = `conversas.html?${new URLSearchParams({ grupo: '1', texto })}`;
+  });
+  previa();
+  d.showModal();
+}
+document.getElementById('botaoExportar').addEventListener('click', abrirExportar);

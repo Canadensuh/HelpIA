@@ -189,7 +189,7 @@ function renderizar() {
   const peso = (c) => ORDEM[Catalogo.nivel(c).id];
   const entrada = todos.filter((c) => c.status === 'Aguardando')
     .sort((a, b) => peso(a) - peso(b) || a.aberto_em.localeCompare(b.aberto_em));
-  const minhaMesa = todos.filter((c) => c.status === 'Em atendimento' && c.analista === usuario.nome);
+  const minhaMesa = ordenarMesa(todos.filter((c) => c.status === 'Em atendimento' && c.analista === usuario.nome));
   const comColegas = todos.filter((c) => c.status === 'Em atendimento' && c.analista !== usuario.nome);
   const arquivados = todos.filter((c) => c.status === 'Resolvido');
   const hoje = arquivados.filter((c) => c.analista === usuario.nome && (c.resolvido_em || '').startsWith(hojeIso()));
@@ -499,6 +499,48 @@ Arrastar.ligar(elEntrada, {
     return elMesa.querySelector(`[data-numero="${el.dataset.numero}"]`);
   },
   aoTerminar() { arrastando = false; elTampo.classList.remove('alvo'); },
+});
+
+// ---------- Arrastar dentro da mesa: o analista organiza os próprios tickets ----------
+// A ordem fica salva neste navegador; soltando em cima de outro ticket, os dois trocam de lugar.
+const CHAVE_ORDEM = `helpia-mesa-ordem-${usuario?.id}`;
+let ordemMesa = (() => { try { return JSON.parse(localStorage.getItem(CHAVE_ORDEM)) || []; } catch { return []; } })();
+function ordenarMesa(lista) {
+  const pos = (c) => { const i = ordemMesa.indexOf(c.numero); return i < 0 ? Infinity : i; };
+  const ordenada = [...lista].sort((a, b) => pos(a) - pos(b) || (a.assumido_em || '').localeCompare(b.assumido_em || ''));
+  ordemMesa = ordenada.map((c) => c.numero);
+  return ordenada;
+}
+function salvarOrdem() { try { localStorage.setItem(CHAVE_ORDEM, JSON.stringify(ordemMesa)); } catch {} }
+Arrastar.ligar(elMesa, {
+  item: '.tkp-item',
+  ignorar: 'input, label, a, button:not(.tkp-abrir)',
+  aoMover({ el, alvo }) {
+    arrastando = true;
+    const sobre = alvo?.closest('#listaMesa .tkp-item');
+    elMesa.querySelectorAll('.casa-alvo').forEach((x) => { if (x !== sobre) x.classList.remove('casa-alvo'); });
+    if (sobre && sobre !== el) sobre.classList.add('casa-alvo');
+  },
+  aoSoltar({ el, alvo }) {
+    const sobre = alvo?.closest('#listaMesa .tkp-item');
+    if (!sobre || sobre === el) return sobre ? el : null;
+    const a = ordemMesa.indexOf(Number(el.dataset.numero));
+    const b = ordemMesa.indexOf(Number(sobre.dataset.numero));
+    if (a < 0 || b < 0) return null;
+    [ordemMesa[a], ordemMesa[b]] = [ordemMesa[b], ordemMesa[a]];
+    salvarOrdem();
+    arrastando = false;
+    Arrastar.ativo = false;
+    renderizar();
+    const novo = elMesa.querySelector(`.tkp-item[data-numero="${el.dataset.numero}"]`);
+    novo?.classList.add('arrasto-origem');
+    elMesa.querySelector(`.tkp-item[data-numero="${sobre.dataset.numero}"]`)?.classList.add('trocou');
+    return novo;
+  },
+  aoTerminar() {
+    arrastando = false;
+    elMesa.querySelectorAll('.arrasto-origem, .casa-alvo').forEach((x) => x.classList.remove('arrasto-origem', 'casa-alvo'));
+  },
 });
 
 // ---------- Bandeja retrátil (começa recolhida, para a mesa ficar em destaque) ----------

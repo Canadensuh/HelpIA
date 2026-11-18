@@ -53,14 +53,27 @@ const Conta = {
 
   htmlMenu() {
     const u = this.usuario;
-    const empresa = u.empresa?.nome ? ` · ${this.esc(u.empresa.nome)}` : '';
+    // O crachá da pessoa (o mesmo da tela de Usuários do gestor, css/cracha.css)
     return `
-      <div class="conta-menu-cabeca">
-        <strong>${this.esc(u.nome)}</strong>
-        <span>${this.esc(u.email || '')}</span>
-        <small>${this.ROTULOS[u.perfil] || ''}${empresa}</small>
+      <div class="conta-cracha" aria-hidden="true">
+        <div class="cracha-item">
+          <span class="cordao"></span>
+          <div class="cracha p-${u.perfil}">
+            <span class="cracha-faixa"></span>
+            <span class="cracha-foto">${Avatar.conteudo(u)}</span>
+            <span class="cracha-nome">${this.esc(u.nome)}</span>
+            <span class="cracha-cargo">${this.ROTULOS[u.perfil] || ''}</span>
+            <span class="cracha-email">${this.esc(u.email || '')}</span>
+            <span class="cracha-id">ID ${String(u.id ?? 0).padStart(4, '0')} · ${this.esc(u.empresa?.nome || 'HelpIA')}</span>
+            <span class="codigo-barras"></span>
+          </div>
+        </div>
       </div>
-      <button type="button" class="conta-item" role="menuitem" data-conta="config">${this.ic('engrenagem')}<span>Configurações da conta</span></button>
+      <span class="sr-only">${this.esc(u.nome)}, ${this.ROTULOS[u.perfil] || ''}</span>
+      <div class="conta-acoes">
+        <button type="button" class="btn btn-sm" role="menuitem" data-conta="config">${this.ic('engrenagem')} Configurações</button>
+        <button type="button" class="btn btn-sm key--rosa" role="menuitem" data-conta="sair">${this.ic('sair')} Sair</button>
+      </div>
       ${this.ehGestor ? `
       <div class="conta-grupo" role="group" aria-label="Demonstração">
         <span class="conta-grupo-titulo">Demonstração</span>
@@ -71,8 +84,7 @@ const Conta = {
           <span class="chave" aria-hidden="true"></span>
         </label>
         <button type="button" class="conta-item conta-perigo" role="menuitem" data-conta="limpar">${this.ic('x')}<span>Limpar dados<small>Apaga todos os tickets e as conversas da empresa</small></span></button>
-      </div>` : ''}
-      <button type="button" class="conta-item conta-sair" role="menuitem" data-conta="sair">${this.ic('sair')}<span>Sair</span></button>`;
+      </div>` : ''}`;
   },
 
   async abrirMenu(abrir) {

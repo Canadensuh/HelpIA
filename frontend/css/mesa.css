@@ -660,8 +660,6 @@
 .trilho-marca .trilho-rotulo { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; letter-spacing: -.02em; }
 .trilho-marca b { color: var(--mostarda); font-weight: 800; }
 .trilho-marca:focus-visible { outline: 3px solid var(--oliva-clara); outline-offset: 2px; border-radius: 10px; }
-/* Com o trilho, o logo fica nele: o do topo sai para não aparecer dobrado */
-.com-trilho .mesa-topo > .brand { display: none; }
 .trilho-item {
   display: flex; align-items: center; gap: .8rem;
   padding: 3px; border-radius: 12px;
@@ -876,3 +874,45 @@
 .lembranca-titulo { display: flex; align-items: center; gap: .35rem; margin-bottom: .25rem; color: #7A5A0A; font-family: var(--font-display); }
 @keyframes lembra-chega { from { opacity: 0; transform: translateY(-8px) scale(.97); } }
 @media (prefers-reduced-motion: reduce) { .lembranca-modal { animation: none; } }
+
+/* Trilho: o nome HelpIA fica numa linha só; o Sair fica no pé do trilho */
+.trilho-marca .trilho-rotulo { flex-direction: row; align-items: baseline; }
+.trilho-sair { margin-top: auto; border: 0; background: transparent; font: inherit; text-align: left; cursor: pointer; }
+.trilho-sair .trilho-ico { color: #F2B5A6; }
+.trilho-sair .trilho-ico svg { width: 1.35rem; height: 1.35rem; }
+.trilho-sair:hover .trilho-ico { background: linear-gradient(180deg, #6B2A1E, #4A1D14); color: #FFE3DC; }
+.trilho-sair:focus-visible { outline: 3px solid var(--oliva-clara); outline-offset: 2px; }
+/* O nome HelpIA aparece no topo, ao lado do logo do trilho (o ícone do topo sai para não repetir) */
+.com-trilho .mesa-topo > .brand { display: inline-flex; }
+.com-trilho .mesa-topo > .brand img { display: none; }
+
+/* =========================================================
+   Gaveta (Histórico do colaborador, Bandeja do analista)
+   Aberta, ela continua com a cara da alça fechada: a mesma moldura
+   escura, a mesma cor de texto e a seta, agora deitada no topo.
+   Assim dá para ver que é a mesma gaveta abrindo.
+   ========================================================= */
+.tela-retratil.coluna-aberta .coluna-retratil {
+  display: flex; flex-direction: column; gap: .55rem;
+  padding: .55rem .55rem .6rem;
+  border: 2px solid var(--tinta); border-radius: 14px;
+  background: linear-gradient(180deg, #232B1B, #161B10);
+  box-shadow: 4px 4px 0 var(--sombra), inset 0 1px 0 rgba(255, 255, 255, .06);
+  animation: gaveta-abre .35s cubic-bezier(.2, .8, .2, 1);
+}
+@keyframes gaveta-abre { from { opacity: .4; transform: translateX(-14px); } }
+.tela-retratil.coluna-aberta .coluna-retratil > .area-topo {
+  margin: 0; padding: .2rem .2rem .55rem .45rem;
+  border-bottom: 1px dashed rgba(195, 216, 147, .3);
+  color: #C3D893;
+}
+.tela-retratil.coluna-aberta .coluna-retratil > .area-topo h2 { color: #C3D893; font-size: 1rem; }
+.tela-retratil.coluna-aberta .coluna-retratil > .area-topo h2 .ic { color: #C3D893; }
+.tela-retratil.coluna-aberta .coluna-retratil > .bandeja-fundo { flex: 1; min-height: 0; margin: 0; border-radius: 10px; }
+/* A seta de recolher é a mesma da alça, só que apontando para fechar */
+.tela-retratil .coluna-retratil .btn-recolher {
+  --k-top: #34412A; --k-top-2: #252E1E; --k-side: #0A0D07; --k-edge: #050704; --k-text: #C3D893;
+  font-size: 1.35rem; font-weight: 800;
+}
+.tela-retratil .coluna-retratil .btn-recolher:hover { --k-text: var(--fosforo); }
+@media (prefers-reduced-motion: reduce) { .tela-retratil.coluna-aberta .coluna-retratil { animation: none; } }

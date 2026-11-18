@@ -1,0 +1,80 @@
+/* =========================================================
+   celular.css — o HelpIA no celular (carregar por último)
+   - O trilho da esquerda vira uma barra de abas embaixo da tela.
+   - Os tickets cabem na largura da tela.
+   - HelpIA Chat como os apps de conversa: primeiro a lista,
+     depois a conversa em tela cheia, com o botão de voltar.
+   ========================================================= */
+.chat-voltar { display: none; }
+
+@media (max-width: 760px) {
+  /* ---------- Barra de abas embaixo (no lugar do trilho) ---------- */
+  .com-trilho { padding-left: 0; padding-bottom: calc(70px + env(safe-area-inset-bottom)); }
+  .trilho, .trilho:hover, .trilho:focus-within {
+    top: auto; right: 0; bottom: 0; width: auto; height: calc(66px + env(safe-area-inset-bottom));
+    flex-direction: row; align-items: center; gap: 0;
+    padding: .4rem .5rem env(safe-area-inset-bottom);
+    border-right: 0; border-top: 2px solid var(--tinta);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, .35);
+    overflow: visible;
+  }
+  .trilho .trilho-marca, .trilho .trilho-rotulo { display: none; }
+  .trilho ul { flex: 1; display: flex; justify-content: space-around; gap: .3rem; }
+  .trilho li { flex: 1; display: flex; justify-content: center; }
+  .trilho-item { padding: 2px; }
+  .trilho-ico { width: 48px; height: 44px; }
+  .trilho-sair { margin: 0 0 0 .3rem; }
+
+  /* Topo: com o trilho embaixo, o logo volta para o topo */
+  .com-trilho .mesa-topo > .brand img { display: block; }
+  .mesa-topo { padding: .55rem 12px; gap: .5rem; }
+  .usuario-info { display: none; }
+  .conta-menu { position: fixed; top: 64px; right: 8px; left: auto; }
+
+  /* Tickets do tamanho da tela */
+  .tela-mesa { --tkp-w: min(300px, calc(100vw - 56px)); }
+  .tela-mesa .mesa { padding: .6rem 10px 1rem; gap: .9rem; }
+  .tela-mesa .tampo { padding: .8rem .6rem; }
+  .acao-lado .busca-mesa, .busca-mesa { width: 100%; flex: 1 1 100%; }
+  .desktop-acao { flex-wrap: wrap; }
+
+  /* Janelas (modais) ocupam a tela */
+  .modal { width: calc(100vw - 16px); max-width: none; margin: auto; }
+  .modal-conteudo { padding: 1.1rem 1rem 1.2rem; }
+
+  /* ---------- HelpIA Chat ---------- */
+  .tela-conversas .mesa { grid-template-columns: minmax(0, 1fr); }
+  /* Sem conversa aberta: só a lista */
+  .tela-conversas:not(.conversa-aberta) .centro,
+  .tela-conversas:not(.conversa-aberta) .lateral-chat { display: none; }
+  /* Conversa aberta: tela cheia, com o compositor sempre à vista */
+  .tela-conversas.conversa-aberta .bandeja,
+  .tela-conversas.conversa-aberta .lateral-chat { display: none; }
+  .tela-conversas.conversa-aberta .mesa { padding: .4rem 6px .4rem; }
+  .tela-conversas.conversa-aberta .centro {
+    height: calc(100dvh - 64px - 74px - env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; min-height: 0;
+  }
+  .tela-conversas.conversa-aberta .tampo-chat { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .tela-conversas .mensagens { flex: 1; min-height: 0; overflow-y: auto; padding: .7rem .5rem; }
+  .tela-conversas .centro-topo { gap: .5rem; flex-wrap: nowrap; }
+  .tela-conversas .centro-topo h2 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1rem; }
+  .tela-conversas .centro-topo .pagina-sub { display: none; }
+  .chat-voltar { display: inline-flex; flex: none; margin: 0 0 4px; }
+  .msg { max-width: 94%; }
+  .msg-responder { opacity: .85; transform: none; }
+  .compositor { padding: .55rem .5rem .6rem; }
+  .compositor-linha { gap: .35rem; }
+  .compositor-linha .btn-mencionar, .compositor-linha .btn-icone-chat { width: 40px; min-width: 40px; height: 40px; }
+  .compositor-linha #enviar { padding-inline: .8rem; }
+  .compositor-linha #enviar .rotulo-enviar { display: none; }
+  .sugestoes { left: .5rem; width: calc(100% - 1rem); }
+  .menu-anexo { left: .5rem; right: .5rem; width: auto; }
+
+  /* Gaveta (histórico/bandeja) aberta no celular: largura toda */
+  .tela-retratil.coluna-aberta .coluna-retratil { max-height: 60vh; }
+}
+
+@media (max-width: 380px) {
+  .compositor-linha .btn-mencionar { display: none; }
+}

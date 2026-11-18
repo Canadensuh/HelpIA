@@ -567,6 +567,7 @@
       participantes: pessoas.map((u) => ({ id: u.id, nome: u.nome, perfil: u.perfil, foto: u.foto || null })),
       ticket: conversa.ticket ? chamadoDict(db.chamados.find((c) => c.numero === conversa.ticket) || { numero: conversa.ticket }) : null,
       ultima: ultima ? mensagemDict(db, ultima) : null,
+      encerrada: Boolean(conversa.encerrada),
       atividade: ultima ? ultima.em : conversa.criada_em,
       nao_lidas: mensagens.filter((m) => m.id > lida && m.autor_id !== usuario.id).length,
     };
@@ -582,6 +583,15 @@
     if (!outro || outro.empresa_id !== usuario.empresa_id || outro.id === usuario.id) throw naoEncontrado('Pessoa não encontrada.');
     if (!ehEquipe(usuario)) throw acessoNegado('Colaboradores respondem às mensagens dos analistas, mas não iniciam conversas.');
     let conversa = db.conversas.find((c) => c.tipo === 'direta' && c.membros.includes(usuario.id) && c.membros.includes(outro.id));
+    if (outro.perfil === COLABORADOR) {
+      // Com o colaborador, a conversa é sobre um ticket em aberto dele
+      const aberto = db.chamados.find((c) => c.solicitante_id === outro.id && c.status !== RESOLVIDO && (!ticket || c.numero === ticket));
+      if (!aberto && (!conversa || conversa.encerrada)) {
+        throw conflito(`${outro.nome} não tem ticket em aberto. A conversa volta quando houver um novo chamado.`);
+      }
+      if (conversa?.encerrada && aberto) { conversa.encerrada = false; conversa.ticket = aberto.numero; }
+      if (!ticket && aberto) ticket = aberto.numero;
+    }
     if (!conversa) {
       conversa = { id: db.proximaConversa++, tipo: 'direta', empresa_id: usuario.empresa_id, membros: [usuario.id, outro.id], ticket: null, criada_em: agora() };
       db.conversas.push(conversa);
@@ -589,6 +599,17 @@
     if (ticket) conversa.ticket = ticket;
     return conversa;
   }
+  /** Ticket carimbado: encerra a conversa direta do analista com o colaborador. */
+  function encerrarConversa(db, chamado, usuario) {
+    const analista = db.usuarios.find((u) => u.nome === chamado.analista && u.empresa_id === (usuario?.empresa_id ?? u.empresa_id));
+    if (!analista || chamado.solicitante_id == null) return;
+    const conversa = db.conversas.find((c) => c.tipo === 'direta' && c.membros.includes(analista.id) && c.membros.includes(chamado.solicitante_id));
+    if (!conversa || conversa.encerrada) return;
+    const outroAberto = db.chamados.some((c) => c.solicitante_id === chamado.solicitante_id && c.status !== RESOLVIDO && c.analista === analista.nome);
+    postar(db, conversa, null, `Ticket ${codigo(chamado.numero)} carimbado por ${analista.nome}. ${outroAberto ? 'A conversa continua pelos outros tickets em aberto.' : 'Conversa encerrada: ela volta se um novo chamado for aberto.'}`, chamado.numero);
+    if (!outroAberto) conversa.encerrada = true;
+  }
+
   /** Aviso automático do HelpIA no grupo da equipe, mencionando o ticket. */
   function avisarGrupo(db, empresaId, texto, ticket) {
     if (!empresaId) return;
@@ -697,6 +718,7 @@
         id: String(a.id || '').slice(0, 40), nome: String(a.nome || 'arquivo').slice(0, 200),
         tipo: String(a.tipo || 'application/octet-stream').slice(0, 100), tamanho: Number(a.tamanho) || 0,
       })).filter((a) => a.id);
+      if (conversa.encerrada) throw conflito('Esta conversa foi encerrada quando o ticket foi carimbado.');
       if (!texto && !anexos.length) throw dadosInvalidos('Escreva uma mensagem ou anexe um arquivo.');
       const ticket = corpo.ticket ? Number(corpo.ticket) : null;
       if (ticket && !db.chamados.some((c) => c.numero === ticket)) throw dadosInvalidos('Ticket não encontrado.');
@@ -713,6 +735,12 @@
       return [200, { ok: true }];
     }
 
+    if (metodo === 'PATCH' && (m = rota.match(/^\/chat\/conversas\/(\d+)$/))) {
+      const usuario = usuarioLogado(db, token);
+      const conversa = conversaDoUsuario(db, usuario, Number(m[1]));
+      if ('ticket' in corpo) conversa.ticket = corpo.ticket ? Number(corpo.ticket) : null;
+      return [200, conversaDict(db, conversa, usuario)];
+    }
     if (metodo === 'DELETE' && (m = rota.match(/^\/chat\/conversas\/(\d+)\/mensagens$/))) {
       // Comando /clear: só o gestor limpa a conversa
       const usuario = usuarioLogado(db, token);
@@ -882,6 +910,10 @@
       const dono = chamado.solicitante_id != null
         ? chamado.solicitante_id === usuario?.id
         : chamado.solicitante === usuario?.nome;
+      if (usuario?.perfil === GESTOR) {
+        db.chamados = db.chamados.filter((c) => c !== chamado);
+        return [200, { excluido: chamado.numero }];
+      }
       if (usuario && usuario.perfil === COLABORADOR && !dono) {
         throw acessoNegado('Você só pode excluir os tickets que você abriu.');
       }
@@ -890,6 +922,33 @@
       }
       db.chamados = db.chamados.filter((c) => c !== chamado);
       return [200, { excluido: chamado.numero }];
+    }
+    if (metodo === 'POST' && (m = rota.match(/^\/chamados\/(\d+)\/atribuir$/))) {
+      // Gestor joga o ticket na mesa de um analista
+      const gestor = usuarioLogado(db, token);
+      exigirGestor(gestor);
+      const chamado = buscarChamado(db, Number(m[1]));
+      if (chamado.status === RESOLVIDO) throw conflito(`O ticket ${codigo(chamado.numero)} já foi resolvido.`);
+      const analista = db.usuarios.find((u) => u.id === Number(corpo.analista_id) && u.empresa_id === gestor.empresa_id && ehEquipe(u) && u.ativo !== false);
+      if (!analista) throw naoEncontrado('Analista não encontrado.');
+      chamado.analista = analista.nome;
+      chamado.status = EM_ATENDIMENTO;
+      chamado.assumido_em = chamado.assumido_em || agora();
+      avisarGrupo(db, gestor.empresa_id, `${gestor.nome} passou o ticket ${codigo(chamado.numero)} para a mesa de ${analista.nome}.`, chamado.numero);
+      return [200, chamadoDict(chamado)];
+    }
+    if (metodo === 'PATCH' && (m = rota.match(/^\/chamados\/(\d+)$/))) {
+      // Gestor troca a prioridade (baixa, normal, média ou alta)
+      const gestor = usuarioLogado(db, token);
+      exigirGestor(gestor);
+      const chamado = buscarChamado(db, Number(m[1]));
+      const NIVEIS = { baixa: 'Baixa', normal: 'Normal', media: 'Média', alta: 'Alta' };
+      if (corpo.nivel !== undefined) {
+        if (!NIVEIS[corpo.nivel]) throw dadosInvalidos('Escolha baixa, normal, média ou alta.');
+        chamado.nivel_manual = corpo.nivel;
+        chamado.prioridade = NIVEIS[corpo.nivel];
+      }
+      return [200, chamadoDict(chamado)];
     }
     if (metodo === 'POST' && (m = rota.match(/^\/chamados\/(\d+)\/assumir$/))) {
       const chamado = buscarChamado(db, Number(m[1]));
@@ -919,6 +978,7 @@
       chamado.status = RESOLVIDO;
       chamado.resolucao = nota.slice(0, 1000);
       chamado.resolvido_em = agora();
+      encerrarConversa(db, chamado, usuario);
       return [200, chamadoDict(chamado)];
     }
 

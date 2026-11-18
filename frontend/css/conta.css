@@ -97,3 +97,16 @@
 .modal-conta .modal-conteudo { width: auto; }
 .modal-conta .campo { text-align: left; }
 .modal-conta .modal-acoes { align-items: center; }
+
+/* Menu da conta com o crachá da pessoa pendurado no cordão */
+.conta-menu { width: 290px; padding: 0 .9rem .9rem; overflow: visible; }
+.conta-cracha { display: flex; justify-content: center; margin-top: -12px; }
+.conta-cracha .cracha-item { width: 220px; }
+.conta-cracha .cordao { height: 36px; }
+.conta-cracha .cracha { animation: conta-cracha-cai .5s cubic-bezier(.3, 1.4, .5, 1); }
+@keyframes conta-cracha-cai { from { transform: translateY(-18px) rotate(-5deg); opacity: 0; } }
+.conta-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: .9rem; }
+.conta-acoes .btn { margin: 0; justify-content: center; }
+.conta-acoes .conta-svg { width: 1rem; height: 1rem; }
+.conta-menu .conta-grupo { margin-top: .8rem; }
+@media (prefers-reduced-motion: reduce) { .conta-cracha .cracha { animation: none; } }

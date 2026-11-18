@@ -10,7 +10,7 @@
    é uma caixa com os itens) → Situação (impacto, avança ao tocar) →
    Nota → Equipamento (computador ou impressora desenhado, com o número
    digitado na tela) → Revisão → Ticket impresso e entregue ao Helpy.
-   (O contato agora é pelo HelpIA Chat: não perguntamos mais.)
+   (O canal principal é o HelpIA Chat; na revisão dá para deixar um contato extra opcional.)
    ========================================================= */
 
 const usuario = Sessao.exigir(['colaborador']);
@@ -927,7 +927,46 @@ function telaRevisao() {
       <p>Confira os dados. Ao gerar, ele vai direto para a mesa do analista da fila ${esc(estado.genero.fila)}.</p>
     </div>
     ${ticketHtml()}
+    ${blocoContato()}
     <p class="aviso aviso-erro erro-etapa" id="erroEnvio" hidden></p>`;
+}
+
+/** Contato extra (opcional): WhatsApp, Teams ou e-mail, além do HelpIA Chat. */
+function blocoContato() {
+  const tipo = estado.contato?.tipo || 'whatsapp';
+  const atual = Catalogo.contatos.find((t) => t.id === tipo) || Catalogo.contatos[0];
+  return `
+    <section class="contato-extra" aria-labelledby="tituloContato">
+      <header>
+        <strong id="tituloContato">${ic('fone')} Contato extra <small>opcional</small></strong>
+        <span>O analista já fala com você pelo HelpIA Chat. Se preferir, deixe outro contato.</span>
+      </header>
+      <div class="contato-tipos" role="radiogroup" aria-label="Tipo de contato">
+        ${Catalogo.contatos.map((t) => `<button type="button" class="btn btn-sm ${t.id === tipo ? 'ativo' : ''}" role="radio"
+          aria-checked="${t.id === tipo}" data-contato-tipo="${t.id}">${ic(t.ic)} ${t.titulo}</button>`).join('')}
+      </div>
+      <input class="input" id="contatoValor" type="${tipo === 'whatsapp' ? 'tel' : 'email'}" maxlength="80"
+        placeholder="${atual.placeholder}" value="${esc(estado.contato?.valor || '')}" aria-label="${atual.titulo} (opcional)" />
+    </section>`;
+}
+
+function ligarContato() {
+  const caixa = elPalco.querySelector('.contato-extra');
+  if (!caixa) return;
+  const campo = caixa.querySelector('#contatoValor');
+  campo.addEventListener('input', () => { estado.contato = { ...estado.contato, valor: campo.value.trim() }; });
+  caixa.querySelectorAll('[data-contato-tipo]').forEach((b) => b.addEventListener('click', () => {
+    const t = Catalogo.contatos.find((x) => x.id === b.dataset.contatoTipo);
+    estado.contato = { tipo: t.id, valor: campo.value.trim() };
+    caixa.querySelectorAll('[data-contato-tipo]').forEach((o) => {
+      o.classList.toggle('ativo', o === b);
+      o.setAttribute('aria-checked', String(o === b));
+    });
+    campo.type = t.id === 'whatsapp' ? 'tel' : 'email';
+    campo.placeholder = t.placeholder;
+    campo.setAttribute('aria-label', `${t.titulo} (opcional)`);
+    campo.focus();
+  }));
 }
 
 // ---------- Eventos de cada tela ----------
@@ -953,6 +992,7 @@ function ligarEventos(etapa) {
 
   if (etapa === 'maquina') ligarMaquina();
   if (etapa === 'nota') ligarNota();
+  if (etapa === 'revisao') ligarContato();
 }
 
 function ligarMaquina() {
@@ -1153,6 +1193,8 @@ async function gerarTicket() {
       impacto: estado.impacto || 'eu',
       maquina: estado.maquina,
       nota: estado.nota.trim(),
+      // Contato extra é opcional: só vai se a pessoa preencheu
+      ...(estado.contato?.valor ? { contato: { tipo: estado.contato.tipo, valor: estado.contato.valor } } : {}),
     });
   } catch {
     mostrarOffline(elOffline);

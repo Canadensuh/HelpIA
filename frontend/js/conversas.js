@@ -83,7 +83,9 @@ async function carregarConversas() {
   if (nova !== assinaturaLista) { assinaturaLista = nova; renderizarLista(); }
   if (atual) {
     const fresca = conversas.find((c) => c.id === atual.id);
-    if (fresca && fresca.ultima?.id !== ultimaMensagem) { atual = fresca; carregarMensagens(); }
+    if (fresca && (fresca.ultima?.id !== ultimaMensagem || fresca.encerrada !== atual.encerrada)) {
+      atual = fresca; carregarMensagens(); atualizarEncerrada(); renderizarDetalhes();
+    }
   }
 }
 
@@ -91,11 +93,12 @@ async function carregarConversas() {
 async function abrirConversa(id) {
   atual = conversas.find((c) => c.id === id) || null;
   if (!atual) return;
+  document.body.classList.add('conversa-aberta');          // no celular: a conversa ocupa a tela
   ultimaMensagem = 0;
   mensagens = [];
   cancelarResposta();
   elMensagens.innerHTML = '<li class="msg-carregando">Carregando…</li>';
-  elCompositor.hidden = false;
+  atualizarEncerrada();
   renderizarCabecalho();
   renderizarDetalhes();
   renderizarLista();
@@ -236,10 +239,27 @@ function renderizarDetalhes() {
           <span><b>${esc(p.nome)}${p.id === usuario.id ? ' (você)' : ''}</b><small>${ROTULOS[p.perfil]}</small></span></li>`).join('')}
       </ul>
     </div>
-    ${ticket ? `<div class="detalhe-bloco"><strong>${ic('ticket')} Ticket do assunto</strong>
+    ${ticket ? `<div class="detalhe-bloco"><strong class="detalhe-titulo">${ic('ticket')} Ticket do assunto
+        <button type="button" class="btn btn-sm key--rosa btn-tirar-assunto" data-tirar-assunto aria-label="Tirar o ticket do assunto desta conversa" title="Tirar o ticket desta conversa">${ic('x')}</button></strong>
       <ul class="lista-tickets">${TicketUI.padrao(ticket)}</ul></div>` : ''}
     ${!ticket && mencionados.length ? `<div class="detalhe-bloco"><strong>${ic('ticket')} Tickets mencionados</strong>
       <div class="mencionados">${mencionados.map(cartaoTicket).join('')}</div></div>` : ''}`;
+}
+
+// ---------- Conversa encerrada (ticket carimbado) ----------
+const elEncerrada = document.createElement('p');
+elEncerrada.className = 'conversa-encerrada';
+elEncerrada.hidden = true;
+elCompositor.after(elEncerrada);
+function atualizarEncerrada() {
+  const encerrada = Boolean(atual?.encerrada);
+  elCompositor.hidden = !atual || encerrada;
+  elEncerrada.hidden = !encerrada;
+  if (encerrada) {
+    elEncerrada.innerHTML = `${ic('carimbo')}<span><strong>Conversa encerrada</strong>${
+      ehEquipe ? 'O ticket foi carimbado. A conversa volta quando o colaborador abrir um novo chamado.'
+        : 'Seu ticket foi resolvido e carimbado. Se precisar de novo, é só abrir um novo chamado.'}</span>`;
+  }
 }
 
 // ---------- Enviar ----------
@@ -431,7 +451,69 @@ function limparPendentes() {
   pendentes = [];
   renderizarPendentes();
 }
-document.getElementById('anexar').addEventListener('click', () => elArquivo.click());
+const elBotaoAnexar = document.getElementById('anexar');
+const elMenuAnexo = document.createElement('div');
+elMenuAnexo.className = 'menu-anexo';
+elMenuAnexo.hidden = true;
+elMenuAnexo.innerHTML = `
+  <button type="button" class="menu-anexo-item" data-arquivo>${ic('arquivo')}<span><b>Arquivo</b><small>Documentos, prints, imagens e vídeos</small></span></button>
+  <button type="button" class="menu-anexo-item" data-camera>${ic('olho')}<span><b>Câmera</b><small>Tirar uma foto agora</small></span></button>`;
+elCompositor.appendChild(elMenuAnexo);
+function fecharMenuAnexo() { elMenuAnexo.hidden = true; elBotaoAnexar.setAttribute('aria-expanded', 'false'); }
+elBotaoAnexar.setAttribute('aria-haspopup', 'menu');
+elBotaoAnexar.addEventListener('click', (e) => {
+  e.stopPropagation();
+  elMenuAnexo.hidden = !elMenuAnexo.hidden;
+  elBotaoAnexar.setAttribute('aria-expanded', String(!elMenuAnexo.hidden));
+});
+document.addEventListener('click', (e) => { if (!elMenuAnexo.hidden && !e.target.closest('.menu-anexo, #anexar')) fecharMenuAnexo(); });
+
+// ---------- Câmera: no celular abre a câmera do aparelho; no computador, a webcam ----------
+const elCameraInput = document.createElement('input');
+Object.assign(elCameraInput, { type: 'file', accept: 'image/*', hidden: true });
+elCameraInput.setAttribute('capture', 'environment');
+elCompositor.appendChild(elCameraInput);
+elCameraInput.addEventListener('change', () => { adicionarArquivos(elCameraInput.files); elCameraInput.value = ''; });
+
+async function abrirCamera() {
+  const celular = matchMedia('(pointer: coarse)').matches;
+  if (celular || !navigator.mediaDevices?.getUserMedia) { elCameraInput.click(); return; }
+  let fluxo;
+  try {
+    fluxo = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+  } catch {
+    Efeitos.toast('Não deu para abrir a câmera. Confira a permissão do navegador ou escolha um arquivo.', { icone: ic('alerta'), tipo: 'alerta' });
+    return;
+  }
+  const modal = document.createElement('dialog');
+  modal.className = 'modal modal-camera';
+  modal.innerHTML = `<div class="modal-conteudo">
+    <header class="modal-topo"><h2>${ic('olho')} Tirar foto</h2>
+      <button type="button" class="btn btn-ghost btn-sm" data-fechar aria-label="Fechar">${ic('x')}</button></header>
+    <video class="camera-video" autoplay playsinline muted></video>
+    <div class="modal-acoes">
+      <button type="button" class="btn btn-ghost" data-fechar>Cancelar</button>
+      <button type="button" class="btn key--green" data-foto>${ic('olho')} Tirar foto</button>
+    </div></div>`;
+  document.body.appendChild(modal);
+  const video = modal.querySelector('video');
+  video.srcObject = fluxo;
+  modal.addEventListener('close', () => { fluxo.getTracks().forEach((t) => t.stop()); modal.remove(); });
+  modal.querySelector('[data-foto]').addEventListener('click', () => {
+    const tela = document.createElement('canvas');
+    tela.width = video.videoWidth || 1280;
+    tela.height = video.videoHeight || 720;
+    tela.getContext('2d').drawImage(video, 0, 0, tela.width, tela.height);
+    tela.toBlob((blob) => {
+      if (blob) {
+        const hora = new Date().toLocaleTimeString('pt-BR').replace(/:/g, '-');
+        adicionarArquivos([new File([blob], `foto-${hora}.jpg`, { type: 'image/jpeg' })]);
+      }
+      modal.close();
+    }, 'image/jpeg', .9);
+  });
+  modal.showModal();
+}
 elArquivo.addEventListener('change', () => { adicionarArquivos(elArquivo.files); elArquivo.value = ''; });
 elTexto.addEventListener('paste', (e) => {
   const arquivos = [...(e.clipboardData?.files || [])];
@@ -542,6 +624,16 @@ async function conversarCom(id, ticket = null) {
 // ---------- Cliques ----------
 document.addEventListener('click', async (e) => {
   const alvo = (s) => e.target.closest(s);
+  if (alvo('[data-tirar-assunto]')) {
+    const { ok, dados } = await API.chatTirarTicket(atual.id);
+    if (!ok) { Efeitos.toast(esc(dados.erro || 'Não foi possível tirar o ticket.'), { icone: ic('alerta'), tipo: 'alerta' }); return; }
+    atual = { ...atual, ticket: null };
+    renderizarDetalhes();
+    Efeitos.toast('Ticket tirado do assunto da conversa.', { icone: ic('check'), tipo: 'sucesso' });
+    return;
+  }
+  if (alvo('[data-camera]')) { abrirCamera(); fecharMenuAnexo(); return; }
+  if (alvo('[data-arquivo]')) { elArquivo.click(); fecharMenuAnexo(); return; }
   if (alvo('[data-responder]')) { responderA(alvo('[data-responder]').dataset.responder); return; }
   if (alvo('[data-cancelar-resposta]')) { cancelarResposta(); elTexto.focus(); return; }
   if (alvo('[data-ir-msg]')) {
@@ -589,9 +681,16 @@ document.addEventListener('click', async (e) => {
   if (q.get('com') && ehEquipe) await conversarCom(Number(q.get('com')), anexo);
   else if (q.get('grupo')) { const g = conversas.find((c) => c.tipo === 'grupo'); if (g) await abrirConversa(g.id); }
   else if (q.get('conversa')) await abrirConversa(Number(q.get('conversa')));
-  else if (conversas.length) await abrirConversa((conversas.find((c) => c.nao_lidas) || conversas[0]).id);
+  // No celular a tela começa pela lista de conversas (como nos apps de mensagem)
+  else if (conversas.length && !matchMedia('(max-width: 760px)').matches) await abrirConversa((conversas.find((c) => c.nao_lidas) || conversas[0]).id);
   if (q.get('texto')) { elTexto.value = q.get('texto'); ajustarAltura(); }
   mostrarAnexo();
 
   setInterval(() => { if (!document.hidden) carregarConversas(); }, 2500);
 })();
+
+// Celular: voltar da conversa para a lista
+document.getElementById('voltarConversas')?.addEventListener('click', () => {
+  document.body.classList.remove('conversa-aberta');
+  fecharSugestoes();
+});

@@ -17,7 +17,9 @@
   <link rel="stylesheet" href="css/paginas.css" />
   <link rel="stylesheet" href="css/teclas.css" />
   <link rel="stylesheet" href="css/papelaria.css" />
+  <link rel="stylesheet" href="css/cracha.css" />
   <link rel="stylesheet" href="css/conta.css" />
+  <link rel="stylesheet" href="css/celular.css" />
 </head>
 <body class="tela-mesa tela-pagina tela-conversas">
 
@@ -47,6 +49,7 @@
     <!-- Centro: a conversa aberta -->
     <section class="centro" aria-labelledby="tituloConversa">
       <header class="area-topo centro-topo">
+        <button type="button" class="btn btn-sm chat-voltar" id="voltarConversas" aria-label="Voltar para as conversas">‹ Conversas</button>
         <h2 id="tituloConversa"><i class="ic ic-chat" aria-hidden="true"></i> HelpIA Chat</h2>
         <span class="pagina-sub" id="subConversa"></span>
       </header>
@@ -60,7 +63,7 @@
             <button type="button" class="btn btn-icone-chat" id="anexar" title="Anexar documentos, prints, imagens ou vídeos" aria-label="Anexar arquivos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg></button>
             <button type="button" class="btn btn-icone-chat" id="abrirEmojis" title="Emojis" aria-label="Escolher um emoji" aria-expanded="false" aria-controls="painelEmojis"><span aria-hidden="true">😊</span></button>
             <textarea id="texto" class="input" rows="1" maxlength="1000" placeholder="Escreva uma mensagem… (# ticket, @ pessoa)"></textarea>
-            <button type="submit" class="btn key--green" id="enviar"><i class="ic ic-enviar" aria-hidden="true"></i> Enviar</button>
+            <button type="submit" class="btn key--green" id="enviar"><i class="ic ic-enviar" aria-hidden="true"></i><span class="rotulo-enviar"> Enviar</span></button>
           </div>
           <input type="file" id="arquivoInput" multiple hidden />
           <div class="painel-emojis" id="painelEmojis" role="dialog" aria-label="Emojis" hidden></div>

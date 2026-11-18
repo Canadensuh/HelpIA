@@ -773,3 +773,94 @@ a.quadro-meta { color: var(--tinta); text-decoration: none; display: block; }
 .sugestao.bloqueada { opacity: .55; }
 .sugestao-comando { flex: none; padding: .15rem .45rem; border-radius: 6px; background: var(--tinta); color: var(--fosforo); font: 800 .78rem var(--font-mono); }
 @media (prefers-reduced-motion: reduce) { .msg-responder { transition: none; } .msg.destacada .msg-balao, .msg-sistema.destacada { animation: none; } }
+
+/* =========================================================
+   Anexar: menu Arquivo / Câmera, foto pela webcam
+   ========================================================= */
+.menu-anexo {
+  position: absolute; left: 3.6rem; bottom: calc(100% - .4rem); z-index: 30;
+  width: 260px; padding: .35rem;
+  border-radius: 12px; background: #FFFCF2; color: #23291B;
+  outline: 2px solid var(--tinta); box-shadow: 5px 5px 0 var(--sombra);
+}
+.menu-anexo-item {
+  display: flex; align-items: center; gap: .65rem; width: 100%;
+  padding: .55rem .6rem; border: 0; border-radius: 9px; background: transparent;
+  color: inherit; font: inherit; text-align: left; cursor: pointer;
+}
+.menu-anexo-item:hover, .menu-anexo-item:focus-visible { background: #E6EDD3; outline: none; }
+.menu-anexo-item > .ic { flex: none; width: 1.3rem; height: 1.3rem; color: #4C6B3C; }
+.menu-anexo-item > span { display: grid; }
+.menu-anexo-item b { font-size: .88rem; }
+.menu-anexo-item small { font-size: .74rem; color: #625E4A; }
+.modal-camera .modal-conteudo { width: min(640px, calc(100vw - 32px)); }
+.camera-video { width: 100%; border-radius: 12px; background: #0A0D07; outline: 2px solid var(--tinta); aspect-ratio: 4 / 3; object-fit: cover; }
+
+/* Conversa encerrada (ticket carimbado): no lugar do compositor */
+.conversa-encerrada {
+  flex: none; display: flex; align-items: center; gap: .8rem; margin: 0;
+  padding: .9rem 1rem; border-top: 2px dashed rgba(35, 41, 27, .2);
+  color: #23291B; background: rgba(79, 159, 67, .12);
+}
+.conversa-encerrada > .ic { flex: none; width: 1.8rem; height: 1.8rem; color: #3E6B2A; }
+.conversa-encerrada strong { display: block; font-family: var(--font-display); }
+.conversa-encerrada span { font-size: .86rem; color: #3F3B2C; }
+
+/* Ticket do assunto com o X para tirar */
+.detalhe-titulo { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.btn-tirar-assunto { margin: 0 0 3px; padding: .25rem .45rem; --key-depth: 3px; }
+
+/* =========================================================
+   Gestor: Cobrar, Gerenciar e Exportar
+   ========================================================= */
+.modal-gestao .modal-conteudo, .modal-exportar .modal-conteudo { width: min(560px, calc(100vw - 32px)); }
+.modal-gestao .lista-tickets { display: flex; justify-content: center; padding: .3rem 0 .6rem; }
+.gestao-dica { margin: 0; font-size: .84rem; color: var(--muted); }
+.gestao-opcoes { display: grid; gap: .45rem; max-height: 300px; overflow-y: auto; padding: .2rem; }
+.gestao-opcao {
+  display: flex; align-items: center; gap: .7rem; width: 100%;
+  padding: .55rem .7rem; border-radius: 11px; border: 2px solid var(--tinta);
+  background: #FFFCF2; color: #23291B; font: inherit; text-align: left; cursor: pointer;
+  box-shadow: 0 4px 0 var(--sombra); transition: transform .07s, box-shadow .07s;
+}
+.gestao-opcao:hover { background: #F1EAD3; }
+.gestao-opcao:active { transform: translateY(4px); box-shadow: 0 0 0 var(--sombra); }
+.gestao-opcao.destaque { background: #FFF6D6; }
+.gestao-opcao .conv-avatar { width: 36px; height: 36px; flex: none; }
+.gestao-opcao > span:last-child { display: grid; }
+.gestao-opcao small { font-size: .74rem; color: #625E4A; }
+.gestao-bloco { display: grid; gap: .5rem; padding-top: .8rem; border-top: 2px dashed var(--border); }
+.gestao-bloco > strong { font-family: var(--font-display); }
+.gestao-niveis { display: flex; flex-wrap: wrap; gap: .45rem; }
+.gestao-niveis .btn { margin-bottom: 4px; }
+.gestao-niveis .btn.ativo { transform: translateY(var(--key-depth)); box-shadow: 0 0 0 var(--k-side), inset 0 2px 4px rgba(0, 0, 0, .14); }
+.gestao-niveis .nivel-baixa { --k-top: #CFE8C2; --k-top-2: #A9D394; --k-side: #5C8A48; --k-edge: #2E4A22; --k-text: #1A2E12; }
+.gestao-niveis .nivel-normal { --k-top: #CFE1F5; --k-top-2: #9EC1E8; --k-side: #4C77A3; --k-edge: #24425F; --k-text: #0F2235; }
+.gestao-niveis .nivel-media { --k-top: #F8E4A0; --k-top-2: #EDC95E; --k-side: #A07C1B; --k-edge: #5E4609; --k-text: #3A2A05; }
+.gestao-niveis .nivel-alta { --k-top: #F4B3A3; --k-top-2: #E57E66; --k-side: #9B3A26; --k-edge: #5A1A10; --k-text: #3A0E05; }
+.gestao-linha { display: flex; gap: .5rem; align-items: flex-start; }
+.gestao-linha .input { flex: 1; }
+.gestao-linha .btn { margin: 0 0 6px; }
+.gestao-perigo .btn.confirmar { animation: pulsa-ponto 1s infinite; }
+
+.btn-exportar { margin: 0 0 4px auto; }
+.exportar-recortes { margin: 0; padding: 0; border: 0; display: grid; gap: .4rem; }
+.exportar-recortes legend { margin-bottom: .4rem; font-weight: 800; }
+.exportar-opcao { display: flex; align-items: center; gap: .55rem; padding: .5rem .7rem; border-radius: 10px; border: 2px solid var(--border); cursor: pointer; font-weight: 700; }
+.exportar-opcao:has(input:checked) { border-color: var(--tinta); background: #E6EDD3; }
+.exportar-opcao input { accent-color: #4C6B3C; }
+.exportar-previa { display: grid; gap: .4rem; font-size: .8rem; }
+.exportar-tabela { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+.exportar-previa table { width: 100%; border-collapse: collapse; }
+.exportar-previa th, .exportar-previa td { padding: .35rem .55rem; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--border); }
+.exportar-previa th { background: var(--surface-2); font-size: .74rem; }
+
+/* Janelas novas: a largura é a da janela (sem barra de rolagem de lado) */
+.modal-gestao, .modal-exportar, .modal-camera { width: min(600px, calc(100vw - 24px)); max-width: none; overflow-x: hidden; }
+.modal-gestao .modal-conteudo, .modal-exportar .modal-conteudo, .modal-camera .modal-conteudo { width: auto; }
+.modal-exportar .modal-acoes { flex-wrap: wrap; }
+/* Cores das teclas de prioridade (mais específico que as teclas padrão de teclas.css) */
+.modal-gestao .gestao-niveis .btn.nivel-baixa { --k-top: #CFE8C2; --k-top-2: #A9D394; --k-side: #5C8A48; --k-edge: #2E4A22; --k-text: #1A2E12; }
+.modal-gestao .gestao-niveis .btn.nivel-normal { --k-top: #CFE1F5; --k-top-2: #9EC1E8; --k-side: #4C77A3; --k-edge: #24425F; --k-text: #0F2235; }
+.modal-gestao .gestao-niveis .btn.nivel-media { --k-top: #F8E4A0; --k-top-2: #EDC95E; --k-side: #A07C1B; --k-edge: #5E4609; --k-text: #3A2A05; }
+.modal-gestao .gestao-niveis .btn.nivel-alta { --k-top: #F4B3A3; --k-top-2: #E57E66; --k-side: #9B3A26; --k-edge: #5A1A10; --k-text: #3A0E05; }

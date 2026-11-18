@@ -46,7 +46,12 @@ const Navegacao = {
             <span class="trilho-rotulo"><strong>${i.rotulo}</strong><small>${i.desc}</small></span>
           </a></li>`;
         }).join('')}
-      </ul>`;
+      </ul>
+      <button type="button" class="trilho-item trilho-sair" data-trilho-sair title="Sair da conta">
+        <span class="trilho-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></span>
+        <span class="trilho-rotulo"><strong>Sair</strong><small>Deslogar desta conta</small></span>
+      </button>`;
+    nav.querySelector('[data-trilho-sair]').addEventListener('click', () => Sessao.sair());
     document.body.prepend(nav);
     document.body.classList.add('com-trilho');
     if (itens.some((i) => i.chat)) {

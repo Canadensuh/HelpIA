@@ -64,6 +64,10 @@ const API = {
   excluir(numero) { return this.requisitar(`/chamados/${numero}`, { method: 'DELETE' }); },
   /** Tira um ticket resolvido da coluna "Histórico" da mesa do colaborador (continua na tela Histórico de Tickets). */
   removerDoHistorico(numero) { return this.enviar(`/chamados/${numero}/ocultar`); },
+  /** Gestor: passa o ticket para a mesa de um analista. */
+  atribuir(numero, analistaId) { return this.enviar(`/chamados/${numero}/atribuir`, { analista_id: analistaId }); },
+  /** Gestor: troca a prioridade (baixa, normal, media, alta). */
+  mudarPrioridade(numero, nivel) { return this.requisitar(`/chamados/${numero}`, { method: 'PATCH', body: JSON.stringify({ nivel }) }); },
 
   // ---------- HelpIA Chat ----------
   chatConversas() { return this.requisitar('/chat/conversas'); },
@@ -78,6 +82,8 @@ const API = {
   /** Comando /clear (só o gestor): apaga as mensagens da conversa. */
   chatLimpar(id) { return this.requisitar(`/chat/conversas/${id}/mensagens`, { method: 'DELETE' }); },
   chatLida(id) { return this.enviar(`/chat/conversas/${id}/lida`); },
+  /** Tira o "ticket do assunto" da conversa (painel da direita). */
+  chatTirarTicket(id) { return this.requisitar(`/chat/conversas/${id}`, { method: 'PATCH', body: JSON.stringify({ ticket: null }) }); },
 
   // ---------- Minha conta e modo simulação (gestor) ----------
   trocarSenha(atual, nova) { return this.enviar('/auth/senha', { atual, nova }); },
