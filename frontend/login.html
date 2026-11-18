@@ -7,60 +7,80 @@
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@400;500;600;700;800&display=swap" />
-  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=Nunito:wght@700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400;1,8..60,500&display=swap" />
   <link rel="stylesheet" href="css/simbolos.css" />
-  <script src="js/tema.js"></script>
-  <link rel="stylesheet" href="css/acesso.css" />
+  <link rel="stylesheet" href="css/institucional.css" />
   <link rel="stylesheet" href="css/teclas.css" />
-  <link rel="stylesheet" href="css/papelaria.css" />
+  <link rel="stylesheet" href="css/publico.css" />
 </head>
-<body>
+<body class="lp pub-cinza pub-login">
+  <header class="topo lp-topo">
+    <a href="index.html" class="marca" aria-label="HelpIA — início"><img src="assets/logo.svg" alt="" /><span class="marca-nome">Help<b>IA</b></span></a>
+    <nav class="lp-nav" aria-label="Navegação principal">
+      <a href="index.html#plataforma" class="key key--sm key--escura">Plataforma</a>
+      <a href="index.html#como-funciona" class="key key--sm key--escura">Como funciona</a>
+      <a href="index.html#perfis" class="key key--sm key--escura">Perfis</a>
+      <a href="index.html#planos" class="key key--sm key--escura">Planos</a>
+      <a href="index.html#equipe" class="key key--sm key--escura">Equipe</a>
+    </nav>
+    <div class="lp-topo-acoes">
+      <a href="login.html" class="key key--sm lp-entrar"><i class="ic ic-cadeado-aberto" aria-hidden="true"></i> Entrar</a>
+      <a href="contratar.html" class="key key--sm key--mostarda"><i class="ic ic-ticket" aria-hidden="true"></i> Contratar</a>
+    </div>
+  </header>
+
   <div class="acesso">
-    <aside class="acesso-marca textura-grade">
-      <a href="index.html" class="brand"><img src="assets/logo.svg" alt="" /><span class="brand-nome">Help<b>IA</b></span></a>
-      <h2>Cada perfil entra direto na <span>sua área</span>.</h2>
-      <p>Escolha como você vai usar o HelpIA hoje. A plataforma confere o perfil da conta e abre a tela certa.</p>
-      <ul class="acesso-lista">
-        <li><span><strong>Colaborador:</strong> abre chamados conversando com o HelpBot e acompanha o andamento.</span></li>
-        <li><span><strong>Analista:</strong> trabalha a fila de chamados no painel de atendimento.</span></li>
-        <li><span><strong>Gestor:</strong> entra pela área do analista e também cria as contas da equipe.</span></li>
-      </ul>
-      <p class="acesso-rodape">HelpIA · Projeto acadêmico de Engenharia de Software</p>
-      <div class="faixa-alerta" aria-hidden="true"></div>
+    <aside class="acesso-lado">
+      <div class="acesso-lado-meio">
+        <span class="sobretitulo">Acesso à plataforma</span>
+        <h2>Cada perfil entra direto na <em>sua área</em>.</h2>
+        <p>A plataforma confere o perfil da conta e abre a tela certa para o seu trabalho.</p>
+        <ul class="acesso-pontos">
+          <li><span class="perfil-icone perfil-colaborador"><i class="ic ic-usuario" aria-hidden="true"></i></span>
+            <div><strong>Colaborador</strong><span>Abre tickets com o Helpy e acompanha cada um até a solução.</span></div></li>
+          <li><span class="perfil-icone perfil-analista"><i class="ic ic-ferramenta" aria-hidden="true"></i></span>
+            <div><strong>Analista</strong><span>Atende a fila na mesa e conversa com o colaborador pelo HelpIA Chat.</span></div></li>
+          <li><span class="perfil-icone perfil-gestor"><i class="ic ic-coroa" aria-hidden="true"></i></span>
+            <div><strong>Gestor</strong><span>Acompanha o painel de controle, define metas e cuida dos acessos.</span></div></li>
+        </ul>
+      </div>
+      <p class="acesso-lado-rodape">HelpIA · Projeto acadêmico de Engenharia de Software</p>
     </aside>
 
-    <main class="acesso-form">
-      <div class="acesso-topo">
-        <a href="index.html" class="link-voltar">← Voltar ao site</a>
-        <button type="button" class="btn-tema" aria-label="Alternar tema">
-          <svg class="icone-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-          <svg class="icone-lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        </button>
-      </div>
+    <main class="acesso-principal">
 
       <div class="acesso-caixa">
         <h1>Entrar</h1>
-        <p class="acesso-sub">Acesse com a conta criada pelo gestor da sua empresa.</p>
+        <p class="acesso-sub">Use a conta criada pelo gestor da sua empresa.</p>
 
-        <form class="form-acesso" id="formLogin" novalidate>
-          <div class="segmentado" role="radiogroup" aria-label="Entrar como">
-            <input type="radio" name="perfil" id="perfilColaborador" value="colaborador" checked />
-            <label for="perfilColaborador"><i class="ic ic-chat" aria-hidden="true"></i> Colaborador</label>
-            <input type="radio" name="perfil" id="perfilAnalista" value="analista" />
-            <label for="perfilAnalista"><i class="ic ic-ferramenta" aria-hidden="true"></i> Analista</label>
+        <form class="form" id="formLogin" novalidate>
+          <div class="areas" role="radiogroup" aria-label="Entrar como">
+            <div class="area area-colaborador">
+              <input type="radio" name="perfil" id="perfilColaborador" value="colaborador" checked />
+              <label for="perfilColaborador"><i class="ic ic-usuario" aria-hidden="true"></i> Colaborador</label>
+            </div>
+            <div class="area area-analista">
+              <input type="radio" name="perfil" id="perfilAnalista" value="analista" />
+              <label for="perfilAnalista"><i class="ic ic-ferramenta" aria-hidden="true"></i> Analista</label>
+            </div>
+            <div class="area area-gestor">
+              <input type="radio" name="perfil" id="perfilGestor" value="gestor" />
+              <label for="perfilGestor"><i class="ic ic-coroa" aria-hidden="true"></i> Gestor</label>
+            </div>
           </div>
-          <p class="perfil-dica" id="perfilDica">Você vai para o chat de abertura de chamados.</p>
+          <p class="area-dica" id="perfilDica">Você vai para a abertura de tickets.</p>
 
           <label class="campo">
-            E-mail
-            <input id="email" type="email" autocomplete="username" placeholder="nome@empresa.com" required />
+            <span>E-mail</span>
+            <input class="entrada" id="email" type="email" autocomplete="username" placeholder="nome@empresa.com.br" required />
           </label>
-          <label class="campo campo-senha">
-            Senha
-            <input id="senha" type="password" autocomplete="current-password" placeholder="Sua senha" required />
-            <button type="button" class="ver-senha" data-alvo="senha" aria-label="Mostrar senha">Mostrar</button>
-          </label>
+          <div class="campo">
+            <label class="campo-rotulo" for="senha">Senha</label>
+            <div class="entrada-com-botao">
+              <input class="entrada" id="senha" type="password" autocomplete="current-password" placeholder="Sua senha" required />
+              <button type="button" class="ver-senha key key--sm" data-alvo="senha" aria-label="Mostrar senha">Mostrar</button>
+            </div>
+          </div>
 
           <div class="linha-entre">
             <label class="checkbox"><input type="checkbox" id="lembrar" /> Manter conectado</label>
@@ -68,31 +88,37 @@
 
           <p class="aviso" id="aviso" role="alert" hidden></p>
 
-          <button type="submit" class="btn btn-primary btn-lg btn-bloco" id="botaoEntrar">Entrar</button>
+          <button type="submit" class="key key--lg key--block key--accent" id="botaoEntrar">Entrar</button>
         </form>
 
-        <div class="demo">
-          <span class="demo-titulo">Contas de demonstração · senha demo123</span>
-          <div class="demo-contas">
-            <button type="button" class="demo-conta" data-email="colaborador@demo.helpia" data-perfil="colaborador">
-              <strong>João Silva</strong><span>Colaborador</span>
-            </button>
-            <button type="button" class="demo-conta" data-email="lucio@demo.helpia" data-perfil="colaborador">
-              <strong>Lúcio Martins</strong><span>Colaborador</span>
-            </button>
-            <button type="button" class="demo-conta" data-email="gestor@demo.helpia" data-perfil="analista">
-              <strong>Ana Lima</strong><span>Gestora</span>
-            </button>
-            <button type="button" class="demo-conta" data-email="analista@demo.helpia" data-perfil="analista">
-              <strong>Carlos Souza</strong><span>Analista</span>
-            </button>
-            <button type="button" class="demo-conta" data-email="beatriz@demo.helpia" data-perfil="analista">
-              <strong>Beatriz Rocha</strong><span>Analista</span>
-            </button>
-          </div>
+        <div class="separador">Contas de demonstração</div>
+        <div class="demo-contas">
+          <button type="button" class="demo-conta" data-email="murilonb@helpia.com.br" data-perfil="gestor">
+            <span class="demo-av perfil-gestor"><i class="ic ic-coroa" aria-hidden="true"></i><img src="https://github.com/Canadensuh.png?size=80" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" /></span>
+            <span><strong>Murilo do Nascimento B.</strong><small>Gestor</small></span>
+          </button>
+          <button type="button" class="demo-conta" data-email="joãopm@helpia.com.br" data-perfil="gestor">
+            <span class="demo-av perfil-gestor"><i class="ic ic-coroa" aria-hidden="true"></i><img src="https://github.com/marquess07.png?size=80" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" /></span>
+            <span><strong>João Pedro M.</strong><small>Gestor</small></span>
+          </button>
+          <button type="button" class="demo-conta" data-email="carlos@helpia.com.br" data-perfil="analista">
+            <span class="demo-av perfil-analista"><i class="ic ic-ferramenta" aria-hidden="true"></i></span>
+            <span><strong>Carlos Souza</strong><small>Analista</small></span>
+          </button>
+          <button type="button" class="demo-conta" data-email="beatriz@helpia.com.br" data-perfil="analista">
+            <span class="demo-av perfil-analista"><i class="ic ic-ferramenta" aria-hidden="true"></i></span>
+            <span><strong>Beatriz Rocha</strong><small>Analista</small></span>
+          </button>
+          <button type="button" class="demo-conta" data-email="joao.silva@helpia.com.br" data-perfil="colaborador">
+            <span class="demo-av perfil-colaborador"><i class="ic ic-usuario" aria-hidden="true"></i></span>
+            <span><strong>João Silva</strong><small>Colaborador</small></span>
+          </button>
+          <button type="button" class="demo-conta" data-email="maria@helpia.com.br" data-perfil="colaborador">
+            <span class="demo-av perfil-colaborador"><i class="ic ic-usuario" aria-hidden="true"></i></span>
+            <span><strong>Maria Oliveira</strong><small>Colaborador</small></span>
+          </button>
         </div>
-
-        <p class="acesso-rodape-form">Sua empresa ainda não usa o HelpIA? <a href="index.html#planos">Conheça os planos</a></p>
+        <p class="demo-nota">Clique em uma conta para preencher. Senha de todas: <code>1234</code></p>
       </div>
     </main>
   </div>

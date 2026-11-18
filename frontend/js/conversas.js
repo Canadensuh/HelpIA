@@ -38,7 +38,6 @@ let pendentes = [];            // arquivos escolhidos para a próxima mensagem: 
 let assinaturaLista = '';
 let ultimaMensagem = 0;
 
-const iniciais = (nome) => String(nome || '?').split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
 const ticketPorNumero = (n) => tickets.find((c) => c.numero === Number(n));
 const horaOuDia = (iso) => {
   const d = new Date(iso);
@@ -48,7 +47,7 @@ const horaOuDia = (iso) => {
 // ---------- Lista de conversas ----------
 function avatarConversa(c) {
   if (c.tipo === 'grupo') return `<span class="conv-avatar conv-grupo">${ic('equipe')}</span>`;
-  return `<span class="conv-avatar perfil-${c.outro?.perfil}">${esc(iniciais(c.nome))}</span>`;
+  return Avatar.html(c.outro || { perfil: "colaborador" }, "conv-avatar");
 }
 
 function renderizarLista() {
@@ -94,6 +93,7 @@ async function abrirConversa(id) {
   if (!atual) return;
   ultimaMensagem = 0;
   mensagens = [];
+  cancelarResposta();
   elMensagens.innerHTML = '<li class="msg-carregando">Carregando…</li>';
   elCompositor.hidden = false;
   renderizarCabecalho();
@@ -116,12 +116,41 @@ function renderizarCabecalho() {
     : `${ROTULOS[atual.outro?.perfil] || ''}${atual.ticket?.codigo ? ` · sobre o ticket ${atual.ticket.codigo}` : ''}`;
 }
 
-/** Texto com "#007" vira botão que abre o ticket. */
+/** Pessoas que dá para mencionar com @ (quem está na conversa e os contatos da equipe). */
+function pessoasMencionaveis() {
+  const todas = [...(atual?.participantes || []), ...contatos];
+  const vistas = new Map();
+  todas.forEach((p) => { if (p?.nome && !vistas.has(p.id)) vistas.set(p.id, p); });
+  return [...vistas.values()];
+}
+const escRegex = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** Texto com "#007" vira botão que abre o ticket; "@Nome Sobrenome" vira menção à pessoa. */
 function formatarTexto(texto) {
-  return esc(texto).replace(/(^|[\s(])#(\d{1,4})\b/g, (todo, antes, n) => {
+  let html = esc(texto).replace(/(^|[\s(])#(\d{1,4})\b/g, (todo, antes, n) => {
     const c = ticketPorNumero(n);
     return c ? `${antes}<button type="button" class="mencao pri-${Catalogo.nivel(c).id}" data-ticket="${c.numero}">${esc(c.codigo)}</button>` : todo;
   });
+  const nomes = pessoasMencionaveis().map((p) => p.nome).sort((a, b) => b.length - a.length);
+  if (nomes.length) {
+    const padrao = new RegExp(`(^|[\\s(])@(${nomes.map((n) => escRegex(esc(n))).join('|')})`, 'g');
+    html = html.replace(padrao, (todo, antes, nome) => {
+      const eu = nome === esc(usuario.nome);
+      return `${antes}<span class="mencao-pessoa ${eu ? 'eu' : ''}">@${nome}</span>`;
+    });
+  }
+  return html;
+}
+const mencionaMim = (texto) => new RegExp(`(^|[\\s(])@${escRegex(usuario.nome)}`).test(texto || '');
+
+const SETA_RESPONDER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>';
+
+/** Mensagem respondida, citada em cima da resposta (clicando, a conversa rola até ela). */
+function citacao(r) {
+  if (!r) return '';
+  if (r.apagada) return '<span class="msg-citacao apagada">Mensagem apagada</span>';
+  return `<button type="button" class="msg-citacao" data-ir-msg="${r.id}">
+    <b>${esc(r.autor_id === usuario.id ? 'Você' : r.autor_nome)}</b><span>${esc(r.texto)}</span></button>`;
 }
 
 function cartaoTicket(c) {
@@ -140,15 +169,18 @@ function renderizarMensagens() {
     const separador = d !== dia ? `<li class="msg-dia"><span>${d}</span></li>` : '';
     dia = d;
     const ticket = m.ticket ? (ticketPorNumero(m.ticket.numero) || m.ticket) : null;
+    const responder = `<button type="button" class="msg-responder" data-responder="${m.id}" aria-label="Responder esta mensagem" title="Responder">${SETA_RESPONDER}</button>`;
     if (m.sistema) {
-      return `${separador}<li class="msg msg-sistema"><span class="msg-sistema-selo">HelpIA</span>
-        <p>${formatarTexto(m.texto)}</p>${ticket ? cartaoTicket(ticket) : ''}<time>${formatarHora(m.em)}</time></li>`;
+      return `${separador}<li class="msg msg-sistema" data-msg-id="${m.id}"><span class="msg-sistema-selo">HelpIA</span>
+        <p>${formatarTexto(m.texto)}</p>${ticket ? cartaoTicket(ticket) : ''}<time>${formatarHora(m.em)}</time>${responder}</li>`;
     }
     const minha = m.autor_id === usuario.id;
-    return `${separador}<li class="msg ${minha ? 'minha' : ''}">
-      ${minha ? '' : `<span class="conv-avatar perfil-${m.autor_perfil}" aria-hidden="true">${esc(iniciais(m.autor_nome))}</span>`}
+    return `${separador}<li class="msg ${minha ? 'minha' : ''} ${!minha && mencionaMim(m.texto) ? 'me-mencionou' : ''}" data-msg-id="${m.id}">
+      ${minha ? '' : Avatar.html({ perfil: m.autor_perfil, foto: m.autor_foto }, "conv-avatar")}
       <div class="msg-balao">
+        ${responder}
         ${minha ? '' : `<span class="msg-autor">${esc(m.autor_nome)} <small>${ROTULOS[m.autor_perfil] || ''}</small></span>`}
+        ${citacao(m.resposta)}
         ${m.texto ? `<p class="${soEmoji(m.texto) ? 'so-emoji' : ''}">${formatarTexto(m.texto)}</p>` : ''}
         ${m.anexos?.length ? `<div class="msg-anexos ${m.anexos.length > 1 ? 'varios' : ''}">${m.anexos.map((a) => Anexos.html(a)).join('')}</div>` : ''}
         ${ticket ? cartaoTicket(ticket) : ''}
@@ -191,7 +223,7 @@ function renderizarDetalhes() {
   if (!atual) {
     elDetalhes.innerHTML = `<div class="detalhe-bloco"><strong>${ic('chat')} HelpIA Chat</strong>
       <p>${ehEquipe ? 'Converse com o grupo da equipe, com outros analistas e com os colaboradores sobre os tickets deles.' : 'Aqui ficam as mensagens que os analistas mandam sobre os seus tickets.'}</p>
-      <p class="detalhe-dica">Escreva <b>#007</b> para mencionar um ticket.</p></div>`;
+      <p class="detalhe-dica">Escreva <b>#007</b> para mencionar um ticket e <b>@</b> para mencionar uma pessoa.${usuario.perfil === 'gestor' ? ' Como gestor, <b>/clear</b> limpa a conversa.' : ''}</p></div>`;
     return;
   }
   const ticket = atual.ticket?.numero ? ticketPorNumero(atual.ticket.numero) : null;
@@ -200,7 +232,7 @@ function renderizarDetalhes() {
     <div class="detalhe-bloco">
       <strong>${ic('equipe')} ${atual.tipo === 'grupo' ? 'No grupo' : 'Na conversa'}</strong>
       <ul class="pessoas">${atual.participantes.map((p) => `
-        <li><span class="conv-avatar perfil-${p.perfil}">${esc(iniciais(p.nome))}</span>
+        <li>${Avatar.html(p, "conv-avatar")}
           <span><b>${esc(p.nome)}${p.id === usuario.id ? ' (você)' : ''}</b><small>${ROTULOS[p.perfil]}</small></span></li>`).join('')}
       </ul>
     </div>
@@ -217,10 +249,49 @@ function mostrarAnexo() {
   elAnexo.innerHTML = c ? `${cartaoTicket(c)}<button type="button" class="btn btn-ghost btn-sm" id="tirarAnexo" aria-label="Tirar o ticket anexado">${ic('x')}</button>` : '';
 }
 
+// ---------- Responder uma mensagem (setinha no balão) ----------
+let respondendo = null;           // mensagem que está sendo respondida
+const elRespondendo = document.createElement('div');
+elRespondendo.className = 'compositor-resposta';
+elRespondendo.hidden = true;
+elCompositor.prepend(elRespondendo);
+
+function responderA(id) {
+  const m = mensagens.find((x) => x.id === Number(id));
+  if (!m) return;
+  respondendo = m;
+  const autor = m.sistema ? 'HelpIA' : m.autor_id === usuario.id ? 'você mesmo' : m.autor_nome;
+  const trecho = m.texto || (m.anexos?.length ? '📎 Anexo' : '');
+  elRespondendo.innerHTML = `${SETA_RESPONDER}<span><small>Respondendo a <b>${esc(autor)}</b></small>${esc(trecho.slice(0, 140))}</span>
+    <button type="button" class="btn btn-ghost btn-sm" data-cancelar-resposta aria-label="Cancelar a resposta">${ic('x')}</button>`;
+  elRespondendo.hidden = false;
+  elTexto.focus();
+}
+function cancelarResposta() { respondendo = null; elRespondendo.hidden = true; elRespondendo.innerHTML = ''; }
+
+/** Comando /clear: o gestor limpa a conversa inteira. */
+async function comandoClear() {
+  if (usuario.perfil !== 'gestor') {
+    Efeitos.toast('Só o gestor pode usar o comando <strong>/clear</strong>.', { icone: ic('alerta'), tipo: 'alerta' });
+    return;
+  }
+  if (!confirm(`Limpar todas as mensagens de "${atual.nome}"? Essa ação não pode ser desfeita.`)) return;
+  const { ok, dados } = await API.chatLimpar(atual.id);
+  if (!ok) { Efeitos.toast(esc(dados.erro || 'Não foi possível limpar a conversa.'), { icone: ic('alerta'), tipo: 'alerta' }); return; }
+  elTexto.value = '';
+  ajustarAltura();
+  cancelarResposta();
+  await carregarMensagens();
+  carregarConversas();
+  Efeitos.toast('Conversa limpa.', { icone: ic('check'), tipo: 'sucesso' });
+}
+
 elCompositor.addEventListener('submit', async (e) => {
   e.preventDefault();
   const texto = elTexto.value.trim();
   if ((!texto && !pendentes.length) || !atual) return;
+  fecharSugestoes();
+  if (/^\/clear$/i.test(texto)) { comandoClear(); return; }
   const botao = document.getElementById('enviar');
   botao.disabled = true;
   let metas = [];
@@ -231,11 +302,12 @@ elCompositor.addEventListener('submit', async (e) => {
     Efeitos.toast(esc(erro.message || 'Não foi possível anexar o arquivo.'), { icone: ic('alerta'), tipo: 'alerta' });
     return;
   }
-  const { ok, dados } = await API.chatEnviar(atual.id, texto, anexo, metas);
+  const { ok, dados } = await API.chatEnviar(atual.id, texto, anexo, metas, respondendo?.id || null);
   botao.disabled = false;
   if (!ok) { Efeitos.toast(esc(dados.erro || 'Não foi possível enviar.'), { icone: ic('alerta'), tipo: 'alerta' }); return; }
   elTexto.value = '';
   ajustarAltura();
+  cancelarResposta();
   anexo = null;
   mostrarAnexo();
   limparPendentes();
@@ -245,14 +317,83 @@ elCompositor.addEventListener('submit', async (e) => {
   renderizarDetalhes();
   carregarConversas();
 });
+// ---------- Sugestões: "@" para mencionar uma pessoa, "/" para os comandos ----------
+const COMANDOS = [{ id: 'clear', rotulo: '/clear', desc: 'Limpar todas as mensagens desta conversa', so: 'gestor' }];
+const elSugestoes = document.createElement('ul');
+elSugestoes.className = 'sugestoes';
+elSugestoes.setAttribute('role', 'listbox');
+elSugestoes.hidden = true;
+elCompositor.appendChild(elSugestoes);
+let sugestoes = { itens: [], escolhida: 0, inicio: 0 };
+
+function fecharSugestoes() { elSugestoes.hidden = true; sugestoes.itens = []; }
+
+function atualizarSugestoes() {
+  const ate = elTexto.selectionStart ?? elTexto.value.length;
+  const antes = elTexto.value.slice(0, ate);
+  const arroba = antes.match(/(^|\s)@([\p{L} ]{0,30})$/u);
+  const barra = antes.match(/^\/(\w*)$/);
+  let itens = [];
+  if (arroba && !/\s{2}/.test(arroba[2])) {
+    const termo = Busca.normalizar(arroba[2]);
+    itens = (atual?.participantes || pessoasMencionaveis())
+      .filter((p) => p.id !== usuario.id && Busca.normalizar(p.nome).startsWith(termo))
+      .slice(0, 6)
+      .map((p) => ({ texto: `@${p.nome} `, html: `${Avatar.html(p, 'conv-avatar')}<span><b>${esc(p.nome)}</b><small>${ROTULOS[p.perfil] || ''}</small></span>` }));
+    sugestoes.inicio = ate - arroba[2].length - 1;
+  } else if (barra) {
+    itens = COMANDOS.filter((c) => c.id.startsWith(barra[1].toLowerCase()))
+      .map((c) => ({ texto: c.rotulo, html: `<span class="sugestao-comando">${c.rotulo}</span><span><b>${esc(c.desc)}</b><small>${c.so === 'gestor' ? 'Só o gestor' : ''}</small></span>`, bloqueada: c.so && usuario.perfil !== c.so }));
+    sugestoes.inicio = 0;
+  }
+  if (!itens.length) { fecharSugestoes(); return; }
+  sugestoes = { ...sugestoes, itens, escolhida: 0 };
+  elSugestoes.innerHTML = `<li class="sugestoes-titulo">${arroba ? 'Mencionar' : 'Comandos'}</li>${itens.map((s, i) => `
+    <li><button type="button" class="sugestao ${i === 0 ? 'escolhida' : ''} ${s.bloqueada ? 'bloqueada' : ''}" data-sugestao="${i}" role="option">${s.html}</button></li>`).join('')}`;
+  elSugestoes.hidden = false;
+}
+
+function usarSugestao(i) {
+  const s = sugestoes.itens[i];
+  if (!s) return;
+  const ate = elTexto.selectionStart ?? elTexto.value.length;
+  elTexto.value = elTexto.value.slice(0, sugestoes.inicio) + s.texto + elTexto.value.slice(ate);
+  const pos = sugestoes.inicio + s.texto.length;
+  elTexto.focus();
+  elTexto.setSelectionRange(pos, pos);
+  fecharSugestoes();
+  ajustarAltura();
+}
+
+elSugestoes.addEventListener('mousedown', (e) => {
+  const b = e.target.closest('[data-sugestao]');
+  if (b) { e.preventDefault(); usarSugestao(Number(b.dataset.sugestao)); }
+});
+
 elTexto.addEventListener('keydown', (e) => {
+  if (!elSugestoes.hidden && sugestoes.itens.length) {
+    const n = sugestoes.itens.length;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      sugestoes.escolhida = (sugestoes.escolhida + (e.key === 'ArrowDown' ? 1 : n - 1)) % n;
+      elSugestoes.querySelectorAll('.sugestao').forEach((b, i) => b.classList.toggle('escolhida', i === sugestoes.escolhida));
+      return;
+    }
+    if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey && !/^\/clear$/i.test(elTexto.value.trim()))) {
+      e.preventDefault(); usarSugestao(sugestoes.escolhida); return;
+    }
+    if (e.key === 'Escape') { e.preventDefault(); fecharSugestoes(); return; }
+  }
+  if (e.key === 'Escape' && respondendo) { cancelarResposta(); return; }
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); elCompositor.requestSubmit(); }
 });
 function ajustarAltura() {
   elTexto.style.height = 'auto';
   elTexto.style.height = `${Math.min(140, elTexto.scrollHeight)}px`;
 }
-elTexto.addEventListener('input', ajustarAltura);
+elTexto.addEventListener('input', () => { ajustarAltura(); atualizarSugestoes(); });
+elTexto.addEventListener('click', atualizarSugestoes);
+elTexto.addEventListener('blur', () => setTimeout(fecharSugestoes, 150));
 
 // ---------- Anexos: clipe, colar print (Ctrl+V) e arrastar arquivos para a conversa ----------
 const elPendentes = document.getElementById('arquivosPendentes');
@@ -381,7 +522,7 @@ function renderizarContatos() {
   document.getElementById('listaContatos').innerHTML = grupos.filter(([, l]) => l.length).map(([perfil, l]) => `
     <span class="contatos-grupo">${ROTULOS[perfil]}s</span>
     ${l.map((p) => `<button type="button" class="contato" data-com="${p.id}">
-      <span class="conv-avatar perfil-${p.perfil}">${esc(iniciais(p.nome))}</span><span><b>${esc(p.nome)}</b><small>${esc(p.email)}</small></span></button>`).join('')}`).join('')
+      ${Avatar.html(p, "conv-avatar")}<span><b>${esc(p.nome)}</b><small>${esc(p.email)}</small></span></button>`).join('')}`).join('')
     || '<p class="vazio">Ninguém encontrado.</p>';
 }
 document.getElementById('novaConversa').addEventListener('click', () => {
@@ -401,6 +542,13 @@ async function conversarCom(id, ticket = null) {
 // ---------- Cliques ----------
 document.addEventListener('click', async (e) => {
   const alvo = (s) => e.target.closest(s);
+  if (alvo('[data-responder]')) { responderA(alvo('[data-responder]').dataset.responder); return; }
+  if (alvo('[data-cancelar-resposta]')) { cancelarResposta(); elTexto.focus(); return; }
+  if (alvo('[data-ir-msg]')) {
+    const li = elMensagens.querySelector(`[data-msg-id="${alvo('[data-ir-msg]').dataset.irMsg}"]`);
+    if (li) { li.scrollIntoView({ behavior: 'smooth', block: 'center' }); li.classList.remove('destacada'); void li.offsetWidth; li.classList.add('destacada'); }
+    return;
+  }
   if (alvo('[data-fechar]')) alvo('dialog')?.close();
   else if (alvo('[data-conversa]')) abrirConversa(Number(alvo('[data-conversa]').dataset.conversa));
   else if (alvo('[data-com]')) { modalNova.close(); conversarCom(Number(alvo('[data-com]').dataset.com)); }

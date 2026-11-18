@@ -2,10 +2,10 @@
    contas.js — centro de comando do gestor
    Emite crachás (contas), suspende/reativa, promove/rebaixa e
    redefine senhas. Ações de poder exigem "segurar para autorizar".
-   Tela "Usuários": só os crachás, com abas Analistas / Colaboradores
-   / Gestores. Cada crachá tem a cor do cargo e uma engrenagem no
-   canto superior direito com o menu (editar, senha, suspender, cargo).
-   Arraste um crachá até "Suspender" para suspender ou reativar.
+   Tela "Usuários": só os crachás, com abas Geral (todos) / Analistas /
+   Colaboradores / Gestores. Cada crachá tem a cor do cargo e uma
+   engrenagem no canto superior direito com o menu (editar, senha,
+   cargo e suspender/reativar).
    ========================================================= */
 
 const usuario = Sessao.exigir(['gestor']);
@@ -24,7 +24,6 @@ const elCredencial = document.getElementById('credencial');
 const modalPoder = document.getElementById('modalPoder');
 const modalEmissor = document.getElementById('modalEmissor');
 const modalEditar = document.getElementById('modalEditar');
-const elZonaSuspender = document.getElementById('zonaSuspender');
 let contaEmEdicao = null;
 
 // Esta tela não tem o Helpy: avisos importantes viram um aviso (toast) rápido
@@ -41,17 +40,17 @@ const DICAS = {
   colaborador: 'Abre chamados pelo HelpIA. Não conta no limite de analistas.',
   gestor: 'Vê o Painel de Controle, define metas e cuida dos crachás da empresa.',
 };
-const ICONES_CARGO = { gestor: 'coroa', analista: 'ferramenta', colaborador: 'chat' };
+const ICONES_CARGO = { gestor: 'coroa', analista: 'ferramenta', colaborador: 'usuario' };
 
 let contas = [];
 let chamados = [];
-let filtro = 'analista';       // aba aberta: analista, colaborador ou gestor
+let filtro = 'geral';          // aba aberta: geral (todos), analista, colaborador ou gestor
+const ORDEM_CARGO = { gestor: 0, analista: 1, colaborador: 2 };
 let soSuspensos = false;
 let idDestacado = null;
 const eventosDaSessao = [];
 
 const perfilEscolhido = () => document.querySelector('input[name="perfil"]:checked').value;
-const iniciais = (nome) => nome.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase() || '?';
 const hojeIso = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -89,12 +88,12 @@ function crachaHtml(conta, { previa = false } = {}) {
          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
        </button>`;
   return `
-    <li class="cracha-item" data-id="${conta.id ?? ''}" ${!previa && !eu ? 'draggable="true" title="Arraste até “Suspender” para suspender ou reativar"' : ''}>
+    <li class="cracha-item" data-id="${conta.id ?? ''}">
       <span class="cordao" aria-hidden="true"></span>
       <article class="cracha p-${conta.perfil} ${suspenso ? 'suspenso' : ''} ${conta.id === idDestacado ? 'emitido' : ''}">
         <span class="cracha-faixa"></span>
         ${engrenagem}
-        <span class="cracha-foto" aria-hidden="true">${esc(iniciais(conta.nome || ''))}</span>
+        <span class="cracha-foto" aria-hidden="true">${Avatar.conteudo(conta)}</span>
         <span class="cracha-nome">${esc(conta.nome || 'Nome da pessoa')}</span>
         <span class="cracha-cargo">${ROTULOS[conta.perfil]}</span>
         <span class="cracha-email">${esc(conta.email || 'email@empresa.com')}</span>
@@ -126,7 +125,11 @@ function abrirMenu(botao) {
     <span class="menu-separador" role="separator"></span>
     ${outrosCargos.map((p) => item(`cargo-${p}`, ICONES_CARGO[p], `Tornar ${ROTULOS[p].toLowerCase()}`)).join('')}
     <span class="menu-separador" role="separator"></span>
-    ${suspenso ? item('reativar', 'play', 'Reativar acesso') : item('suspender', 'pausa', 'Suspender acesso', true)}`;
+    <button type="button" role="menuitem" class="menu-acesso ${suspenso ? 'reativar' : 'suspender'}" data-poder="${suspenso ? 'reativar' : 'suspender'}" data-id="${conta.id}">
+      ${suspenso ? ic('cadeado-aberto') : ic('bloqueio')}
+      <span><b>${suspenso ? 'Reativar acesso' : 'Suspender acesso'}</b>
+      <small>${suspenso ? 'A pessoa volta a entrar na plataforma' : 'A pessoa é desconectada na hora'}</small></span>
+    </button>`;
   const r = botao.getBoundingClientRect();
   elMenu.hidden = false;
   const largura = elMenu.offsetWidth;
@@ -194,11 +197,17 @@ function renderizarKpis() {
 function renderizarEquipe() {
   const termo = document.getElementById('busca').value.trim().toLowerCase();
   const visiveis = contas
-    .filter((c) => c.perfil === filtro)
+    .filter((c) => filtro === 'geral' || c.perfil === filtro)
     .filter((c) => !soSuspensos || c.ativo === false)
-    .filter((c) => !termo || Busca.normalizar(`${c.nome} ${c.email} ${String(c.id).padStart(4, '0')} ${c.id}`).includes(Busca.normalizar(termo)))
-    .sort((a, b) => (a.perfil === 'gestor' ? -1 : b.perfil === 'gestor' ? 1 : 0) || a.nome.localeCompare(b.nome));
+    .filter((c) => !termo || Busca.normalizar(`${c.nome} ${c.email} ${String(c.id).padStart(4, '0')} ${c.id} ${ROTULOS[c.perfil]}`).includes(Busca.normalizar(termo)))
+    .sort((a, b) => ORDEM_CARGO[a.perfil] - ORDEM_CARGO[b.perfil] || a.nome.localeCompare(b.nome));
   document.getElementById('contadorCrachas').textContent = visiveis.length;
+  // Quantos crachás há em cada aba
+  document.querySelectorAll('[data-aba]').forEach((b) => {
+    const qtd = b.dataset.aba === 'geral' ? contas.length : contas.filter((c) => c.perfil === b.dataset.aba).length;
+    const el = b.querySelector('.aba-qtd');
+    if (el) el.textContent = qtd;
+  });
   elLista.innerHTML = visiveis.length
     ? visiveis.map((c, i) => crachaHtml(c, { indice: i })).join('')
     : `<li class="mesa-vazia mesa-vazia-centro"><span class="mesa-vazia-ico">${ic('cracha')}</span>
@@ -296,39 +305,59 @@ function falarDoPainel() {
 }
 
 // ---------- Autorização: segurar para confirmar ----------
-function autorizar({ icone, titulo, texto, rotulo, perigo = false, acao }) {
+/* Botão largo que vai "enchendo" enquanto você segura. Soltou antes do fim:
+   a barra volta devagar e a dica avisa. Encheu: vira check e a ação acontece. */
+function autorizar({ icone, titulo, texto, rotulo, perigo = false, acao, conta = null }) {
   const conteudo = document.getElementById('conteudoPoder');
+  const DURACAO = 1200;
+  const DICA = `Mantenha pressionado por ${(DURACAO / 1000).toLocaleString('pt-BR')} segundo · ou segure Enter`;
   conteudo.innerHTML = `
     <div class="poder-icone ${perigo ? 'perigo' : ''}">${icone}</div>
     <h2>${titulo}</h2>
+    ${conta ? `<div class="poder-alvo">${Avatar.html(conta, 'poder-avatar')}
+      <span><b>${esc(conta.nome)}</b><small>${ROTULOS[conta.perfil]} · ${esc(conta.email)}</small></span></div>` : ''}
     <p>${texto}</p>
     <button type="button" class="segurar ${perigo ? 'perigo' : ''}" id="botaoSegurar" aria-label="Segure para ${rotulo}">
-      <svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="16" pathLength="100" id="anelSegurar"/></svg>
-      <span>Segure para ${rotulo}</span>
+      <span class="segurar-barra" aria-hidden="true"></span>
+      <span class="segurar-texto">${icone}<span data-rotulo>Segure para ${rotulo}</span></span>
+      <span class="segurar-pct" aria-hidden="true"></span>
     </button>
-    <p class="dica-segurar">Mantenha pressionado por 1 segundo · ou segure Enter</p>
+    <p class="dica-segurar" id="dicaSegurar" aria-live="polite">${DICA}</p>
     <p class="aviso aviso-erro" id="erroPoder" hidden></p>
     <div class="modal-acoes"><button type="button" class="btn btn-ghost" data-fechar>Cancelar</button></div>`;
   modalPoder.showModal();
 
   const botao = document.getElementById('botaoSegurar');
-  const anel = document.getElementById('anelSegurar');
-  const DURACAO = 1000;
+  const elRotulo = botao.querySelector('[data-rotulo]');
+  const elPct = botao.querySelector('.segurar-pct');
+  const elDica = document.getElementById('dicaSegurar');
   let inicio = null;
   let quadro = null;
   let feito = false;
+  let progresso = 0;
 
+  const pintar = (p) => {
+    progresso = p;
+    botao.style.setProperty('--p', p.toFixed(3));
+    botao.classList.toggle('meio', p > .5);
+    elPct.textContent = p > 0 && p < 1 ? `${Math.round(p * 100)}%` : '';
+  };
   const parar = () => {
-    if (feito) return;
+    if (feito || inicio === null) return;
     cancelAnimationFrame(quadro);
     inicio = null;
     botao.classList.remove('segurando');
-    anel.style.strokeDasharray = '0 100';
+    if (progresso > .05) {
+      elDica.textContent = 'Quase! Segure até a barra encher por completo.';
+      elDica.classList.add('alerta');
+      botao.classList.remove('tremeu'); void botao.offsetWidth; botao.classList.add('tremeu');
+    }
+    pintar(0);
   };
   const passo = (agora) => {
-    const progresso = Math.min(1, (agora - inicio) / DURACAO);
-    anel.style.strokeDasharray = `${progresso * 100} 100`;
-    if (progresso < 1) { quadro = requestAnimationFrame(passo); return; }
+    const p = Math.min(1, (agora - inicio) / DURACAO);
+    pintar(p);
+    if (p < 1) { quadro = requestAnimationFrame(passo); return; }
     feito = true;
     executar();
   };
@@ -338,28 +367,37 @@ function autorizar({ icone, titulo, texto, rotulo, perigo = false, acao }) {
     e.preventDefault();
     inicio = performance.now();
     botao.classList.add('segurando');
+    elDica.textContent = 'Segurando… não solte';
+    elDica.classList.remove('alerta');
+    navigator.vibrate?.(12);
     quadro = requestAnimationFrame(passo);
   };
   const executar = async () => {
     botao.classList.remove('segurando');
-    botao.querySelector('span').textContent = '…';
+    botao.classList.add('processando');
+    elRotulo.textContent = 'Aplicando…';
     const resultado = await acao();
+    botao.classList.remove('processando');
     if (resultado?.erro) {
       feito = false;
-      parar();
-      botao.querySelector('span').textContent = `Segure para ${rotulo}`;
+      inicio = null;
+      pintar(0);
+      elRotulo.textContent = `Segure para ${rotulo}`;
+      elDica.textContent = DICA;
       const erro = document.getElementById('erroPoder');
       erro.textContent = resultado.erro;
       erro.hidden = false;
       return;
     }
+    navigator.vibrate?.([20, 40, 20]);
     botao.classList.add('autorizado');
-    botao.querySelector('span').innerHTML = '<i class="ic ic-check" aria-hidden="true"></i> Autorizado';
+    botao.querySelector('.segurar-texto').innerHTML = '<i class="ic ic-check" aria-hidden="true"></i><span>Feito!</span>';
     if (resultado?.html) {
-      conteudo.querySelector('.dica-segurar').outerHTML = resultado.html;
+      elDica.outerHTML = resultado.html;
       conteudo.querySelector('[data-fechar]').textContent = 'Concluir';
     } else {
-      setTimeout(() => modalPoder.close(), 750);
+      elDica.textContent = 'Autorizado.';
+      setTimeout(() => modalPoder.close(), 900);
     }
   };
 
@@ -367,6 +405,7 @@ function autorizar({ icone, titulo, texto, rotulo, perigo = false, acao }) {
   botao.addEventListener('keydown', comecar);
   ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => botao.addEventListener(ev, parar));
   botao.addEventListener('keyup', parar);
+  botao.addEventListener('contextmenu', (e) => e.preventDefault());     // segurar no celular não abre o menu
   botao.focus();
 }
 
@@ -403,6 +442,7 @@ async function aplicarPoder(tipo, id) {
       gestor: 'passa a ver o Painel de Controle, definir metas e cuidar dos crachás.',
     };
     autorizar({
+      conta,
       icone: ic(ICONES_CARGO[novo]),
       titulo: `Tornar ${ROTULOS[novo].toLowerCase()}`,
       texto: `${nome} ${TEXTOS[novo]}`,
@@ -413,7 +453,7 @@ async function aplicarPoder(tipo, id) {
         if (!ok) return { erro: dados.erro || 'Não foi possível concluir.' };
         registrarPoder(ic(ICONES_CARGO[novo]), `Você tornou <strong>${esc(conta.nome)}</strong> ${ROTULOS[novo].toLowerCase()}`);
         Efeitos.toast(`${esc(conta.nome)} agora é <strong>${ROTULOS[novo].toLowerCase()}</strong>`, { icone: ic(ICONES_CARGO[novo]), tipo: 'sucesso' });
-        escolherAba(novo);
+        if (filtro !== "geral") escolherAba(novo);
         destacar();
         return {};
       },
@@ -424,6 +464,7 @@ async function aplicarPoder(tipo, id) {
   if (tipo === 'suspender' || tipo === 'reativar') {
     const suspender = tipo === 'suspender';
     autorizar({
+      conta,
       icone: suspender ? '<i class="ic ic-bloqueio" aria-hidden="true"></i>' : '<i class="ic ic-cadeado-aberto" aria-hidden="true"></i>',
       titulo: suspender ? 'Suspender acesso' : 'Reativar acesso',
       texto: suspender
@@ -445,6 +486,7 @@ async function aplicarPoder(tipo, id) {
   if (tipo === 'promover' || tipo === 'rebaixar') {
     const promover = tipo === 'promover';
     autorizar({
+      conta,
       icone: promover ? '<i class="ic ic-seta-cima" aria-hidden="true"></i>' : '<i class="ic ic-seta-baixo" aria-hidden="true"></i>',
       titulo: promover ? 'Promover a analista' : 'Tornar colaborador',
       texto: promover
@@ -466,6 +508,7 @@ async function aplicarPoder(tipo, id) {
   if (tipo === 'senha') {
     const nova = gerarSenha();
     autorizar({
+      conta,
       icone: '<i class="ic ic-chave" aria-hidden="true"></i>',
       titulo: 'Redefinir senha',
       texto: `Uma nova senha provisória será gerada para ${nome}. A senha atual deixa de funcionar.`,
@@ -510,7 +553,7 @@ elForm.addEventListener('submit', async (evento) => {
     await Efeitos.voar(elPrevia.querySelector('.cracha-item'), elLista, { duracao: 750, escalaFinal: .6 });
 
     idDestacado = resposta.id;
-    escolherAba(resposta.perfil);
+    if (filtro !== "geral") escolherAba(resposta.perfil);
     registrarPoder('<i class="ic ic-cracha" aria-hidden="true"></i>', `Você emitiu o crachá de <strong>${esc(resposta.nome)}</strong> (${ROTULOS[resposta.perfil]})`);
     await carregar();
     elLista.querySelector(`[data-id="${resposta.id}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -642,37 +685,6 @@ document.getElementById('formEditar').addEventListener('submit', async (e) => {
   elLista.querySelector(`[data-id="${conta.id}"] .cracha`)?.classList.add('recebeu-poder');
 });
 
-// ---------- Arrastar um crachá até "Suspender" ----------
-let arrastandoId = null;
-elLista.addEventListener('dragstart', (e) => {
-  const item = e.target.closest('.cracha-item[draggable]');
-  if (!item) return;
-  arrastandoId = Number(item.dataset.id);
-  e.dataTransfer.setData('text/plain', String(arrastandoId));
-  e.dataTransfer.effectAllowed = 'move';
-  const conta = contas.find((c) => c.id === arrastandoId);
-  elZonaSuspender.innerHTML = conta?.ativo === false
-    ? `${ic('play')} Solte para reativar` : `${ic('pausa')} Solte para suspender`;
-  elZonaSuspender.classList.add('esperando');
-  setTimeout(() => item.classList.add('arrastando'), 0);
-});
-elLista.addEventListener('dragend', (e) => {
-  e.target.closest('.cracha-item')?.classList.remove('arrastando');
-  elZonaSuspender.classList.remove('esperando', 'alvo');
-  elZonaSuspender.innerHTML = `${ic('pausa')} Suspender`;
-  arrastandoId = null;
-});
-elZonaSuspender.addEventListener('dragover', (e) => { if (arrastandoId) { e.preventDefault(); elZonaSuspender.classList.add('alvo'); } });
-elZonaSuspender.addEventListener('dragleave', () => elZonaSuspender.classList.remove('alvo'));
-elZonaSuspender.addEventListener('drop', (e) => {
-  e.preventDefault();
-  const id = Number(e.dataTransfer.getData('text/plain'));
-  const conta = contas.find((c) => c.id === id);
-  if (conta) aplicarPoder(conta.ativo === false ? 'reativar' : 'suspender', id);
-});
-elZonaSuspender.addEventListener('click', () => {
-  Efeitos.toast('Arraste um crachá até o botão <strong>Suspender</strong> para suspender (ou reativar). Ou use a engrenagem do crachá.', { icone: ic('pausa') });
-});
 document.getElementById('busca').addEventListener('input', renderizarEquipe);
 
 // ---------- Início ----------

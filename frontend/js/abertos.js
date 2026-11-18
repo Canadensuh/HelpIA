@@ -46,7 +46,7 @@ function montarFiltros() {
   const manter = (el, html) => { const v = el.value; el.innerHTML = html; el.value = v; };
   manter(elTipo, `<option value="">Todos os tipos</option>${Catalogo.generos.map((g) => `<option value="${g.id}">${esc(g.titulo)}</option>`).join('')}`);
   manter(elAnalista, `<option value="">Todos os analistas</option><option value="__sem__">Sem analista (na fila)</option>${
-    [...new Set(todos.map((c) => c.analista).filter(Boolean))].sort().map((n) => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}`);
+    [...new Set(todos.map((c) => c.analista).filter(Boolean))].sort().map((n) => `<option value="${esc(n)}">${esc(n)}${n === usuario.nome ? " (Você)" : ""}</option>`).join('')}`);
 }
 
 const demorando = (c) => TicketUI.minutosParado(c) >= DEMORA_MIN;
@@ -90,7 +90,7 @@ function renderizar() {
   elLista.innerHTML = lista.length
     ? lista.map((c, i) => {
       const parado = TicketUI.minutosParado(c);
-      const onde = c.status === 'Aguardando' ? 'na fila' : `com ${esc(c.analista)}`;
+      const onde = c.status === "Aguardando" ? "na fila" : `com ${esc(TicketUI.quem(c.analista))}`;
       return TicketUI.padrao(c, {
         i, classe: demorando(c) ? 'demorando' : '',
         linhas: [
@@ -107,7 +107,7 @@ function renderizar() {
 function atualizarTempos() {
   document.querySelectorAll('[data-parado]').forEach((el) => {
     const c = todos.find((x) => x.numero === Number(el.dataset.parado));
-    if (c) el.textContent = `${TicketUI.minutosParado(c)} min ${c.status === 'Aguardando' ? 'na fila' : `com ${c.analista}`}`;
+    if (c) el.textContent = `${TicketUI.minutosParado(c)} min ${c.status === "Aguardando" ? "na fila" : `com ${TicketUI.quem(c.analista)}`}`;
   });
 }
 
@@ -134,8 +134,9 @@ elLista.addEventListener('click', async (e) => {
     Efeitos.toast(`Ticket <strong>${esc(c.codigo)}</strong> está na sua mesa. <a href="painel.html">Ir para a mesa →</a>`, { icone: ic('pastas'), tipo: 'sucesso' });
     carregar(true);
   } else if (alvo('[data-cobrar]')) {
-    irParaChat({ com: idDe(c.analista), ticket: c.numero,
-      texto: `Oi ${c.analista.split(' ')[0]}, como está o ${c.codigo}? Ele está há ${TicketUI.minutosParado(c)} min em atendimento.` });
+    // Cobrar: leva o ticket para o grupo da equipe já mencionando o analista com @
+    irParaChat({ grupo: true, ticket: c.numero,
+      texto: `@${c.analista}, como está o ${c.codigo}? Ele está há ${TicketUI.minutosParado(c)} min em atendimento.` });
   } else if (alvo('[data-avisar]')) {
     irParaChat({ grupo: true, ticket: c.numero,
       texto: `Time, o ${c.codigo} (${c.genero_titulo}) está há ${TicketUI.minutosParado(c)} min na fila. Alguém pode assumir?` });

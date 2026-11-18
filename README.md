@@ -76,7 +76,7 @@ Os testes também rodam automaticamente no GitHub Actions a cada push (`.github/
 
 Abrindo a pasta `frontend` pelo **Live Server / Go Live** do VS Code, o `js/simulador.js` assume o
 lugar da API: imita as rotas do backend com as mesmas regras e guarda os dados no navegador.
-Uma faixa "Modo simulação" aparece no canto da tela, com o botão **Limpar dados**.
+No menu da conta (cartão no canto superior direito), o gestor liga ou desliga o **Modo simulação** (chamados fictícios) e usa **Limpar dados** para apagar os tickets e conversas da empresa.
 
 - Forçar o simulador: `?simulador=1` na URL · Desligar: `?simulador=0` (a escolha fica salva).
 - Ele nunca liga no site publicado nem em `localhost:5000` (o Flask).
@@ -85,13 +85,25 @@ Uma faixa "Modo simulação" aparece no canto da tela, com o botão **Limpar dad
 
 ### Contas de demonstração
 
-Criadas ao iniciar o servidor (senha de todas: `demo123`):
+**Modo simulação (frontend)** — criadas pelo `js/simulador.js`, senha de todas: `1234`.
+Os gestores são os donos do projeto e usam a foto do GitHub; as demais contas são fictícias e
+usam o ícone do cargo (colaborador = bonequinho, analista = ferramenta, gestor = coroa).
 
-| Perfil | E-mail | Área de login | Abre em |
+| Perfil | Nome | E-mail | Abre em |
 |---|---|---|---|
-| Colaborador | `colaborador@demo.helpia` | Colaborador | `chat.html` |
-| Analista | `analista@demo.helpia` | Analista | `painel.html` |
-| Gestor | `gestor@demo.helpia` | Analista | `painel.html` + `criar-conta.html` |
+| Gestor | Murilo do Nascimento B. | `MuriloNB@HelpIA.com.br` | `controle.html` |
+| Gestor | João Pedro M. | `JoãoPM@HelpIA.com.br` (aceita também `joaopm@…`) | `controle.html` |
+| Analista | Carlos Souza | `carlos@helpia.com.br` | `painel.html` |
+| Analista | Beatriz Rocha | `beatriz@helpia.com.br` | `painel.html` |
+| Colaborador | João Silva | `joao.silva@helpia.com.br` | `chat.html` |
+| Colaborador | Maria Oliveira | `maria@helpia.com.br` | `chat.html` |
+
+> A chave do banco local mudou para `helpia-simulador-db-v4`: navegadores que já usavam o
+> simulador recebem as contas novas automaticamente. Se alguém estiver com a sessão de uma conta
+> antiga aberta, basta sair e entrar de novo.
+
+**Backend Flask** — ainda cria as contas antigas (senha `demo123`): `colaborador@demo.helpia`,
+`analista@demo.helpia` e `gestor@demo.helpia`. Atualizar na reintegração (`servico_conta.py`).
 
 > A sessão fica guardada por aba do navegador, então dá para entrar como colaborador em uma aba
 > e como analista em outra. Em produção, defina a variável de ambiente `HELPIA_SECRET_KEY`

@@ -12,14 +12,18 @@ const elDica = document.getElementById('perfilDica');
 const elBotao = document.getElementById('botaoEntrar');
 
 const DICAS = {
-  colaborador: 'Você vai para o chat de abertura de chamados.',
-  analista: 'Você vai para o painel de atendimento. Gestores também entram por aqui.',
+  colaborador: 'Você vai para a abertura de tickets.',
+  analista: 'Você vai para a mesa de atendimento.',
+  gestor: 'Você vai para o painel de controle da empresa.',
 };
 const params = new URLSearchParams(location.search);
 
 function perfilEscolhido() {
   return document.querySelector('input[name="perfil"]:checked').value;
 }
+
+/** Área enviada ao servidor: o gestor entra pela área da equipe de suporte ("analista"). */
+const areaDoLogin = (perfil) => (perfil === 'gestor' ? 'analista' : perfil);
 
 function escolherPerfil(perfil) {
   const radio = document.querySelector(`input[name="perfil"][value="${perfil}"]`);
@@ -51,7 +55,7 @@ if (atual) location.replace(Sessao.destino(atual));
 document.querySelectorAll('input[name="perfil"]').forEach((radio) => {
   radio.addEventListener('change', () => escolherPerfil(radio.value));
 });
-escolherPerfil(params.get('perfil') === 'analista' ? 'analista' : 'colaborador');
+escolherPerfil(['analista', 'gestor'].includes(params.get('perfil')) ? params.get('perfil') : 'colaborador');
 
 if (params.get('motivo') === 'expirou') {
   mostrarAviso('Sua sessão terminou. Entre novamente para continuar.');
@@ -71,7 +75,7 @@ document.querySelectorAll('.demo-conta').forEach((botao) => {
   botao.addEventListener('click', () => {
     escolherPerfil(botao.dataset.perfil);
     elEmail.value = botao.dataset.email;
-    elSenha.value = 'demo123';
+    elSenha.value = '1234';
     elAviso.hidden = true;
     elBotao.focus();
   });
@@ -89,9 +93,13 @@ elForm.addEventListener('submit', async (evento) => {
   elBotao.disabled = true;
   elBotao.textContent = 'Entrando…';
   try {
-    const { ok, dados } = await API.login(email, senha, perfilEscolhido());
+    const { ok, dados } = await API.login(email, senha, areaDoLogin(perfilEscolhido()));
     if (!ok) {
       mostrarAviso(dados.erro || 'Não foi possível entrar.');
+      return;
+    }
+    if (perfilEscolhido() === 'gestor' && dados.usuario.perfil !== 'gestor') {
+      mostrarAviso('Esta conta não é de gestor. Selecione “Analista” para entrar.');
       return;
     }
     Sessao.salvar(dados, elLembrar.checked);

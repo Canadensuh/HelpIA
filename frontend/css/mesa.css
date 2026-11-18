@@ -461,7 +461,8 @@
 .tela-analista .centro-topo .dica-arrastar { margin-left: auto; color: var(--muted); font-weight: 600; }
 
 /* Ações dentro do ticket padrão: teclas pequenas, sem mudar o tamanho do ticket */
-.tkp-rodape > .tkp-acoes { display: flex; gap: .4rem; overflow: visible; }
+/* position + z-index: os botões ficam por cima da área clicável do ticket (.tkp-abrir) */
+.tkp-rodape > .tkp-acoes { position: relative; z-index: 2; display: flex; gap: .4rem; overflow: visible; }
 .tkp-acoes .btn { margin: 0; padding: .22rem .62rem; font-size: .74rem; --key-depth: 3px; border-radius: 7px; }
 .tkp-acoes .btn-nota { flex: 0 0 auto; }
 .tkp-tempo { color: var(--muted); }
@@ -635,7 +636,7 @@
 /* =========================================================
    Trilho lateral de navegação (js/navegacao.js)
    ========================================================= */
-.com-trilho { --trilho: 76px; padding-left: var(--trilho); }
+.com-trilho { --trilho: 80px; padding-left: var(--trilho); }
 .trilho {
   position: fixed; left: 0; top: 0; bottom: 0; z-index: 60;
   width: var(--trilho);
@@ -649,13 +650,18 @@
 }
 .trilho:hover, .trilho:focus-within { width: 268px; box-shadow: 10px 0 30px rgba(0, 0, 0, .45); }
 .trilho ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; }
-.trilho-titulo {
-  display: flex; align-items: center; gap: .9rem;
-  height: 48px; padding: 0 .9rem; margin-bottom: .3rem;
-  color: #8C9A72; font-size: 1.2rem;
-  border-bottom: 1px dashed rgba(236, 239, 220, .12);
+.trilho-marca {
+  display: flex; align-items: center; gap: .85rem;
+  height: 56px; padding: 0 0 0 9px; margin-bottom: .5rem;
+  color: #ECEFDC; text-decoration: none; white-space: nowrap;
+  border-bottom: 1px dashed rgba(236, 239, 220, .14);
 }
-.trilho-titulo .trilho-rotulo { font-family: var(--font-mono); font-size: .68rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; }
+.trilho-marca img { flex: none; width: 36px; height: 36px; }
+.trilho-marca .trilho-rotulo { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; letter-spacing: -.02em; }
+.trilho-marca b { color: var(--mostarda); font-weight: 800; }
+.trilho-marca:focus-visible { outline: 3px solid var(--oliva-clara); outline-offset: 2px; border-radius: 10px; }
+/* Com o trilho, o logo fica nele: o do topo sai para não aparecer dobrado */
+.com-trilho .mesa-topo > .brand { display: none; }
 .trilho-item {
   display: flex; align-items: center; gap: .8rem;
   padding: 3px; border-radius: 12px;
@@ -665,15 +671,16 @@
 .trilho-ico {
   position: relative; flex: none;
   display: grid; place-items: center;
-  width: 50px; height: 46px;
-  border-radius: 11px;
-  background: linear-gradient(180deg, #2D3723, #232B1B);
-  border: 1px solid #3E4A31;
-  box-shadow: 0 4px 0 #0A0D07, inset 0 1px 0 rgba(255, 255, 255, .08);
-  font-size: 1.25rem; color: #C3D893;
-  transition: transform .08s, box-shadow .08s, background .15s;
+  width: 52px; height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #3A4830, #2A3421);
+  border: 1px solid #56663F;
+  box-shadow: 0 4px 0 #0A0D07, inset 0 1px 0 rgba(255, 255, 255, .14);
+  font-size: 1.5rem; color: #E6F2C4;
+  transition: transform .08s, box-shadow .08s, background .15s, color .15s;
 }
-.trilho-item:hover .trilho-ico { background: linear-gradient(180deg, #3A4729, #2D3723); }
+.trilho-ico .ic { width: 1.45rem; height: 1.45rem; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .45)); }
+.trilho-item:hover .trilho-ico { background: linear-gradient(180deg, #4A5B3A, #36432A); color: #FFFFFF; }
 .trilho-item:active .trilho-ico { transform: translateY(4px); box-shadow: 0 0 0 #0A0D07; }
 .trilho-item.ativo .trilho-ico {
   background: linear-gradient(180deg, #B4CD7C, #8FA858);
@@ -684,7 +691,7 @@
 .trilho-rotulo { display: flex; flex-direction: column; line-height: 1.2; opacity: 0; transform: translateX(-8px); transition: opacity .2s, transform .2s; }
 .trilho:hover .trilho-rotulo, .trilho:focus-within .trilho-rotulo { opacity: 1; transform: none; }
 .trilho-rotulo strong { font-size: .92rem; }
-.trilho-rotulo small { font-size: .72rem; color: #8C9A72; }
+.trilho-rotulo small { font-size: .72rem; color: #A9B48E; }
 .trilho-item.ativo .trilho-rotulo strong { color: var(--fosforo); }
 .trilho-badge {
   position: absolute; top: -6px; right: -6px;
@@ -845,3 +852,27 @@
 .busca-mesa .input { padding-right: .85rem; }
 .busca-mesa:has(.busca-resultado:not([hidden])) .input { padding-right: 7.5rem; }
 .acao-lado .busca-mesa { width: min(440px, 38vw); max-width: none; }
+
+/* Bandeja do analista vazia: o aviso ocupa a bandeja inteira e o texto fica escuro no kraft */
+.tela-analista .bandeja-fundo:has(.mesa-vazia) { display: flex; flex-direction: column; }
+.tela-analista .bandeja-fundo:has(.mesa-vazia) > ul { flex: 1; display: flex; flex-direction: column; margin: 0; padding: 0; }
+.tela-analista .bandeja-fundo .mesa-vazia {
+  flex: 1; min-height: 220px; margin: 0; box-sizing: border-box;
+  align-content: center;
+  border: 2px dashed rgba(35, 41, 27, .4); border-radius: 14px;
+  background: rgba(255, 252, 242, .3);
+  color: #3F3B2C; font-weight: 600;
+}
+.tela-analista .bandeja-fundo .mesa-vazia strong { color: #23291B; }
+.tela-analista .bandeja-fundo .mesa-vazia > span:first-child { color: #4C6B3C; }
+
+/* "Helpy lembra" dentro do ticket aberto */
+.lembranca-modal {
+  color: #23291B; background: #FFF6D6;
+  border: 2px solid var(--tinta); box-shadow: 3px 3px 0 var(--sombra);
+  animation: lembra-chega .45s cubic-bezier(.3, 1.5, .5, 1);
+}
+.lembranca-modal p { margin: 0 0 .35rem; }
+.lembranca-titulo { display: flex; align-items: center; gap: .35rem; margin-bottom: .25rem; color: #7A5A0A; font-family: var(--font-display); }
+@keyframes lembra-chega { from { opacity: 0; transform: translateY(-8px) scale(.97); } }
+@media (prefers-reduced-motion: reduce) { .lembranca-modal { animation: none; } }

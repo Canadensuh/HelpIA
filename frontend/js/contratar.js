@@ -10,9 +10,10 @@ const elBotao = document.getElementById('botaoContratar');
 const campo = (id) => document.getElementById(id);
 
 const RESUMO = {
-  essencial: 'Essencial · R$ 149/mês',
-  profissional: 'Profissional · R$ 390/mês',
-  empresarial: 'Empresarial · sob consulta',
+  // Mesmos itens dos planos da página inicial (index.html)
+  essencial: { nome: 'Essencial', preco: 'R$ 149 <small>/mês</small>', itens: ['Até 3 analistas', 'Colaboradores ilimitados', 'Abertura guiada e triagem automática', 'HelpIA Chat'] },
+  profissional: { nome: 'Profissional', preco: 'R$ 390 <small>/mês</small>', itens: ['Até 15 analistas', 'Tudo do Essencial', 'Painel de controle da fila', 'Metas diárias e mural da equipe'] },
+  empresarial: { nome: 'Empresarial', preco: 'Sob consulta', itens: ['Analistas ilimitados', 'Tudo do Profissional', 'Valor combinado com a sua empresa'] },
 };
 
 function planoEscolhido() {
@@ -21,11 +22,21 @@ function planoEscolhido() {
 
 function atualizarResumo() {
   const plano = planoEscolhido();
-  elResumo.textContent = RESUMO[plano];
+  const r = RESUMO[plano];
+  elResumo.textContent = r.nome;
+  campo('resumoPreco').innerHTML = r.preco;
+  campo('resumoItens').innerHTML = r.itens.map((i) => `<li>${i}</li>`).join('');
   elBotao.textContent = plano === 'empresarial'
-    ? 'Solicitar proposta e criar conta de gestor'
+    ? 'Solicitar proposta e criar conta'
     : 'Contratar e criar conta de gestor';
 }
+
+/** Empresa e gestor aparecem no resumo enquanto a pessoa digita. */
+function atualizarDados() {
+  campo('resumoEmpresa').textContent = campo('empresaNome').value.trim() || '—';
+  campo('resumoGestor').textContent = campo('respNome').value.trim() || '—';
+}
+['empresaNome', 'respNome'].forEach((id) => campo(id).addEventListener('input', atualizarDados));
 
 function mostrarAviso(texto) {
   elAviso.textContent = texto;

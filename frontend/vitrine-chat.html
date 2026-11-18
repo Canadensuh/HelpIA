@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="perfil-analista">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1440" />
+  <title>HelpIA Chat · vitrine</title>
+  <!--
+    Vitrine da página inicial: a tela real do HelpIA Chat (conversas.html),
+    com os mesmos CSS da aplicação e pessoas fictícias. Sem login e sem
+    dados: é só a "foto" da tela. A página inicial manda o progresso da
+    rolagem (postMessage) e as mensagens vão chegando como no chat de verdade.
+  -->
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/simbolos.css" />
+  <link rel="stylesheet" href="css/icones.css" />
+  <link rel="stylesheet" href="css/helpy.css" />
+  <link rel="stylesheet" href="css/painel.css" />
+  <link rel="stylesheet" href="css/mesa.css" />
+  <link rel="stylesheet" href="css/paginas.css" />
+  <link rel="stylesheet" href="css/teclas.css" />
+  <link rel="stylesheet" href="css/papelaria.css" />
+  <link rel="stylesheet" href="css/conta.css" />
+  <style>
+    html, body { overflow: hidden; }
+    body * { cursor: default !important; }
+    .vitrine-oculta { display: none !important; }
+    .vitrine-chegou { animation: vitrine-chega .45s cubic-bezier(.2, .9, .3, 1.2) both; }
+    @keyframes vitrine-chega { from { opacity: 0; transform: translateY(18px) scale(.97); } }
+    .conv-badge.vitrine-oculta { display: none; }
+  </style>
+</head>
+<body class="tela-mesa tela-pagina tela-conversas com-trilho">
+<nav class="trilho" aria-label="Navegação do HelpIA">
+      <a class="trilho-marca"><img src="assets/logo.svg" alt="" /><span class="trilho-rotulo">Help<b>IA</b></span></a>
+      <ul>
+        <li><a class="trilho-item " title="Minha Mesa">
+            <span class="trilho-ico"><i class="ic ic-pastas" aria-hidden="true"></i></span>
+            <span class="trilho-rotulo"><strong>Minha Mesa</strong><small>Bandeja e tickets em atendimento</small></span>
+          </a></li><li><a class="trilho-item " title="Metas">
+            <span class="trilho-ico"><i class="ic ic-alvo" aria-hidden="true"></i></span>
+            <span class="trilho-rotulo"><strong>Metas</strong><small>Metas definidas pelo gestor</small></span>
+          </a></li><li><a class="trilho-item ativo" aria-current="page" title="HelpIA Chat">
+            <span class="trilho-ico"><i class="ic ic-chat" aria-hidden="true"></i><span class="trilho-badge" data-badge-chat="">1</span></span>
+            <span class="trilho-rotulo"><strong>HelpIA Chat</strong><small>Grupo da equipe e colaboradores</small></span>
+          </a></li><li><a class="trilho-item " title="Tickets em Aberto">
+            <span class="trilho-ico"><i class="ic ic-entrada" aria-hidden="true"></i></span>
+            <span class="trilho-rotulo"><strong>Tickets em Aberto</strong><small>Todos os tickets pendentes</small></span>
+          </a></li><li><a class="trilho-item " title="Histórico de Tickets">
+            <span class="trilho-ico"><i class="ic ic-arquivo" aria-hidden="true"></i></span>
+            <span class="trilho-rotulo"><strong>Histórico de Tickets</strong><small>Tickets que você atendeu</small></span>
+          </a></li>
+      </ul></nav>
+  <header class="mesa-topo">
+    <a class="brand" data-inicio=""><img src="assets/logo.svg" alt=""><span class="brand-nome">Help<b>IA</b></span></a>
+    <div class="topbar-acoes">
+      <div class="usuario-menu"><span class="conta-botao"><span class="usuario-avatar avatar perfil-analista" data-usuario-iniciais="" aria-hidden="true"><i class="ic ic-ferramenta av-ico" aria-hidden="true"></i></span><span class="usuario-info"><strong data-usuario-nome="">Carlos Souza</strong><span data-usuario-perfil="">Analista · HelpIA</span></span><span class="conta-seta" aria-hidden="true"></span></span>
+      </div>
+    </div>
+  </header>
+  <main class="mesa">
+    <section class="bandeja" aria-labelledby="tituloConversas">
+      <header class="area-topo">
+        <h2 id="tituloConversas"><i class="ic ic-chat" aria-hidden="true"></i> Conversas</h2>
+        <button type="button" class="btn btn-sm btn-primary" id="novaConversa"><i class="ic ic-mais" aria-hidden="true"></i> Nova</button>
+      </header>
+      <div class="bandeja-fundo">
+        <ul class="lista-conversas" id="listaConversas">
+      <li><button type="button" class="conv ativa " data-conversa="1">
+        <span class="conv-avatar conv-grupo"><i class="ic ic-equipe" aria-hidden="true"></i></span>
+        <span class="conv-texto">
+          <span class="conv-topo"><strong>Equipe HelpIA</strong><time>13:51</time></span>
+          <span class="conv-sub"><i class="ic ic-equipe" aria-hidden="true"></i> Grupo · Você: Deixa comigo o #007 assim que eu fechar o que estou fazendo.</span>
+        </span>
+      </button></li>
+      <li><button type="button" class="conv  " data-conversa="3">
+        <span class="avatar perfil-colaborador conv-avatar" aria-hidden="true"><i class="ic ic-usuario av-ico" aria-hidden="true"></i></span>
+        <span class="conv-texto">
+          <span class="conv-topo"><strong>João Silva</strong><time>13:48</time></span>
+          <span class="conv-sub">Colaborador · Você: Oi João! Vi seu ticket #006. Enquanto eu não chego aí: o cabo de rede está bem encaixado atrás do computador?</span>
+        </span>
+      </button></li>
+      <li><button type="button" class="conv  nao-lida" data-conversa="2">
+        <span class="avatar perfil-analista conv-avatar" aria-hidden="true"><i class="ic ic-ferramenta av-ico" aria-hidden="true"></i></span>
+        <span class="conv-texto">
+          <span class="conv-topo"><strong>Beatriz Rocha</strong><time>13:39</time></span>
+          <span class="conv-sub">Analista · Carlos, aquele computador 043 da Maria voltou a dar problema. Acho que é o estabilizador.</span>
+        </span>
+        <span class="conv-badge">1</span>
+      </button></li></ul>
+      </div>
+    </section>
+    <section class="centro" aria-labelledby="tituloConversa">
+      <header class="area-topo centro-topo">
+        <h2 id="tituloConversa"><i class="ic ic-equipe" aria-hidden="true"></i> Equipe HelpIA</h2>
+        <span class="pagina-sub" id="subConversa">4 pessoas · analistas e gestores</span>
+      </header>
+      <div class="tampo tampo-chat" id="tampoChat">
+        <ol class="mensagens" id="mensagens" aria-live="polite"><li class="msg-dia"><span>hoje</span></li><li class="msg ">
+      <span class="avatar perfil-gestor conv-avatar" aria-hidden="true"><i class="ic ic-coroa av-ico" aria-hidden="true"></i></span>
+      <div class="msg-balao">
+        <span class="msg-autor">Renata Alves <small>Gestor</small></span>
+        <p class="">Bom dia, time! Hoje o foco é zerar a bandeja antes do almoço. Bora?</p>
+        <time>12:44</time>
+      </div></li><li class="msg ">
+      <span class="avatar perfil-analista conv-avatar" aria-hidden="true"><i class="ic ic-ferramenta av-ico" aria-hidden="true"></i></span>
+      <div class="msg-balao">
+        <span class="msg-autor">Beatriz Rocha <small>Analista</small></span>
+        <p class="">Peguei a impressora do 2º andar, a equipe toda está parada lá.</p>
+        <button type="button" class="msg-ticket pri-media" data-ticket="4">
+    <span class="msg-ticket-faixa"><b>#004</b>Média</span>
+    <span class="msg-ticket-corpo"><span class="mini-ico"><svg viewBox="0 0 64 64" class="ico ico-impressora" aria-hidden="true">
+    <path class="ico-traco" d="M18 24V8h28v16"></path>
+    <rect class="ico-papel" x="19" y="34" width="26" height="22" rx="1.5"></rect>
+    <rect class="ico-traco ico-corpo-imp" x="8" y="22" width="48" height="20" rx="4"></rect>
+    <circle class="ico-led" cx="47" cy="30" r="2.4"></circle></svg></span>
+      <span><strong>Impressora</strong><small>Papel atolado · Em atendimento</small></span></span>
+  </button>
+        <time>13:13</time>
+      </div></li><li class="msg msg-sistema"><span class="msg-sistema-selo">HelpIA</span>
+        <p>Ticket <button type="button" class="mencao pri-alta" data-ticket="7">#007</button> · Setor parado chegou com prioridade ALTA. Quem pode assumir?</p><button type="button" class="msg-ticket pri-alta" data-ticket="7">
+    <span class="msg-ticket-faixa"><b>#007</b>Alta</span>
+    <span class="msg-ticket-corpo"><span class="mini-ico"><svg viewBox="0 0 64 64" class="ico ico-setor" aria-hidden="true">
+    <path class="ico-traco" d="M14 58V28h36v30M8 58h48"></path>
+    <path class="ico-traco" d="M22 36h6M36 36h6M22 46h6M36 46h6M29 58v-7h6v7"></path>
+    <path class="ico-sirene" d="M25 28v-6a7 7 0 0 1 14 0v6z"></path>
+    <g class="ico-raios"><path class="ico-traco" d="M32 4v5M18 9l3.5 3.5M46 9l-3.5 3.5"></path></g></svg></span>
+      <span><strong>Setor parado</strong><small>Sem internet no setor · Aguardando</small></span></span>
+  </button><time>13:50</time></li><li class="msg minha">
+      <div class="msg-balao">
+        <p class="">Deixa comigo o <button type="button" class="mencao pri-alta" data-ticket="7">#007</button> assim que eu fechar o que estou fazendo.</p>
+        <time>13:51</time>
+      </div></li></ol>
+        <form class="compositor" id="compositor">
+          <div class="compositor-anexo" id="anexo" hidden=""></div>
+          <ul class="compositor-arquivos" id="arquivosPendentes" aria-label="Arquivos para enviar" hidden=""></ul>
+          <div class="compositor-linha">
+            <button type="button" class="btn btn-mencionar" id="mencionar" title="Mencionar um ticket" aria-label="Mencionar um ticket">#</button>
+            <button type="button" class="btn btn-icone-chat" id="anexar" title="Anexar documentos, prints, imagens ou vídeos" aria-label="Anexar arquivos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"></path></svg></button>
+            <button type="button" class="btn btn-icone-chat" id="abrirEmojis" title="Emojis" aria-label="Escolher um emoji" aria-expanded="false" aria-controls="painelEmojis"><span aria-hidden="true">😊</span></button>
+            <textarea id="texto" class="input" rows="1" maxlength="1000" placeholder="Escreva uma mensagem… (# ticket, @ pessoa)"></textarea>
+            <button type="submit" class="btn key--green" id="enviar"><i class="ic ic-enviar" aria-hidden="true"></i> Enviar</button>
+          </div>
+          <input type="file" id="arquivoInput" multiple="" hidden="">
+          </form>
+        <div class="soltar-aqui" id="soltarAqui" aria-hidden="true" hidden=""><span>📎 Solte aqui para anexar</span></div>
+      </div>
+    </section>
+    <aside class="lateral lateral-chat" aria-label="Detalhes da conversa">
+      <div class="chat-detalhes" id="detalhes">
+    <div class="detalhe-bloco">
+      <strong><i class="ic ic-equipe" aria-hidden="true"></i> No grupo</strong>
+      <ul class="pessoas">
+        <li><span class="avatar perfil-gestor conv-avatar" aria-hidden="true"><i class="ic ic-coroa av-ico" aria-hidden="true"></i></span>
+          <span><b>Renata Alves</b><small>Gestor</small></span></li>
+        <li><span class="avatar perfil-gestor conv-avatar" aria-hidden="true"><i class="ic ic-coroa av-ico" aria-hidden="true"></i></span>
+          <span><b>Paulo Mendes</b><small>Gestor</small></span></li>
+        <li><span class="avatar perfil-analista conv-avatar" aria-hidden="true"><i class="ic ic-ferramenta av-ico" aria-hidden="true"></i></span>
+          <span><b>Carlos Souza (você)</b><small>Analista</small></span></li>
+        <li><span class="avatar perfil-analista conv-avatar" aria-hidden="true"><i class="ic ic-ferramenta av-ico" aria-hidden="true"></i></span>
+          <span><b>Beatriz Rocha</b><small>Analista</small></span></li>
+      </ul>
+    </div>
+    </div>
+    </aside>
+  </main>
+  <script>
+  /* Progresso vindo da página inicial (0 a 1): as mensagens chegam uma a uma,
+     a última é digitada no compositor e enviada. Sem progresso: tela completa. */
+  (() => {
+    const lista = document.getElementById('mensagens');
+    const msgs = [...lista.querySelectorAll(':scope > li.msg')];
+    const texto = document.getElementById('texto');
+    const ultima = msgs[msgs.length - 1];
+    const frase = ultima.querySelector('p').textContent.trim();
+    const PASSOS = [0, .22, .45, .9];          // quando cada mensagem aparece
+    const DIGITA = [.58, .84];                 // a última é digitada antes de sair
+    let antes = -1;
+    function mostrar(t) {
+      msgs.forEach((m, i) => {
+        const ver = t >= PASSOS[i];
+        if (ver && m.classList.contains('vitrine-oculta')) {
+          m.classList.remove('vitrine-oculta');
+          if (t > antes) { m.classList.remove('vitrine-chegou'); void m.offsetWidth; m.classList.add('vitrine-chegou'); }
+        }
+        if (!ver) m.classList.add('vitrine-oculta');
+      });
+      const d = Math.min(1, Math.max(0, (t - DIGITA[0]) / (DIGITA[1] - DIGITA[0])));
+      texto.value = t >= PASSOS[3] || d <= 0 ? '' : frase.slice(0, Math.round(frase.length * d));
+      lista.scrollTop = lista.scrollHeight;
+      antes = t;
+    }
+    addEventListener('message', (e) => {
+      if (e.data && e.data.tipo === 'helpia-vitrine' && typeof e.data.t === 'number') mostrar(e.data.t);
+    });
+    lista.scrollTop = lista.scrollHeight;
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+/* =========================================================
+   publico.css — peças das páginas públicas (início, contratar, entrar)
+   - Teclas 3D da aplicação (css/teclas.css) com tamanhos para o site;
+   - o topo: logo à esquerda, telas no centro, Entrar/Contratar à direita;
+   - títulos com serifa (Source Serif 4);
+   - tema grafite de Contratar e Entrar (body.pub-cinza).
+   Carregar depois de institucional.css e teclas.css.
+   ========================================================= */
+:root {
+  --fosforo: #A6F08A;
+  --serifa: 'Source Serif 4', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --topo-h: 72px;
+}
+
+/* =========================================================
+   Botões: as mesmas teclas 3D da aplicação (css/teclas.css)
+   ========================================================= */
+.lp .key {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .62rem 1.15rem;
+  font: 800 .92rem/1.2 'Nunito', var(--fonte); white-space: nowrap;
+}
+.lp .key .ic { width: 1.05em; height: 1.05em; }
+.lp .key--sm { padding: .45rem .85rem; font-size: .84rem; }
+.lp .key--lg { padding: .85rem 1.5rem; font-size: 1.02rem; }
+.lp .key--block { display: flex; width: 100%; }
+/* Tecla escura (a mesma do trilho de navegação da aplicação) */
+.key--escura {
+  --k-top: #34412A; --k-top-2: #252E1E; --k-side: #0E120B; --k-edge: #050704; --k-text: #E2E8CF;
+  --k-face: linear-gradient(180deg, rgba(255, 255, 255, .1) 0%, rgba(255, 255, 255, 0) 22%), linear-gradient(180deg, var(--k-top) 0%, var(--k-top-2) 100%);
+}
+/* Tecla mostarda: a ação que mais chama atenção */
+.key--mostarda {
+  --k-top: #F7DC7C; --k-top-2: #E2B53A; --k-side: #9C7614; --k-edge: #5E4609; --k-text: #2A1F04;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .35);
+}
+/* Tela atual no menu: tecla afundada e acesa, como o filtro ativo da aplicação */
+.key--escura.ativo {
+  --k-top: #b4cd7c; --k-top-2: #8fa858; --k-side: #5f7536; --k-edge: #3d4c22; --k-text: #141a0d;
+  --k-face: linear-gradient(180deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, 0) 18%), linear-gradient(180deg, var(--k-top) 0%, var(--k-top-2) 100%);
+  transform: translateY(var(--key-depth));
+  box-shadow: 0 0 0 var(--k-side), 0 1px 0 var(--k-edge), 0 3px 8px rgba(0, 0, 0, .3), inset 0 2px 4px rgba(0, 0, 0, .14), inset 0 1px 0 rgba(255, 255, 255, .6);
+}
+
+/* =========================================================
+   Topo: logo à esquerda, telas no centro, acesso à direita
+   ========================================================= */
+.lp-topo {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 60;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1.5rem;
+  height: var(--topo-h); padding: 0 28px;
+  background: rgba(9, 12, 8, .74);
+  backdrop-filter: saturate(150%) blur(14px); -webkit-backdrop-filter: saturate(150%) blur(14px);
+  border-bottom: 1px solid var(--borda);
+}
+.lp-topo .marca { justify-self: start; }
+.lp-nav { display: flex; gap: .55rem; }
+.lp-nav .key, .lp-topo-acoes .key { margin-bottom: 4px; }
+.lp-topo-acoes { justify-self: end; display: flex; align-items: center; gap: .6rem; }
+
+
+/* Títulos com serifa (a fonte do início) */
+.lp h1, .lp h2 { font-family: var(--serifa); font-weight: 500; letter-spacing: -.018em; }
+
+@media (max-width: 1180px) {
+  .lp-nav { gap: .35rem; }
+  .lp-nav .key--sm { padding: .42rem .65rem; font-size: .8rem; }
+}
+@media (max-width: 1060px) {
+  .lp-topo { grid-template-columns: auto 1fr; }
+  .lp-nav { display: none; }
+}
+@media (max-width: 760px) {
+  .lp-topo { padding: 0 16px; }
+  .lp .lp-entrar { display: none; }
+}
+
+/* =========================================================
+   Contratar e Entrar: tema grafite (cinza neutro), mais formal
+   Mesmos botões 3D e o mesmo topo do início.
+   ========================================================= */
+.pub-cinza {
+  --bg: #121312; --bg-2: #171817;
+  --superficie: #1C1D1C; --superficie-2: #232423; --superficie-3: #2B2C2A;
+  --borda: rgba(236, 236, 230, .09); --borda-forte: rgba(236, 236, 230, .17);
+  --texto: #EDEDE8; --texto-2: #C6C6BF; --suave: #93938C;
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(236, 236, 230, .05), transparent 70%),
+    radial-gradient(rgba(236, 236, 230, .045) 1px, transparent 1.3px) 0 0 / 24px 24px,
+    #121312;
+}
+.pub-cinza h1 { font-family: var(--serifa); font-weight: 500; letter-spacing: -.02em; }
+.pub-cinza .lp-topo { background: rgba(14, 15, 14, .82); }
+
+/* Campos */
+.pub-cinza .entrada { height: 48px; border-radius: 10px; background: #161716; border-color: rgba(236, 236, 230, .14); }
+.pub-cinza .entrada::placeholder { color: #6E6E68; }
+.pub-cinza .entrada:focus { background: #1A1B1A; border-color: #8FA858; box-shadow: 0 0 0 3px rgba(143, 168, 88, .2); }
+.pub-cinza .campo > span, .pub-cinza .campo-rotulo { font-weight: 600; color: var(--texto-2); }
+.pub-cinza .ver-senha.key { position: absolute; right: 7px; top: 50%; height: auto; margin: 0; padding: .3rem .6rem; transform: translateY(calc(-50% - 2px)); --key-depth: 3px; font-size: .74rem; }
+.pub-cinza .ver-senha.key:active { transform: translateY(calc(-50% + 1px)); }
+
+/* ---------- Contratar ---------- */
+.pub-contratar main { padding-top: calc(var(--topo-h) + 1.5rem); }
+.pub-contratar .contratar { margin-top: 1.5rem; gap: 2.2rem; }
+.pub-contratar .contratar-cabeca h1 { margin-top: 1.2rem; font-size: clamp(2.2rem, 3.4vw, 2.9rem); line-height: 1.08; }
+.pub-contratar .contratar-cabeca p { max-width: 36rem; font-size: 1.02rem; line-height: 1.6; }
+.pub-contratar .etapa {
+  padding: 1.7rem 1.8rem; border-radius: 16px;
+  background: linear-gradient(180deg, #1D1E1D, #191A19);
+  border: 1px solid rgba(236, 236, 230, .1);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .03) inset, 0 20px 40px -28px rgba(0, 0, 0, .8);
+}
+.pub-contratar .etapa legend { font: 500 1.25rem var(--serifa); letter-spacing: -.01em; }
+.pub-contratar .etapa legend small { font-family: var(--fonte); }
+.pub-contratar .etapa-num {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: linear-gradient(180deg, #34352F, #26272A); color: #EDEDE8; border: 1px solid #45463F;
+  box-shadow: 0 3px 0 #0B0B0A; font: 800 .82rem 'Nunito', var(--fonte);
+}
+/* Planos: cada opção é uma tecla; o escolhido fica afundado e aceso */
+.pub-contratar .plano-opcao label {
+  padding: 1.05rem 1.05rem 1.1rem; border-radius: 12px;
+  background: linear-gradient(180deg, #262725, #1E1F1D);
+  border: 1px solid #3A3B37;
+  box-shadow: 0 5px 0 #0B0B0A, 0 12px 18px -10px rgba(0, 0, 0, .7), inset 0 1px 0 rgba(255, 255, 255, .06);
+  transition: transform .08s, box-shadow .08s, border-color .15s, background .15s;
+}
+.pub-contratar .plano-opcao label:hover { border-color: #55564F; }
+.pub-contratar .plano-opcao input:checked + label {
+  transform: translateY(4px);
+  border-color: #8FA858;
+  background: linear-gradient(180deg, rgba(143, 168, 88, .2), rgba(143, 168, 88, .08)), #1E1F1D;
+  box-shadow: 0 1px 0 #0B0B0A, inset 0 0 0 1px #8FA858, 0 0 24px -6px rgba(143, 168, 88, .45);
+}
+.pub-contratar .plano-opcao .preco { font: 500 1.35rem var(--serifa); }
+.pub-contratar .plano-opcao strong { font-size: .92rem; }
+/* Resumo */
+.pub-contratar .resumo {
+  top: calc(var(--topo-h) + 1.5rem);
+  border-radius: 18px; padding: 1.8rem;
+  background: linear-gradient(180deg, #222321, #1B1C1A);
+  border: 1px solid rgba(236, 236, 230, .13);
+}
+.pub-contratar .resumo-plano strong { font: 500 1.5rem var(--serifa); }
+.pub-contratar .resumo-plano span { font: 500 1.35rem var(--serifa); }
+.pub-contratar .resumo .key { margin-top: .3rem; }
+.pub-contratar .rodape-simples { border-top: 1px solid var(--borda); background: transparent; }
+
+/* ---------- Entrar ---------- */
+.pub-login .acesso { min-height: 100vh; padding-top: var(--topo-h); grid-template-columns: minmax(380px, 5fr) 7fr; }
+.pub-login .acesso-lado {
+  background:
+    radial-gradient(520px 360px at 0% 100%, rgba(236, 236, 230, .05), transparent 70%),
+    linear-gradient(rgba(236, 236, 230, .035) 1px, transparent 1px) 0 0 / 48px 48px,
+    linear-gradient(90deg, rgba(236, 236, 230, .035) 1px, transparent 1px) 0 0 / 48px 48px,
+    #151615;
+}
+.pub-login .acesso-lado h2 { font-size: clamp(2rem, 3vw, 2.7rem); line-height: 1.1; }
+.pub-login .acesso-lado h2 em { font-style: italic; color: var(--oliva-clara); }
+.pub-login .acesso-lado-meio > p { font-size: 1.02rem; line-height: 1.6; }
+.pub-login .acesso-pontos .perfil-icone { width: 42px; height: 42px; border-radius: 11px; border: 2px solid #0B0B0A; box-shadow: 0 3px 0 #0B0B0A; }
+.pub-login .acesso-pontos .perfil-colaborador { background: #73A6DC; color: #0F2235; }
+.pub-login .acesso-pontos .perfil-analista { background: #73C163; color: #0F2E0B; }
+.pub-login .acesso-pontos .perfil-gestor { background: #F2CE58; color: #3A2A05; }
+.pub-login .acesso-principal { padding-top: 1.5rem; }
+.pub-login .acesso-caixa h1 { font-size: clamp(2.2rem, 3vw, 2.7rem); }
+
+/* Entrar como: três teclas; a escolhida afunda e acende na cor do cargo */
+.pub-login .area label {
+  padding: .9rem .5rem .85rem; border-radius: 12px;
+  background: linear-gradient(180deg, #2A2B29, #20211F);
+  border: 1px solid #3A3B37; color: var(--texto-2);
+  font: 800 .86rem 'Nunito', var(--fonte);
+  box-shadow: 0 5px 0 #0B0B0A, inset 0 1px 0 rgba(255, 255, 255, .07);
+  transition: transform .08s, box-shadow .08s, background .15s, color .15s;
+}
+.pub-login .area label .ic { width: 1.4rem; height: 1.4rem; }
+.pub-login .area input:checked + label { transform: translateY(4px); box-shadow: 0 1px 0 #0B0B0A, inset 0 2px 4px rgba(0, 0, 0, .2); color: #1A1A14; }
+.pub-login .area-colaborador input:checked + label { background: linear-gradient(180deg, #9CC3EC, #6E9FD6); border-color: #2D5478; }
+.pub-login .area-analista input:checked + label { background: linear-gradient(180deg, #9BDA8B, #6CB95C); border-color: #2F6A28; }
+.pub-login .area-gestor input:checked + label { background: linear-gradient(180deg, #F7DC7C, #E2B53A); border-color: #7A5A0A; }
+.pub-login .area input:checked + label .ic { color: currentColor; }
+
+/* Contas de demonstração: teclas escuras com o avatar na cor do cargo */
+.pub-login .demo-conta {
+  padding: .6rem .7rem; border-radius: 11px;
+  background: linear-gradient(180deg, #262725, #1E1F1D);
+  border: 1px solid #3A3B37;
+  box-shadow: 0 4px 0 #0B0B0A, inset 0 1px 0 rgba(255, 255, 255, .06);
+  transition: transform .08s, box-shadow .08s, border-color .15s;
+}
+.pub-login .demo-conta:hover { border-color: #5A5B53; background: linear-gradient(180deg, #2C2D2A, #222320); }
+.pub-login .demo-conta:active { transform: translateY(4px); box-shadow: 0 0 0 #0B0B0A; }
+.pub-login .demo-av { border-radius: 9px; border: 2px solid #0B0B0A; }
+.pub-login .demo-av.perfil-colaborador { background: #73A6DC; color: #0F2235; }
+.pub-login .demo-av.perfil-analista { background: #73C163; color: #0F2E0B; }
+.pub-login .demo-av.perfil-gestor { background: #F2CE58; color: #3A2A05; }
+.pub-login .checkbox input { accent-color: #8FA858; }
+
+@media (max-width: 900px) {
+  .pub-login .acesso { grid-template-columns: 1fr; }
+}

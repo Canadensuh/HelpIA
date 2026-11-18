@@ -283,6 +283,19 @@ code { font-family: var(--font-mono); }
   background: var(--primary); color: var(--on-primary);
   font-family: var(--font-display); font-weight: 700; font-size: .85rem;
 }
+/* Avatar das pessoas (js/sessao.js → Avatar): foto ou ícone colorido do cargo */
+.avatar, .cracha-foto { position: relative; overflow: hidden; }
+.avatar .av-ico { width: 58%; height: 58%; }
+.cracha-foto .av-ico { width: 50%; height: 50%; }
+.av-foto {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; border-radius: inherit;
+  background: var(--surface-2);
+}
+.avatar.perfil-colaborador { background: var(--ceu); color: #0F2235; }
+.avatar.perfil-analista { background: var(--oliva); color: #141A0D; }
+.avatar.perfil-gestor { background: var(--mostarda); color: #3A2A05; }
 .usuario-info { display: flex; flex-direction: column; line-height: 1.15; }
 .usuario-info strong { font-size: .86rem; }
 .usuario-info span { font-size: .72rem; color: var(--muted); }

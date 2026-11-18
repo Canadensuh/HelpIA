@@ -37,7 +37,7 @@ const Navegacao = {
     nav.className = 'trilho';
     nav.setAttribute('aria-label', 'Navegação do HelpIA');
     nav.innerHTML = `
-      <span class="trilho-titulo" aria-hidden="true"><i class="ic ic-janela"></i><span class="trilho-rotulo">Navegação</span></span>
+      <a href="${Sessao.destino(usuario)}" class="trilho-marca" title="HelpIA — início"><img src="assets/logo.svg" alt="" /><span class="trilho-rotulo">Help<b>IA</b></span></a>
       <ul>
         ${itens.map((i) => {
           const ativo = i.href === atual;

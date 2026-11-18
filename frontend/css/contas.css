@@ -165,9 +165,6 @@
   background: var(--faixa);
   background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, .08) 0 8px, transparent 8px 16px);
 }
-.cracha.p-analista { --faixa: var(--primary); }
-.cracha.p-gestor { --faixa: linear-gradient(90deg, #2C2A17, #8FA858); }
-.cracha.p-gestor .cracha-faixa { background: var(--faixa); }
 .cracha-foto {
   width: 70px; height: 70px; margin-top: -48px; margin-bottom: .4rem;
   border-radius: 50%;
@@ -177,10 +174,8 @@
   border: 4px solid var(--surface);
   position: relative; z-index: 1;
 }
-.cracha.p-gestor .cracha-foto { color: #fde68a; }
 .cracha-nome { font-family: var(--font-display); font-weight: 700; font-size: 1.02rem; line-height: 1.2; }
 .cracha-cargo { font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--primary-text); }
-.cracha.p-colaborador .cracha-cargo { color: var(--muted); }
 .cracha-email { font-size: .75rem; color: var(--muted); word-break: break-all; }
 .cracha-id { margin-top: .35rem; font-family: var(--font-mono); font-size: .68rem; color: var(--muted); }
 .cracha-stat { font-size: .74rem; font-weight: 600; color: var(--text); }
@@ -270,24 +265,72 @@
 .modal-alvo { font-weight: 700; color: var(--text); }
 .modal-acoes { display: flex; justify-content: center; gap: .6rem; flex-wrap: wrap; }
 
+/* Segurar para confirmar: tecla larga que enche da esquerda para a direita (--p = 0…1) */
 .segurar {
-  position: relative;
-  width: 116px; height: 116px; border-radius: 50%;
-  border: 0; background: var(--grafite); color: #f4f4f5;
-  font: inherit; font-weight: 800; font-size: .8rem; letter-spacing: .06em; text-transform: uppercase;
+  --cor: #5E7A2E; --cor-clara: #8FA858; --fundo: #EEF2E0;
+  position: relative; overflow: hidden;
+  width: min(100%, 340px); height: 60px;
+  border: 2px solid var(--tinta); border-radius: 14px;
+  background: var(--fundo); color: var(--tinta);
+  font: inherit; font-weight: 800; font-size: .95rem;
   cursor: pointer;
-  box-shadow: 0 0 0 6px var(--primary-soft);
-  user-select: none; -webkit-user-select: none; touch-action: none;
-  transition: transform .15s;
+  box-shadow: 0 5px 0 var(--tinta);
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none;
+  transition: transform .08s, box-shadow .08s;
 }
-.segurar.perigo { box-shadow: 0 0 0 6px var(--danger-soft); }
-.segurar svg { position: absolute; inset: -6px; width: calc(100% + 12px); height: calc(100% + 12px); transform: rotate(-90deg); pointer-events: none; }
-.segurar circle { fill: none; stroke: var(--primary); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 0 100; }
-.segurar.perigo circle { stroke: var(--danger); }
-.segurar.segurando { transform: scale(.95); }
-.segurar span { position: relative; display: block; padding: 0 .75rem; }
-.segurar.autorizado { background: var(--success-solid); box-shadow: 0 0 0 10px var(--success-soft); }
-.dica-segurar { font-size: .78rem; color: var(--muted); }
+.segurar.perigo { --cor: #B5391F; --cor-clara: #E0654B; --fundo: #FBE9E3; }
+.segurar:focus-visible { outline: 3px solid var(--oliva-clara); outline-offset: 3px; }
+.segurar-barra {
+  position: absolute; inset: 0;
+  transform: scaleX(var(--p, 0)); transform-origin: left center;
+  background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, .16) 0 10px, transparent 10px 20px), linear-gradient(90deg, var(--cor), var(--cor-clara));
+  transition: transform .45s cubic-bezier(.3, .7, .4, 1);     /* ao soltar: volta devagar */
+}
+.segurar.segurando .segurar-barra { transition: none; }
+.segurar-texto {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center; gap: .55rem;
+  height: 100%; padding: 0 1rem;
+}
+.segurar-texto .ic { width: 1.3em; height: 1.3em; }
+/* Quando a barra passa da metade, o texto fica claro para continuar legível */
+.segurar.meio .segurar-texto { color: #fff; transition: color .15s; }
+.segurar-pct {
+  position: absolute; z-index: 1; right: .8rem; top: 50%; transform: translateY(-50%);
+  font-family: var(--font-mono); font-size: .75rem; font-weight: 700; color: #fff;
+  opacity: .9;
+}
+.segurar.segurando { transform: translateY(4px); box-shadow: 0 1px 0 var(--tinta); }
+.segurar.segurando::after {          /* brilho correndo enquanto segura */
+  content: ''; position: absolute; inset: 0; z-index: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .35) 50%, transparent 70%);
+  animation: segurar-brilho 1s linear infinite;
+}
+@keyframes segurar-brilho { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+.segurar.tremeu { animation: segurar-treme .35s ease; }
+@keyframes segurar-treme { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+.segurar.processando { cursor: progress; }
+.segurar.autorizado { --p: 1; --cor: #3F8A35; --cor-clara: #5DB04F; color: #fff; transform: translateY(4px); box-shadow: 0 1px 0 var(--tinta); }
+.segurar.autorizado .segurar-texto { color: #fff; animation: segurar-ok .45s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes segurar-ok { from { transform: scale(.7); opacity: 0; } }
+.dica-segurar { font-size: .8rem; color: var(--muted); min-height: 1.2em; transition: color .2s; }
+.dica-segurar.alerta { color: #A3361F; font-weight: 700; }
+
+/* Quem vai receber a ação */
+.poder-alvo {
+  display: flex; align-items: center; gap: .7rem;
+  width: 100%; padding: .6rem .8rem;
+  border: 2px dashed #D5CBAE; border-radius: 12px;
+  background: #F6F0DE; text-align: left;
+}
+.poder-alvo .poder-avatar { flex: none; width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; border: 2px solid var(--tinta); }
+.poder-alvo b { display: block; font-family: var(--font-display); color: var(--tinta); }
+.poder-alvo small { color: #625E4A; font-size: .78rem; word-break: break-all; }
+
+@media (prefers-reduced-motion: reduce) {
+  .segurar-barra { transition: none; }
+  .segurar.segurando::after, .segurar.tremeu, .segurar.autorizado .segurar-texto { animation: none; }
+}
 .senha-nova { font-family: var(--font-mono); font-size: 1.3rem; font-weight: 700; padding: .5rem 1rem; border-radius: 10px; background: var(--surface-2); border: 1px dashed var(--border); }
 
 /* ---------- Responsivo ---------- */

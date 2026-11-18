@@ -66,7 +66,7 @@ const CATALOGO_HELPIA = [
     descricao: 'Não liga, está lento, tela, teclado ou mouse',
     categoria: 'Hardware', fila: 'Suporte Técnico',
     pergunta: 'O que está acontecendo com o equipamento?',
-    pedeMaquina: true,
+    aparelho: 'computador',
     subgeneros: [
       { id: 'nao-liga', titulo: 'Não liga', ic: 'tomada',
         dica: 'Confira se o cabo de força está firme no computador e na tomada, e teste a tomada com outro aparelho. No notebook, segure o botão de ligar por 15 segundos e ligue só no carregador.' },
@@ -87,6 +87,7 @@ const CATALOGO_HELPIA = [
     descricao: 'Esqueci, expirou ou a conta bloqueou',
     categoria: 'Acesso', fila: 'Acessos e Identidade',
     pergunta: 'Senha do quê?',
+    aparelho: 'computador',
     subgeneros: [
       { id: 'email', titulo: 'E-mail corporativo', ic: 'envelope',
         dica: 'Use "Esqueci minha senha" na tela de login do e-mail. Confira também se o Caps Lock não está ligado.' },
@@ -107,7 +108,7 @@ const CATALOGO_HELPIA = [
     descricao: 'Sem internet, lenta, Wi-Fi ou cabo',
     categoria: 'Rede', fila: 'Infraestrutura',
     pergunta: 'Qual é o problema de conexão?',
-    pedeMaquina: true,
+    aparelho: 'computador',
     subgeneros: [
       { id: 'sem-internet', titulo: 'Estou sem internet', ic: 'wifi-off',
         dica: 'Veja se outras pessoas perto de você também estão sem internet. Se for só você, reinicie o computador.' },
@@ -128,6 +129,7 @@ const CATALOGO_HELPIA = [
     categoria: 'Incidente', fila: 'Infraestrutura',
     prioridade: 'Alta',            // sempre urgente: não pergunta o impacto
     pergunta: 'O que parou o setor?',
+    aparelho: 'computador',
     subgeneros: [
       { id: 'energia', titulo: 'Queda de energia', ic: 'raio' },
       { id: 'sem-internet-setor', titulo: 'Sem internet no setor', ic: 'globo' },
@@ -142,8 +144,7 @@ const CATALOGO_HELPIA = [
     descricao: 'Não imprime, papel atolado ou toner',
     categoria: 'Hardware', fila: 'Suporte Técnico',
     pergunta: 'O que a impressora está fazendo?',
-    pedeMaquina: true,
-    rotuloMaquina: 'Identificação da impressora',
+    aparelho: 'impressora',
     subgeneros: [
       { id: 'nao-imprime', titulo: 'Não imprime', ic: 'bloqueio',
         dica: 'Desligue e ligue a impressora. No Windows, abra "Impressoras", clique com o botão direito e limpe a fila de impressão.' },
@@ -160,6 +161,7 @@ const CATALOGO_HELPIA = [
     descricao: 'Office, Teams, e-mail, instalação ou erro',
     categoria: 'Software', fila: 'Sistemas',
     pergunta: 'Qual programa está com problema?',
+    aparelho: 'computador',
     subgeneros: [
       { id: 'office', titulo: 'Word, Excel ou PowerPoint', ic: 'grafico',
         dica: 'Salve o que estiver aberto e reinicie o programa. Se travar sempre no mesmo arquivo, anexe o nome do arquivo na nota.' },
@@ -178,12 +180,16 @@ const CATALOGO_HELPIA = [
     descricao: 'Mouse, teclado, monitor, headset',
     categoria: 'Solicitação', fila: 'Suporte Técnico',
     pergunta: 'O que você precisa?',
+    caixa: true,                   // os itens aparecem dentro de uma caixa, sem etapa de impacto
     subgeneros: [
-      { id: 'mouse-teclado', titulo: 'Mouse ou teclado', ic: 'mouse' },
-      { id: 'monitor', titulo: 'Monitor adicional', ic: 'monitor' },
-      { id: 'headset', titulo: 'Headset', ic: 'fone' },
-      { id: 'notebook', titulo: 'Notebook', ic: 'notebook' },
-      { id: 'outro', titulo: 'Outro equipamento', ic: 'pacote' },
+      { id: 'mouse-teclado', titulo: 'Mouse e teclado', ic: 'teclado', ic2: 'mouse', descricao: 'O kit completo' },
+      { id: 'mouse', titulo: 'Mouse', ic: 'mouse', descricao: 'Com ou sem fio' },
+      { id: 'teclado', titulo: 'Teclado', ic: 'teclado', descricao: 'Padrão ABNT2' },
+      { id: 'notebook', titulo: 'Notebook', ic: 'notebook', descricao: 'Para trabalho fora da mesa' },
+      { id: 'monitor', titulo: 'Monitor adicional', ic: 'monitor', descricao: 'Uma segunda tela' },
+      { id: 'headset', titulo: 'Headset', ic: 'fone', descricao: 'Para reuniões e ligações' },
+      { id: 'cabos', titulo: 'Cabos e adaptadores', ic: 'link', descricao: 'HDMI, USB, rede, carregador' },
+      { id: 'outro', titulo: 'Outro equipamento', ic: 'pacote', descricao: 'Conte qual na nota' },
     ],
   },
   {
@@ -192,6 +198,7 @@ const CATALOGO_HELPIA = [
     descricao: 'Não encontrou? Conte para a gente',
     categoria: 'Geral', fila: 'Service Desk',
     pergunta: 'Sobre o que é?',
+    aparelho: 'computador', aparelhoSubs: ['problema'],   // só quando é um problema
     subgeneros: [
       { id: 'duvida', titulo: 'Tenho uma dúvida', ic: 'duvida' },
       { id: 'problema', titulo: 'Tenho um problema', ic: 'ferramenta' },
@@ -238,6 +245,14 @@ const Catalogo = {
   genero(id) { return CATALOGO_HELPIA.find((g) => g.id === id) || null; },
   subgenero(generoId, subId) {
     return this.genero(generoId)?.subgeneros.find((s) => s.id === subId) || null;
+  },
+
+  /** Equipamento que o analista precisa acessar: 'computador', 'impressora' ou null. */
+  aparelho(generoId, subId) {
+    const g = this.genero(generoId);
+    if (!g?.aparelho) return null;
+    if (g.aparelhoSubs && !g.aparelhoSubs.includes(subId)) return null;
+    return g.aparelho;
   },
 
   /**

@@ -11,7 +11,7 @@
    - Nunca no site publicado nem em localhost:5000 (o próprio Flask).
    - Forçar: ?simulador=1   ·   Desligar: ?simulador=0 (fica salvo).
 
-   Dados: ficam no localStorage (chave helpia-simulador-db-v2), compartilhados
+   Dados: ficam no localStorage (chave helpia-simulador-db-v3), compartilhados
    entre abas — o ticket aberto pelo colaborador chega na mesa do analista.
    As senhas ficam em texto puro: são dados fictícios de teste.
    Depende de js/catalogo.js (tipos de manutenção).
@@ -33,14 +33,17 @@
    6. Usuario ganha "ativo". Conta suspensa não entra (403) e sessão cai (401).
    7. PATCH /api/contas/<id> { ativo?, perfil? } e POST /api/contas/<id>/senha
       { senha } — só o gestor, na própria empresa, nunca na própria conta.
-   8. Dados de exemplo: analista Beatriz Rocha, colaborador Lúcio Martins e
-      histórico de chamados resolvidos (ver popularExemplos).
+   8. Dados de exemplo (ver DEMO e popularExemplos), senha 1234 em todas:
+      gestores Murilo e João Pedro (donos do projeto), analistas Carlos e
+      Beatriz, colaboradores João Silva e Maria, e histórico de chamados.
+      A senha 1234 só existe na demonstração (contas novas: mínimo 6).
+   9. Usuario ganha "foto" (URL https). Sem foto, o front mostra o ícone do cargo.
    ========================================================= */
 
 (function () {
   // ---------- Ativação ----------
   const CHAVE_PREF = 'helpia-simulador';
-  const CHAVE_DB = 'helpia-simulador-db-v2';
+  const CHAVE_DB = 'helpia-simulador-db-v4';
 
   function lerPref() { try { return localStorage.getItem(CHAVE_PREF); } catch { return null; } }
   function salvarPref(valor) { try { localStorage.setItem(CHAVE_PREF, valor); } catch {} }
@@ -164,7 +167,7 @@
   });
   const usuarioDict = (u) => ({
     id: u.id, nome: u.nome, email: u.email, perfil: u.perfil, empresa_id: u.empresa_id,
-    ativo: u.ativo !== false, criado_em: u.criado_em, trocar_senha: !!u.trocar_senha,
+    ativo: u.ativo !== false, criado_em: u.criado_em, trocar_senha: !!u.trocar_senha, foto: u.foto || null,
   });
   const chamadoDict = (c) => ({ ...c, codigo: codigo(c.numero) });
 
@@ -173,9 +176,11 @@
     return { ...usuarioDict(usuario), empresa: empresa ? empresaDict(empresa) : null };
   }
   const emitirSessao = (db, usuario) => ({ token: `simulador-${usuario.id}`, usuario: perfilPublico(db, usuario) });
+  // E-mail comparado sem caixa e sem acento: "JoãoPM@…" e "joaopm@…" são a mesma conta
+  const chaveEmail = (email) => String(email || '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   function buscarPorEmail(db, email) {
-    const alvo = (email || '').trim().toLowerCase();
-    return db.usuarios.find((u) => u.email === alvo) || null;
+    const alvo = chaveEmail(email);
+    return db.usuarios.find((u) => chaveEmail(u.email) === alvo) || null;
   }
   function entraComo(usuario, area) {
     if (area === COLABORADOR) return usuario.perfil === COLABORADOR;
@@ -249,7 +254,7 @@
   function atualizarConta(db, gestor, id, { ativo, perfil, nome, email, trocar_senha }) {
     const conta = contaDaEmpresa(db, gestor, id);
     if (nome !== undefined) conta.nome = validarNome(nome);
-    if (email !== undefined && validarEmail(email) !== conta.email) {
+    if (email !== undefined && chaveEmail(email) !== chaveEmail(conta.email)) {
       garantirEmailLivre(db, email);
       conta.email = validarEmail(email);
     }
@@ -317,25 +322,60 @@
   }
 
   // ---------- Dados de exemplo ----------
+  // Contas de demonstração (senha de todas: 1234).
+  // Gestores = os donos do projeto, com a foto do GitHub. Analistas e colaboradores são fictícios.
+  const SENHA_DEMO = '1234';
+  const DEMO = {
+    murilo: { nome: 'Murilo do Nascimento B.', email: 'murilonb@helpia.com.br', foto: 'https://github.com/Canadensuh.png?size=200' },
+    joaoPm: { nome: 'João Pedro M.', email: 'joãopm@helpia.com.br', foto: 'https://github.com/marquess07.png?size=200' },
+    carlos: { nome: 'Carlos Souza', email: 'carlos@helpia.com.br' },
+    beatriz: { nome: 'Beatriz Rocha', email: 'beatriz@helpia.com.br' },
+    joao: { nome: 'João Silva', email: 'joao.silva@helpia.com.br' },
+    maria: { nome: 'Maria Oliveira', email: 'maria@helpia.com.br' },
+  };
+
   function popularExemplos(db) {
+    // A senha de demonstração (1234) é mais curta que o mínimo das contas novas: grava direto.
+    const comDemo = (u, extra = {}) => Object.assign(u, { senha: SENHA_DEMO }, extra);
     const sessao = contratar(db, {
       plano: 'profissional',
-      empresa: { nome: 'Empresa Demonstração', cnpj: '' },
-      responsavel: { nome: 'Ana Lima', email: 'gestor@demo.helpia', senha: 'demo123' },
+      empresa: { nome: 'HelpIA', cnpj: '' },
+      responsavel: { nome: DEMO.murilo.nome, email: DEMO.murilo.email, senha: 'provisoria' },
     });
-    const gestor = db.usuarios.find((u) => u.id === sessao.usuario.id);
-    const conta = (nome, email, perfil, dias) =>
-      criarConta(db, gestor, { nome, email, perfil, senha: 'demo123' }, momento(dias, 9, 0));
-    const carlos = conta('Carlos Souza', 'analista@demo.helpia', ANALISTA, 30);
-    const beatriz = conta('Beatriz Rocha', 'beatriz@demo.helpia', ANALISTA, 21);
-    const joao = conta('João Silva', 'colaborador@demo.helpia', COLABORADOR, 20);
-    const maria = conta('Maria Oliveira', 'maria@demo.helpia', COLABORADOR, 18);
-    const lucio = conta('Lúcio Martins', 'lucio@demo.helpia', COLABORADOR, 12);
+    const gestor = comDemo(db.usuarios.find((u) => u.id === sessao.usuario.id), { foto: DEMO.murilo.foto, criado_em: momento(45, 9, 0) });
+    const conta = ({ nome, email, foto }, perfil, dias) =>
+      comDemo(criarConta(db, gestor, { nome, email, perfil, senha: 'provisoria' }, momento(dias, 9, 0)), foto ? { foto } : {});
+    conta(DEMO.joaoPm, GESTOR, 45);
+    const carlos = conta(DEMO.carlos, ANALISTA, 30);
+    const beatriz = conta(DEMO.beatriz, ANALISTA, 21);
+    const joao = conta(DEMO.joao, COLABORADOR, 20);
+    const maria = conta(DEMO.maria, COLABORADOR, 18);
 
+    db.empresas.find((e) => e.id === gestor.empresa_id).simulacao = true;
+    semearChamados(db, gestor.empresa_id);
+  }
+
+  /**
+   * Modo simulação: chamados fictícios da empresa (histórico + fila de hoje),
+   * marcados com "simulado" para sair com um clique. Usa os colaboradores e
+   * analistas da própria empresa; sem eles, usa nomes de exemplo.
+   */
+  function semearChamados(db, empresaId) {
+    const daEmpresa = (perfil) => db.usuarios.filter((u) => u.empresa_id === empresaId && u.perfil === perfil && u.ativo !== false);
+    const colabs = daEmpresa(COLABORADOR);
+    const analistas = daEmpresa(ANALISTA);
+    const colab = (i, nome) => colabs[i % (colabs.length || 1)] || { nome, id: null };
+    const analista = (i, nome) => (analistas[i % (analistas.length || 1)] || { nome }).nome;
+    const joao = colab(0, 'João Silva');
+    const maria = colab(1, 'Maria Oliveira');
+    const carlos = analista(0, 'Carlos Souza');
+    const beatriz = analista(1, 'Beatriz Rocha');
+    const criados = [];
     const chamado = (usuario, dados, extra = {}) => {
       const c = montarChamado(db, { ...dados, solicitante: usuario.nome, solicitante_id: usuario.id });
-      Object.assign(c, extra);
+      Object.assign(c, { empresa_id: empresaId, simulado: true }, extra);
       db.chamados.push(c);
+      criados.push(c);
       return c;
     };
     const whats = (n) => ({ tipo: 'whatsapp', valor: n });
@@ -344,25 +384,23 @@
     chamado(joao, {
       genero: 'senha', subgenero: 'email', impacto: 'eu', aberto_em: momento(2, 8, 40),
       nota: 'Minha senha do e-mail expirou e não consigo trocar pela tela de login.',
-      contato: { tipo: 'email', valor: 'colaborador@demo.helpia' },
     }, {
-      status: RESOLVIDO, analista: carlos.nome, assumido_em: momento(2, 8, 52), resolvido_em: momento(2, 9, 5),
+      status: RESOLVIDO, analista: carlos, assumido_em: momento(2, 8, 52), resolvido_em: momento(2, 9, 5),
       resolucao: 'Senha expirada. Redefini no painel do Microsoft 365 e orientei sobre a troca a cada 90 dias.',
     });
-    chamado(lucio, {
+    chamado(maria, {
       genero: 'computador', subgenero: 'nao-liga', impacto: 'eu', maquina: '043', aberto_em: momento(1, 9, 10),
       nota: 'Cheguei e o computador não liga de jeito nenhum, nem a luz acende.',
       contato: whats('(11) 98888-0043'),
     }, {
-      status: RESOLVIDO, analista: carlos.nome, assumido_em: momento(1, 9, 18), resolvido_em: momento(1, 9, 40),
+      status: RESOLVIDO, analista: carlos, assumido_em: momento(1, 9, 18), resolvido_em: momento(1, 9, 40),
       resolucao: 'Cabo de força solto no estabilizador. Reconectei, liguei e testei: funcionando normalmente.',
     });
     chamado(maria, {
       genero: 'internet', subgenero: 'cabo', impacto: 'eu', maquina: '112', aberto_em: momento(1, 14, 5),
       nota: 'O computador mostra "cabo de rede desconectado" mesmo com o cabo ligado.',
-      contato: { tipo: 'teams', valor: 'maria@demo.helpia' },
     }, {
-      status: RESOLVIDO, analista: beatriz.nome, assumido_em: momento(1, 14, 12), resolvido_em: momento(1, 14, 30),
+      status: RESOLVIDO, analista: beatriz, assumido_em: momento(1, 14, 12), resolvido_em: momento(1, 14, 30),
       resolucao: 'Era só desconectar o cabo de rede e conectar novamente.',
     });
 
@@ -371,8 +409,8 @@
       genero: 'impressora', subgenero: 'atolado', impacto: 'equipe', maquina: 'IMP-2º andar', aberto_em: minutosAtras(55),
       nota: 'A impressora do segundo andar travou com papel e ninguém da equipe consegue imprimir.',
       contato: whats('(11) 97777-1234'),
-    }, { status: EM_ATENDIMENTO, analista: beatriz.nome, assumido_em: minutosAtras(40) });
-    chamado(lucio, {
+    }, { status: EM_ATENDIMENTO, analista: beatriz, assumido_em: minutosAtras(40) });
+    chamado(maria, {
       genero: 'computador', subgenero: 'nao-liga', impacto: 'eu', maquina: '043', aberto_em: minutosAtras(18),
       nota: 'O computador não ligou de novo hoje cedo. Mesma máquina de ontem.',
       contato: whats('(11) 98888-0043'),
@@ -380,13 +418,53 @@
     chamado(joao, {
       genero: 'internet', subgenero: 'cabo', impacto: 'eu', maquina: '087', aberto_em: minutosAtras(9),
       nota: 'Aparece um X no ícone de rede e o cabo parece estar conectado.',
-      contato: { tipo: 'email', valor: 'colaborador@demo.helpia' },
     });
-    chamado(maria, {
+    const setor = chamado(maria, {
       genero: 'setor', subgenero: 'sem-internet-setor', impacto: 'setor', aberto_em: minutosAtras(4),
       nota: 'O financeiro inteiro ficou sem internet há uns 10 minutos. Urgente, fechamento do mês.',
       contato: whats('(11) 96666-5555'),
     });
+    return { criados, setor };
+  }
+
+  /** Empresa de um chamado (os antigos não guardavam: vem do solicitante). */
+  function empresaDoChamado(db, c) {
+    if (c.empresa_id) return c.empresa_id;
+    const dono = c.solicitante_id != null ? db.usuarios.find((u) => u.id === c.solicitante_id) : null;
+    if (dono) return dono.empresa_id;
+    return db.empresas.length === 1 ? db.empresas[0].id : null;
+  }
+
+  /** Liga (joga chamados fictícios) ou desliga (tira só o que a simulação criou). */
+  function definirSimulacao(db, gestor, ativo) {
+    const empresa = db.empresas.find((e) => e.id === gestor.empresa_id);
+    if (ativo && !empresa.simulacao) {
+      const { setor } = semearChamados(db, empresa.id);
+      const m = postar(db, grupoDaEmpresa(db, empresa.id), null,
+        `Ticket ${codigo(setor.numero)} · ${setor.genero_titulo} chegou com prioridade ALTA. Quem pode assumir?`, setor.numero);
+      m.simulado = true;
+    }
+    if (!ativo && empresa.simulacao) {
+      const saem = new Set(db.chamados.filter((c) => c.simulado && empresaDoChamado(db, c) === empresa.id).map((c) => c.numero));
+      db.chamados = db.chamados.filter((c) => !saem.has(c.numero));
+      const conversas = new Set(db.conversas.filter((c) => c.empresa_id === empresa.id).map((c) => c.id));
+      db.mensagens = db.mensagens.filter((m) => !(conversas.has(m.conversa_id) && (m.simulado || saem.has(m.ticket))));
+    }
+    empresa.simulacao = Boolean(ativo);
+    return { ativo: empresa.simulacao };
+  }
+
+  /** Limpar dados: todos os tickets e conversas da empresa (as contas e as metas ficam). */
+  function limparEmpresa(db, gestor) {
+    const empresa = db.empresas.find((e) => e.id === gestor.empresa_id);
+    db.chamados = db.chamados.filter((c) => empresaDoChamado(db, c) !== empresa.id);
+    const conversas = db.conversas.filter((c) => c.empresa_id === empresa.id);
+    const ids = new Set(conversas.map((c) => c.id));
+    db.mensagens = db.mensagens.filter((m) => !ids.has(m.conversa_id));
+    db.conversas = db.conversas.filter((c) => !ids.has(c.id) || c.tipo === 'grupo');
+    for (const chave of Object.keys(db.leituras)) if (ids.has(Number(chave.split(':')[0]))) delete db.leituras[chave];
+    empresa.simulacao = false;
+    return { ativo: false, limpo: true };
   }
 
   // ---------- Rotas ----------
@@ -461,8 +539,19 @@
     return {
       id: m.id, conversa_id: m.conversa_id, texto: m.texto, em: m.em, anexos: m.anexos || [],
       sistema: !m.autor_id,
-      autor_id: m.autor_id, autor_nome: autor ? autor.nome : 'HelpIA', autor_perfil: autor ? autor.perfil : 'sistema',
+      autor_id: m.autor_id, autor_nome: autor ? autor.nome : 'HelpIA', autor_perfil: autor ? autor.perfil : 'sistema', autor_foto: autor?.foto || null,
       ticket: ticket ? chamadoDict(ticket) : null,
+      resposta: m.resposta ? respostaDict(db, m.resposta) : null,
+    };
+  }
+  /** Resumo da mensagem respondida (aparece citada em cima da resposta). */
+  function respostaDict(db, id) {
+    const original = db.mensagens.find((x) => x.id === id);
+    if (!original) return { id, apagada: true };
+    const autor = original.autor_id ? usuarioPorId(db, original.autor_id) : null;
+    return {
+      id, autor_id: original.autor_id, autor_nome: autor ? autor.nome : 'HelpIA', autor_perfil: autor ? autor.perfil : 'sistema',
+      texto: String(original.texto || (original.anexos?.length ? '📎 Anexo' : '')).slice(0, 140),
     };
   }
   function conversaDict(db, conversa, usuario) {
@@ -475,7 +564,7 @@
       id: conversa.id, tipo: conversa.tipo,
       nome: conversa.tipo === 'grupo' ? conversa.nome : (outro?.nome || 'Conversa'),
       outro: outro ? usuarioDict(outro) : null,
-      participantes: pessoas.map((u) => ({ id: u.id, nome: u.nome, perfil: u.perfil })),
+      participantes: pessoas.map((u) => ({ id: u.id, nome: u.nome, perfil: u.perfil, foto: u.foto || null })),
       ticket: conversa.ticket ? chamadoDict(db.chamados.find((c) => c.numero === conversa.ticket) || { numero: conversa.ticket }) : null,
       ultima: ultima ? mensagemDict(db, ultima) : null,
       atividade: ultima ? ultima.em : conversa.criada_em,
@@ -535,26 +624,28 @@
   function semearExtras(db) {
     for (const empresa of db.empresas) {
       const pessoa = (email) => db.usuarios.find((u) => u.email === email && u.empresa_id === empresa.id);
-      const ana = pessoa('gestor@demo.helpia');
-      const carlos = pessoa('analista@demo.helpia');
-      const beatriz = pessoa('beatriz@demo.helpia');
-      const joao = pessoa('colaborador@demo.helpia');
+      const murilo = pessoa(DEMO.murilo.email);
+      const carlos = pessoa(DEMO.carlos.email);
+      const beatriz = pessoa(DEMO.beatriz.email);
+      const joao = pessoa(DEMO.joao.email);
       const grupo = grupoDaEmpresa(db, empresa.id);
-      if (!ana || !carlos || !beatriz) continue;
-      postar(db, grupo, ana.id, 'Bom dia, time! Hoje o foco é zerar a bandeja antes do almoço. Bora?', null, minutosAtras(70));
+      if (!murilo || !carlos || !beatriz) continue;
+      const antes = db.proximaMensagem;
+      postar(db, grupo, murilo.id, 'Bom dia, time! Hoje o foco é zerar a bandeja antes do almoço. Bora?', null, minutosAtras(70));
       postar(db, grupo, beatriz.id, 'Peguei a impressora do 2º andar, a equipe toda está parada lá.', 4, minutosAtras(41));
       postar(db, grupo, null, 'Ticket #007 · Setor parado chegou com prioridade ALTA. Quem pode assumir?', 7, minutosAtras(4));
       postar(db, grupo, carlos.id, 'Deixa comigo o #007 assim que eu fechar o que estou fazendo.', null, minutosAtras(3));
       const direta = abrirDireta(db, carlos, beatriz.id);
-      postar(db, direta, beatriz.id, 'Carlos, aquele computador 043 do Lúcio voltou a dar problema. Acho que é o estabilizador.', 5, minutosAtras(15));
+      postar(db, direta, beatriz.id, 'Carlos, aquele computador 043 da Maria voltou a dar problema. Acho que é o estabilizador.', 5, minutosAtras(15));
       if (joao) {
         const comJoao = abrirDireta(db, carlos, joao.id, 6);
         postar(db, comJoao, carlos.id, 'Oi João! Vi seu ticket #006. Enquanto eu não chego aí: o cabo de rede está bem encaixado atrás do computador?', 6, minutosAtras(6));
       }
+      db.mensagens.forEach((m) => { if (m.id >= antes) m.simulado = true; });
       const metas = metasDaEmpresa(db, empresa.id);
-      metas.regra_do_dia = { texto: 'Prioridade ALTA primeiro, sempre. Ninguém fica mais de 30 minutos esperando na bandeja.', autor: ana.nome, em: minutosAtras(80) };
+      metas.regra_do_dia = { texto: 'Prioridade ALTA primeiro, sempre. Ninguém fica mais de 30 minutos esperando na bandeja.', autor: murilo.nome, em: minutosAtras(80) };
       metas.motivacionais = [
-        { id: metas.proximoMotivacional++, texto: 'Cada ticket fechado é alguém voltando a trabalhar. Obrigada, time!' },
+        { id: metas.proximoMotivacional++, texto: 'Cada ticket fechado é alguém voltando a trabalhar. Obrigado, time!' },
         { id: metas.proximoMotivacional++, texto: 'Uma boa nota de resolução hoje economiza meia hora amanhã.' },
         { id: metas.proximoMotivacional++, texto: 'Respira, toma um café e bora pro próximo! ☕' },
       ];
@@ -609,13 +700,52 @@
       if (!texto && !anexos.length) throw dadosInvalidos('Escreva uma mensagem ou anexe um arquivo.');
       const ticket = corpo.ticket ? Number(corpo.ticket) : null;
       if (ticket && !db.chamados.some((c) => c.numero === ticket)) throw dadosInvalidos('Ticket não encontrado.');
-      return [201, mensagemDict(db, postar(db, conversa, usuario.id, texto.slice(0, 1000), ticket, agora(), anexos))];
+      const nova = postar(db, conversa, usuario.id, texto.slice(0, 1000), ticket, agora(), anexos);
+      const resposta = Number(corpo.resposta) || null;
+      if (resposta && db.mensagens.some((x) => x.id === resposta && x.conversa_id === conversa.id)) nova.resposta = resposta;
+      return [201, mensagemDict(db, nova)];
     }
     if (metodo === 'POST' && (m = rota.match(/^\/chat\/conversas\/(\d+)\/lida$/))) {
       const usuario = usuarioLogado(db, token);
       const conversa = conversaDoUsuario(db, usuario, Number(m[1]));
       const ultima = db.mensagens.filter((x) => x.conversa_id === conversa.id).pop();
       if (ultima) db.leituras[`${conversa.id}:${usuario.id}`] = ultima.id;
+      return [200, { ok: true }];
+    }
+
+    if (metodo === 'DELETE' && (m = rota.match(/^\/chat\/conversas\/(\d+)\/mensagens$/))) {
+      // Comando /clear: só o gestor limpa a conversa
+      const usuario = usuarioLogado(db, token);
+      if (usuario.perfil !== GESTOR) throw acessoNegado('Só o gestor pode limpar a conversa (/clear).');
+      const conversa = conversaDoUsuario(db, usuario, Number(m[1]));
+      db.mensagens = db.mensagens.filter((x) => x.conversa_id !== conversa.id);
+      postar(db, conversa, null, `${usuario.nome} limpou a conversa.`);
+      return [200, { ok: true }];
+    }
+
+    // ---------- Modo simulação (gestor) ----------
+    if (chave === 'GET /simulacao') {
+      const usuario = usuarioLogado(db, token);
+      const empresa = db.empresas.find((e) => e.id === usuario.empresa_id);
+      return [200, { ativo: Boolean(empresa?.simulacao) }];
+    }
+    if (chave === 'POST /simulacao') {
+      const gestor = usuarioLogado(db, token);
+      if (gestor.perfil !== GESTOR) throw acessoNegado('Só o gestor pode ligar o modo simulação.');
+      return [200, definirSimulacao(db, gestor, corpo.ativo)];
+    }
+    if (chave === 'POST /simulacao/limpar') {
+      const gestor = usuarioLogado(db, token);
+      if (gestor.perfil !== GESTOR) throw acessoNegado('Só o gestor pode limpar os dados.');
+      return [200, limparEmpresa(db, gestor)];
+    }
+
+    // ---------- Minha conta ----------
+    if (chave === 'POST /auth/senha') {
+      const usuario = usuarioLogado(db, token);
+      if (usuario.senha !== String(corpo.atual || '')) throw dadosInvalidos('A senha atual não confere.');
+      usuario.senha = validarSenha(corpo.nova);
+      usuario.trocar_senha = false;
       return [200, { ok: true }];
     }
 
@@ -727,6 +857,7 @@
         solicitante: usuario?.nome || corpo.solicitante,
         solicitante_id: usuario?.id ?? null,
       });
+      if (usuario) chamado.empresa_id = usuario.empresa_id;
       db.chamados.push(chamado);
       if (catalogo().nivel(chamado).id === 'alta') {
         avisarGrupo(db, usuario?.empresa_id, `Ticket ${codigo(chamado.numero)} · ${chamado.genero_titulo} chegou com prioridade ALTA. Quem pode assumir?`, chamado.numero);
@@ -736,11 +867,12 @@
     if (metodo === 'GET' && (m = rota.match(/^\/chamados\/(\d+)$/))) {
       return [200, chamadoDict(buscarChamado(db, Number(m[1])))];
     }
-    // Colaborador tira um ticket resolvido do próprio histórico (o registro continua para a TI)
+    // Colaborador tira um ticket resolvido da coluna "Histórico" da mesa.
+    // Ele continua na tela Histórico de Tickets (só o Limpar dados do gestor apaga de vez).
     if (metodo === 'POST' && (m = rota.match(/^\/chamados\/(\d+)\/ocultar$/))) {
       const chamado = buscarChamado(db, Number(m[1]));
       if (chamado.status !== RESOLVIDO) throw conflito(`Só tickets resolvidos podem sair do histórico.`);
-      chamado.oculto_solicitante = true;
+      chamado.oculto_mesa = true;
       return [200, chamadoDict(chamado)];
     }
     // Colaborador exclui um ticket próprio que ainda está na fila
@@ -816,48 +948,6 @@
     window.Sessao?.limpar();
     location.href = 'login.html';
   }
-
-  // ---------- Faixa de aviso ----------
-  function mostrarFaixa() {
-    const estilo = document.createElement('style');
-    estilo.textContent = `
-      .simulador-faixa {
-        position: fixed; left: 12px; bottom: 12px; z-index: 900;
-        display: flex; align-items: center; gap: .6rem;
-        padding: .35rem .4rem .35rem .75rem;
-        border-radius: 999px;
-        background: var(--grafite, #1b1c1f); color: #f4f4f5;
-        border: 1px solid var(--primary, #8FA858);
-        font: 600 .74rem/1.2 var(--font, system-ui, sans-serif);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, .3);
-        opacity: .85;
-      }
-      .simulador-faixa:hover { opacity: 1; }
-      .simulador-faixa::before {
-        content: ''; width: 8px; height: 8px; border-radius: 50%;
-        background: var(--primary, #8FA858); box-shadow: 0 0 0 3px rgba(143, 168, 88, .35);
-      }
-      .simulador-faixa button {
-        font: inherit; cursor: pointer;
-        padding: .28rem .65rem; border-radius: 999px; border: 0;
-        background: rgba(255, 255, 255, .1); color: inherit;
-      }
-      .simulador-faixa button:hover { background: var(--primary, #8FA858); color: var(--on-primary, #141A0D); }
-    `;
-    document.head.appendChild(estilo);
-
-    const faixa = document.createElement('div');
-    faixa.className = 'simulador-faixa';
-    faixa.setAttribute('role', 'status');
-    faixa.innerHTML = '<span>Modo simulação · dados fictícios</span><button type="button">Limpar dados</button>';
-    faixa.querySelector('button').addEventListener('click', () => {
-      if (confirm('Apagar os chamados e contas simulados e voltar aos dados iniciais?')) limparDados();
-    });
-    document.body.appendChild(faixa);
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mostrarFaixa);
-  else mostrarFaixa();
 
   window.Simulador = { ativo: true, responder, limparDados };
 })();

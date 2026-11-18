@@ -18,6 +18,8 @@
   <link rel="stylesheet" href="css/paginas.css" />
   <link rel="stylesheet" href="css/teclas.css" />
   <link rel="stylesheet" href="css/papelaria.css" />
+  <link rel="stylesheet" href="css/conta.css" />
+  <link rel="stylesheet" href="css/cracha.css" />
 </head>
 <body class="tela-mesa tela-pagina tela-usuarios">
 
@@ -36,9 +38,10 @@
     <header class="area-topo centro-topo">
       <h2 id="tituloTampo"><i class="ic ic-cracha" aria-hidden="true"></i> Usuários <span class="contador" id="contadorCrachas">0</span></h2>
       <div class="abas" role="tablist" aria-label="Cargo">
-        <button type="button" class="aba ativo" role="tab" aria-selected="true" data-aba="analista"><i class="ic ic-ferramenta" aria-hidden="true"></i> Analistas</button>
-        <button type="button" class="aba" role="tab" aria-selected="false" data-aba="colaborador"><i class="ic ic-chat" aria-hidden="true"></i> Colaboradores</button>
-        <button type="button" class="aba" role="tab" aria-selected="false" data-aba="gestor"><i class="ic ic-coroa" aria-hidden="true"></i> Gestores</button>
+        <button type="button" class="aba ativo" role="tab" aria-selected="true" data-aba="geral"><i class="ic ic-equipe" aria-hidden="true"></i> Geral <span class="aba-qtd">0</span></button>
+        <button type="button" class="aba" role="tab" aria-selected="false" data-aba="colaborador"><i class="ic ic-usuario" aria-hidden="true"></i> Colaboradores <span class="aba-qtd">0</span></button>
+        <button type="button" class="aba" role="tab" aria-selected="false" data-aba="analista"><i class="ic ic-ferramenta" aria-hidden="true"></i> Analistas <span class="aba-qtd">0</span></button>
+        <button type="button" class="aba" role="tab" aria-selected="false" data-aba="gestor"><i class="ic ic-coroa" aria-hidden="true"></i> Gestores <span class="aba-qtd">0</span></button>
       </div>
     </header>
     <section class="tampo pagina-tampo" id="tampo" aria-labelledby="tituloTampo">
@@ -47,10 +50,8 @@
           <input class="input" id="busca" type="search" placeholder="Buscar por nome, e-mail ou ID…" autocomplete="off" /></label>
         <button type="button" class="filtro" id="soSuspensos" aria-pressed="false"><i class="ic ic-pausa" aria-hidden="true"></i> Só suspensos</button>
         <div class="acao-lado acao-dir">
+          <span class="dica-config">Para suspender ou reativar, use a engrenagem do crachá</span>
           <button type="button" class="btn btn-primary" id="abrirEmissor"><i class="ic ic-mais" aria-hidden="true"></i> Emitir crachá</button>
-          <button type="button" class="btn key--red zona-suspender" id="zonaSuspender" title="Arraste um crachá até aqui para suspender (ou reativar)">
-            <i class="ic ic-pausa" aria-hidden="true"></i> Suspender
-          </button>
         </div>
       </div>
       <p class="aviso-offline" id="avisoOffline" hidden></p>
@@ -78,7 +79,7 @@
             <input type="radio" name="perfil" id="novoAnalista" value="analista" checked />
             <label for="novoAnalista"><i class="ic ic-ferramenta" aria-hidden="true"></i> Analista</label>
             <input type="radio" name="perfil" id="novoColaborador" value="colaborador" />
-            <label for="novoColaborador"><i class="ic ic-chat" aria-hidden="true"></i> Colaborador</label>
+            <label for="novoColaborador"><i class="ic ic-usuario" aria-hidden="true"></i> Colaborador</label>
             <input type="radio" name="perfil" id="novoGestor" value="gestor" />
             <label for="novoGestor"><i class="ic ic-coroa" aria-hidden="true"></i> Gestor</label>
           </div>
@@ -144,6 +145,7 @@
   <script src="js/catalogo.js"></script>
   <script src="js/simulador.js"></script>
   <script src="js/sessao.js"></script>
+  <script src="js/conta.js"></script>
   <script src="js/navegacao.js"></script>
   <script src="js/api.js"></script>
   <script src="js/helpy.js"></script>

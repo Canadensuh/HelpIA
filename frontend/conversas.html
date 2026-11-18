@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="css/paginas.css" />
   <link rel="stylesheet" href="css/teclas.css" />
   <link rel="stylesheet" href="css/papelaria.css" />
+  <link rel="stylesheet" href="css/conta.css" />
 </head>
 <body class="tela-mesa tela-pagina tela-conversas">
 
@@ -58,7 +59,7 @@
             <button type="button" class="btn btn-mencionar" id="mencionar" title="Mencionar um ticket" aria-label="Mencionar um ticket">#</button>
             <button type="button" class="btn btn-icone-chat" id="anexar" title="Anexar documentos, prints, imagens ou vídeos" aria-label="Anexar arquivos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg></button>
             <button type="button" class="btn btn-icone-chat" id="abrirEmojis" title="Emojis" aria-label="Escolher um emoji" aria-expanded="false" aria-controls="painelEmojis"><span aria-hidden="true">😊</span></button>
-            <textarea id="texto" class="input" rows="1" maxlength="1000" placeholder="Escreva uma mensagem… (use #007 para mencionar um ticket)"></textarea>
+            <textarea id="texto" class="input" rows="1" maxlength="1000" placeholder="Escreva uma mensagem… (# ticket, @ pessoa)"></textarea>
             <button type="submit" class="btn key--green" id="enviar"><i class="ic ic-enviar" aria-hidden="true"></i> Enviar</button>
           </div>
           <input type="file" id="arquivoInput" multiple hidden />
@@ -108,6 +109,7 @@
   <script src="js/catalogo.js"></script>
   <script src="js/simulador.js"></script>
   <script src="js/sessao.js"></script>
+  <script src="js/conta.js"></script>
   <script src="js/navegacao.js"></script>
   <script src="js/api.js"></script>
   <script src="js/helpy.js"></script>

@@ -1,0 +1,99 @@
+/* =========================================================
+   conta.css — menu da conta (js/conta.js)
+   O cartão do usuário no canto superior direito vira um botão:
+   abre o menu com Configurações, Modo simulação (gestor), Limpar
+   dados (gestor) e Sair. Visual "papelaria": papel creme, tinta escura.
+   ========================================================= */
+
+.usuario-menu { position: relative; padding: 0; }
+.conta-botao {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .3rem .7rem .3rem .3rem;
+  border: 0; border-radius: 11px; background: transparent;
+  color: inherit; font: inherit; text-align: left; cursor: pointer;
+  transition: background .15s;
+}
+.conta-botao:hover, .usuario-menu.aberto .conta-botao { background: rgba(236, 239, 220, .07); }
+.conta-botao:focus-visible { outline: 3px solid var(--oliva-clara); outline-offset: 2px; }
+.conta-seta {
+  width: 8px; height: 8px; margin: 0 .1rem 0 .3rem;
+  border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+  opacity: .7; transform: translateY(-2px) rotate(45deg); transition: transform .2s;
+}
+.usuario-menu.aberto .conta-seta { transform: translateY(1px) rotate(-135deg); }
+
+.conta-menu {
+  position: absolute; top: calc(100% + 10px); right: 0; z-index: 120;
+  width: 300px; padding: .5rem;
+  border-radius: 14px;
+  background: #FFFCF2; color: #23291B;
+  outline: 2px solid var(--tinta, #23291B);
+  box-shadow: 6px 6px 0 var(--sombra, #0A0D07), 0 24px 50px -20px rgba(0, 0, 0, .6);
+  animation: conta-abre .18s cubic-bezier(.2, .9, .3, 1.2);
+  transform-origin: top right;
+}
+@keyframes conta-abre { from { opacity: 0; transform: translateY(-6px) scale(.97); } }
+.conta-menu-cabeca { display: grid; gap: .1rem; padding: .55rem .65rem .75rem; margin-bottom: .3rem; border-bottom: 2px dashed #D5CBAE; }
+.conta-menu-cabeca strong { font-family: var(--font-display); font-size: 1rem; }
+.conta-menu-cabeca span { font-size: .8rem; color: #4F4B3A; word-break: break-all; }
+.conta-menu-cabeca small { font-size: .74rem; font-weight: 700; color: #4C6B3C; }
+
+.conta-item {
+  position: relative; display: flex; align-items: center; gap: .7rem; width: 100%;
+  padding: .6rem .65rem; border: 0; border-radius: 9px;
+  background: transparent; color: #23291B;
+  font: inherit; font-size: .88rem; font-weight: 700; text-align: left; cursor: pointer;
+}
+.conta-item:hover, .conta-item:focus-visible { background: #F1EAD3; outline: none; }
+.conta-item > .ic, .conta-item > .conta-svg { flex: none; width: 1.15rem; height: 1.15rem; color: #4C6B3C; }
+.conta-item > span { display: grid; flex: 1; min-width: 0; }
+.conta-item small { font-size: .72rem; font-weight: 600; color: #625E4A; }
+.conta-grupo { margin: .3rem 0; padding: .35rem 0; border-block: 2px dashed #D5CBAE; }
+.conta-grupo-titulo { display: block; padding: .2rem .65rem .3rem; font: 800 .64rem var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: #8A6A12; }
+.conta-perigo > .ic { color: #B5391F; }
+.conta-perigo:hover { background: #FBE9E3; }
+.conta-sair > .conta-svg { color: #625E4A; }
+
+/* Chave liga/desliga do modo simulação */
+.conta-chave input { position: absolute; opacity: 0; pointer-events: none; }
+.chave {
+  position: relative; flex: none; width: 42px; height: 24px; border-radius: 999px;
+  background: #D5CBAE; outline: 2px solid #23291B;
+  transition: background .2s;
+}
+.chave::after {
+  content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
+  background: #FFFCF2; outline: 2px solid #23291B; transition: transform .2s cubic-bezier(.3, 1.4, .5, 1);
+}
+.conta-chave input:checked ~ .chave { background: #7FCF6E; }
+.conta-chave input:checked ~ .chave::after { transform: translateX(18px); }
+.conta-chave input:disabled ~ .chave { opacity: .5; }
+.conta-chave input:focus-visible ~ .chave { outline: 3px solid var(--oliva-clara); }
+
+/* Janela de configurações */
+.modal-conta .modal-conteudo { width: min(480px, calc(100vw - 32px)); }
+.modal-conta .modal-topo h2 { display: flex; align-items: center; gap: .5rem; }
+.modal-conta .conta-svg { width: 1.2rem; height: 1.2rem; }
+.conta-texto { margin: 0; line-height: 1.55; }
+.conta-perfil { display: flex; align-items: center; gap: .8rem; }
+.conta-avatar { width: 54px; height: 54px; border-radius: 12px; border: 2px solid var(--tinta, #23291B); display: grid; place-items: center; }
+.conta-perfil strong { display: block; font-family: var(--font-display); font-size: 1.1rem; }
+.conta-perfil span { font-size: .82rem; color: var(--muted); }
+.conta-dados { margin: 0; display: grid; gap: .1rem; padding: .7rem .9rem; border-radius: 10px; background: var(--surface-2); }
+.conta-dados div { display: flex; justify-content: space-between; gap: 1rem; padding: .3rem 0; font-size: .86rem; }
+.conta-dados div + div { border-top: 1px dashed var(--border); }
+.conta-dados dt { color: var(--muted); }
+.conta-dados dd { margin: 0; font-weight: 700; text-align: right; word-break: break-all; }
+.conta-nota { margin: 0; font-size: .78rem; color: var(--muted); }
+.conta-senha { display: grid; gap: .7rem; padding-top: .9rem; border-top: 2px dashed var(--border); }
+.conta-senha > strong { display: flex; align-items: center; gap: .4rem; }
+.conta-senha-linha { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+@media (max-width: 520px) { .conta-senha-linha { grid-template-columns: 1fr; } .conta-menu { width: min(300px, calc(100vw - 24px)); } }
+@media (prefers-reduced-motion: reduce) { .conta-menu, .chave, .chave::after, .conta-seta { animation: none; transition: none; } }
+
+/* Ajustes: a chave não estica e a janela de configurações fica alinhada à esquerda */
+.conta-item > span.chave { flex: none; display: block; }
+.modal-conta { width: min(520px, calc(100vw - 32px)); text-align: left; overflow-x: hidden; }
+.modal-conta .modal-conteudo { width: auto; }
+.modal-conta .campo { text-align: left; }
+.modal-conta .modal-acoes { align-items: center; }

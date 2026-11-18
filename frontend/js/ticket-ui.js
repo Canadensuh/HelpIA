@@ -60,6 +60,15 @@ const TicketUI = {
   dataHoraBr(iso) { return iso ? `${this.dataBr(iso)} às ${formatarHora(iso)}` : '—'; },
   ORDEM: { alta: 0, media: 1, normal: 2, baixa: 3 },
 
+  /** Nome curto da pessoa: quem está logado vira "(Você)". */
+  quem(nome) {
+    return nome && nome === window.Sessao?.usuario()?.nome ? '(Você)' : nome;
+  },
+  /** Nome completo + marca "(Você)" (para o ticket grande). */
+  quemCompleto(nome) {
+    return nome && nome === window.Sessao?.usuario()?.nome ? `${nome} (Você)` : nome;
+  },
+
   selo(nivel) {
     return `<span class="tkp-pri">${nivel.id === 'alta' ? ic('chama') : ''}${nivel.rotulo}</span>`;
   },
@@ -85,7 +94,7 @@ const TicketUI = {
     const rodape = linhas || (historico
       ? [`${ic('relogio')} Aberto ${Efeitos.dataCurta(c.aberto_em)}`, `${ic('usuario')} ${esc(c.solicitante)}`]
       : [`<span class="tag ${classeStatus(c.status)}">${esc(c.status)}</span> ${Efeitos.tempoDesde(c.aberto_em)}`,
-        c.analista ? `${ic('usuario')} <b>${esc(c.analista)}</b>` : `${ic('relogio')} Esperando um analista`]);
+        c.analista ? `${ic('usuario')} <b>${esc(this.quem(c.analista))}</b>` : `${ic('relogio')} Esperando um analista`]);
     return `
       <li class="tkp-item ${historico ? 'tkp-hist' : ''} ${classe}" style="--i:${i}" data-numero="${c.numero}">
         <div class="tkp-sombra">
@@ -111,11 +120,11 @@ const TicketUI = {
     const contato = Catalogo.contatos.find((t) => t.id === c.contato?.tipo);
     const dados = [
       ['Fila', esc(c.fila)],
-      ['Solicitante', esc(c.solicitante)],
+      ['Solicitante', esc(this.quemCompleto(c.solicitante))],
       c.maquina ? ['Máquina', esc(c.maquina)] : null,
       c.contato ? [`Contato · ${contato?.titulo || c.contato.tipo}`, esc(c.contato.valor)] : null,
       ['Aberto em', this.dataHoraBr(c.aberto_em)],
-      c.analista ? ['Analista', esc(c.analista)] : null,
+      c.analista ? ['Analista', esc(this.quemCompleto(c.analista))] : null,
       c.assumido_em ? ['Assumido em', this.dataHoraBr(c.assumido_em)] : null,
       resolvido ? ['Resolvido em', this.dataHoraBr(c.resolvido_em)] : null,
     ].filter(Boolean);

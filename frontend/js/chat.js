@@ -6,8 +6,10 @@
      todo o passo a passo acontece aqui dentro;
    - direita: Helpy com o café, falando por balão sobre a cabeça.
    Não é um chat livre: são perguntas e respostas pré-prontas.
-   Fluxo: Tipo (gênero) → Detalhe (subgênero) → Situação (impacto
-   e máquina) → Nota → Revisão → Ticket impresso e entregue ao Helpy.
+   Fluxo: Tipo (gênero) → Detalhe (subgênero; em "Pedir equipamento"
+   é uma caixa com os itens) → Situação (impacto, avança ao tocar) →
+   Nota → Equipamento (computador ou impressora desenhado, com o número
+   digitado na tela) → Revisão → Ticket impresso e entregue ao Helpy.
    (O contato agora é pelo HelpIA Chat: não perguntamos mais.)
    ========================================================= */
 
@@ -42,6 +44,7 @@ const PASSOS = [
   { id: 'sub', rotulo: 'Detalhe' },
   { id: 'situacao', rotulo: 'Situação' },
   { id: 'nota', rotulo: 'Nota' },
+  { id: 'maquina', rotulo: 'Equipamento' },
   { id: 'revisao', rotulo: 'Revisão' },
 ];
 const MIN_NOTA = 15;
@@ -60,12 +63,14 @@ function novoEstado() {
 const esc = (texto) => escaparHtml(String(texto ?? ''));
 const primeiroNome = () => (usuario?.nome || '').split(' ')[0];
 
-/** Etapa "Situação" só aparece se houver o que perguntar. */
+/** Etapa "Situação" (quem é afetado): não vale para urgências fixas nem para pedidos. */
 function precisaSituacao() {
-  return !(estado.genero?.prioridade && !estado.genero?.pedeMaquina);
+  return !estado.genero?.prioridade && !estado.genero?.caixa;
 }
+/** Equipamento que aparece desenhado na etapa "Equipamento" ('computador', 'impressora' ou null). */
+const aparelhoAtual = () => Catalogo.aparelho(estado.genero?.id, estado.sub?.id);
 function passosVisiveis() {
-  return PASSOS.filter((p) => p.id !== 'situacao' || precisaSituacao());
+  return PASSOS.filter((p) => (p.id !== 'situacao' || precisaSituacao()) && (p.id !== 'maquina' || aparelhoAtual()));
 }
 
 // ---------- Cabeçalho do desktop (título, etapas e botão) ----------
@@ -101,7 +106,7 @@ function botoesDaEtapa() {
       const c = chamadoVisto();
       esq.push(tecla('btn-voltar', 'data-fechar-ver', '← Voltar para a mesa'));
       if (c && podeExcluir(c)) dir.push(tecla('key--red', `data-excluir="${c.numero}"`, `${ic('x')} Excluir ticket`));
-      if (c?.status === 'Resolvido') dir.push(tecla('key--red', `data-remover-hist="${c.numero}"`, `${ic('x')} Remover do histórico`));
+      if (c?.status === 'Resolvido' && !c.oculto_mesa) dir.push(tecla('key--red', `data-remover-hist="${c.numero}"`, `${ic('x')} Tirar da lista do histórico`));
       break;
     }
     case 'genero':
@@ -111,15 +116,12 @@ function botoesDaEtapa() {
       esq.push(voltar());
       dir.push(cancelar);
       break;
-    case 'situacao': {
-      const falta = !estado.genero.prioridade && !estado.impacto;
-      esq.push(voltar());
-      dir.push(cancelar, tecla('btn-primary', `data-avancar ${falta ? 'disabled' : ''}`, 'Continuar →'));
-      break;
-    }
+    // Situação avança sozinha ao escolher; Nota e Equipamento têm o botão dentro do próprio card
+    case 'situacao':
     case 'nota':
+    case 'maquina':
       esq.push(voltar());
-      dir.push(cancelar, tecla('btn-primary', 'data-avancar', 'Revisar ticket →'));
+      dir.push(cancelar);
       break;
     case 'revisao':
       esq.push(voltar('← Ajustar'));
@@ -274,13 +276,13 @@ const MODOS_EXCLUSAO = {
   },
   historico: {
     pode: (c) => c.status === 'Resolvido',
-    titulo: (n) => (n > 1 ? `Remover ${n} tickets do histórico?` : 'Remover do histórico?'),
-    botao: (n) => (n > 1 ? `Remover ${n} tickets` : 'Remover do histórico'),
-    aviso: 'Eles somem só do seu histórico. A equipe de TI continua com o registro do atendimento.',
+    titulo: (n) => (n > 1 ? `Tirar ${n} tickets desta lista?` : 'Tirar da lista do histórico?'),
+    botao: (n) => (n > 1 ? `Tirar ${n} tickets` : 'Tirar da lista'),
+    aviso: 'Eles saem só desta coluna da mesa. Continuam guardados na tela Histórico de Tickets, com o carimbo do analista.',
     chamar: (numero) => API.removerDoHistorico(numero),
     lista: '#listaResolvidos',
-    feito: (codigos, plural) => `${plural ? 'Tickets' : 'Ticket'} ${codigos} removido${plural ? 's' : ''} do histórico`,
-    fala: (codigos, plural) => `Tirei ${plural ? 'os tickets' : 'o ticket'} <strong>${codigos}</strong> do seu histórico. <i class="ic ic-sorriso" aria-hidden="true"></i>`,
+    feito: (codigos, plural) => `${plural ? 'Tickets' : 'Ticket'} ${codigos} fora da lista. Continua${plural ? 'm' : ''} em Histórico de Tickets`,
+    fala: (codigos, plural) => `Tirei ${plural ? 'os tickets' : 'o ticket'} <strong>${codigos}</strong> da lista. Se precisar, ${plural ? 'eles continuam' : 'ele continua'} em <a href="historico.html">Histórico de Tickets</a>. <i class="ic ic-sorriso" aria-hidden="true"></i>`,
     vazio: () => 'Marque a <strong>caixinha</strong> dos tickets do histórico que você quer remover e clique no <strong>X</strong> ao lado de “Histórico”.',
   },
 };
@@ -289,8 +291,8 @@ function atualizarBotaoHistorico() {
   const n = marcadosHist.size;
   elBotaoHist.classList.toggle('com-marcados', n > 0);
   elBotaoHist.innerHTML = `${ic('x')}${n ? `<span class="excluir-qtd">${n}</span>` : ''}`;
-  elBotaoHist.setAttribute('aria-label', n ? `Remover ${n} ticket${n > 1 ? 's' : ''} do histórico` : 'Remover tickets marcados do histórico');
-  elBotaoHist.title = n ? 'Remover os tickets marcados do histórico' : 'Marque a caixinha de um ticket do histórico para remover';
+  elBotaoHist.setAttribute('aria-label', n ? `Tirar ${n} ticket${n > 1 ? 's' : ''} da lista do histórico` : 'Tirar os tickets marcados da lista do histórico');
+  elBotaoHist.title = n ? 'Tirar os tickets marcados da lista (continuam em Histórico de Tickets)' : 'Marque a caixinha de um ticket do histórico para tirar da lista';
 }
 
 function pedirExclusao(numeros, modo) {
@@ -369,6 +371,7 @@ const RENDER = {
   sub: telaSub,
   situacao: telaSituacao,
   nota: telaNota,
+  maquina: telaMaquina,
   revisao: telaRevisao,
   ver: telaVer,
 };
@@ -443,7 +446,7 @@ function ticketPadrao(c, { i = 0, historico = false, estatico = false } = {}) {
     c.numero === destaque ? 'chegando' : '',
     c.numero === visto ? 'selecionado' : '',
   ].join(' ');
-  const acao = historico ? 'remover do histórico' : 'excluir';
+  const acao = historico ? 'tirar da lista do histórico' : 'excluir';
   const caixa = !comCaixa ? '' : (exclui || historico)
     ? `<label class="tkp-caixa" title="Marcar para ${acao}">
          <input type="checkbox" data-marcar="${c.numero}" ${historico ? 'data-lista="hist"' : ''} ${marcado ? 'checked' : ''} aria-label="Marcar ticket ${esc(c.codigo)} para ${acao}" />
@@ -585,10 +588,19 @@ Arrastar.ligar(elPalco, {
 });
 
 let timerGrade = null;
-addEventListener('resize', () => {
+const refazerGrade = () => {
   clearTimeout(timerGrade);
   timerGrade = setTimeout(() => { if (etapaAtual === 'mesa') preencherMesa(); }, 150);
-});
+};
+addEventListener('resize', refazerGrade);
+// Abrir/fechar o histórico estreita a mesa: a grade é refeita para nenhum ticket ficar cortado
+if ('ResizeObserver' in window) {
+  let larguraMesa = 0;
+  new ResizeObserver(([e]) => {
+    const w = Math.round(e.contentRect.width);
+    if (Math.abs(w - larguraMesa) > 4) { larguraMesa = w; refazerGrade(); }
+  }).observe(elPalco);
+}
 
 // ---------- Busca na mesa (tolerante a acento, caixa alta e erros de digitação) ----------
 const elBuscaMesa = document.createElement('label');
@@ -619,7 +631,8 @@ function filtrarMesa() {
 }
 
 function preencherResolvidos() {
-  const resolvidos = meus.filter((c) => c.status === 'Resolvido');
+  // Os que o colaborador tirou da coluna somem só daqui (continuam em Histórico de Tickets)
+  const resolvidos = meus.filter((c) => c.status === 'Resolvido' && !c.oculto_mesa);
   for (const n of [...marcadosHist]) if (!resolvidos.some((c) => c.numero === n)) marcadosHist.delete(n);
   atualizarBotaoHistorico();
   elBotaoHist.hidden = !resolvidos.length;
@@ -693,6 +706,7 @@ function migalha() {
 
 function telaSub() {
   const g = estado.genero;
+  if (g.caixa) return telaCaixa();
   return `
     <div class="etapa-cabeca">
       ${migalha()}
@@ -708,35 +722,59 @@ function telaSub() {
     </div>`;
 }
 
-function telaSituacao() {
+/** Pedir equipamento: os itens já aparecem dentro de uma caixa de papelão. */
+function telaCaixa() {
   const g = estado.genero;
-  const perguntaImpacto = !g.prioridade;
   return `
     <div class="etapa-cabeca">
       ${migalha()}
-      <h1>${perguntaImpacto ? 'Quem está sendo afetado?' : 'Qual equipamento?'}</h1>
-      <p>${esc(estado.sub.titulo)} · isso ajuda a definir a prioridade do seu ticket.</p>
+      <h1>${esc(g.pergunta)}</h1>
+      <p>Tire da caixa o item que você precisa. Se for mais de um, conte na nota.</p>
     </div>
-    ${perguntaImpacto ? `
-      <div class="bloco">
-        <div class="opcoes">
-          ${Catalogo.impactos.map((imp, i) => `
-            <button type="button" class="opcao ${estado.impacto === imp.id ? 'selecionada' : ''}" data-impacto="${imp.id}" style="--i:${i}">
-              <span class="opcao-emoji">${ic(imp.ic)}</span>
-              <span><strong>${imp.titulo}</strong><small>${imp.descricao}</small></span>
+    <div class="caixa-pedido">
+      <div class="caixa-abas" aria-hidden="true"><span class="caixa-aba esq"></span><span class="caixa-aba dir"></span></div>
+      <div class="caixa-dentro">
+        <div class="caixa-itens">
+          ${g.subgeneros.map((s, i) => `
+            <button type="button" class="item-caixa ${estado.sub?.id === s.id ? 'selecionada' : ''}" data-sub="${s.id}" style="--i:${i}">
+              <span class="item-caixa-ico">${ic(s.ic)}${s.ic2 ? ic(s.ic2) : ''}</span>
+              <strong>${esc(s.titulo)}</strong>
+              ${s.descricao ? `<small>${esc(s.descricao)}</small>` : ''}
             </button>`).join('')}
         </div>
-      </div>` : ''}
-    ${g.pedeMaquina ? `
-      <div class="bloco bloco-maquina">
-        <button type="button" class="btn-info" data-info-maquina aria-label="Como encontro o número da máquina?" title="Como encontro o número da máquina?">i</button>
-        <div class="bloco-titulo"><h2>${esc(g.rotuloMaquina || 'Número da máquina')}</h2><span>opcional, mas ajuda muito</span></div>
-        <label class="campo campo-maquina">
-          <span class="campo-ajuda">Está na etiqueta de patrimônio colada no equipamento (ex.: 043).</span>
-          <input id="maquina" type="text" maxlength="30" value="${esc(estado.maquina)}" placeholder="Ex.: 043" autocomplete="off" />
-        </label>
-      </div>` : ''}
-`;
+      </div>
+      <div class="caixa-frente" aria-hidden="true">
+        <span class="caixa-fita"></span>
+        <span class="caixa-etiqueta"><b>Almoxarifado de TI</b><small>Para: ${esc(usuario.nome)}</small></span>
+        <span class="caixa-simbolos">${ic('seta-cima')}${ic('seta-cima')}</span>
+      </div>
+    </div>`;
+}
+
+function telaSituacao() {
+  return `
+    <div class="etapa-cabeca">
+      ${migalha()}
+      <h1>Quem está sendo afetado?</h1>
+      <p>${esc(estado.sub.titulo)} · toque numa opção: isso define a prioridade do seu ticket.</p>
+    </div>
+    <div class="bloco bloco-impacto">
+      <div class="opcoes">
+        ${Catalogo.impactos.map((imp, i) => `
+          <button type="button" class="opcao ${estado.impacto === imp.id ? 'selecionada' : ''}" data-impacto="${imp.id}" style="--i:${i}">
+            <span class="opcao-emoji">${ic(imp.ic)}</span>
+            <span><strong>${imp.titulo}</strong><small>${imp.descricao}</small></span>
+          </button>`).join('')}
+      </div>
+    </div>`;
+}
+
+/** Botão de avançar no canto inferior direito do card (puxa o olho para o próximo passo). */
+function botaoDoCard(etapa) {
+  const rotulo = proximaDepois(etapa) === 'revisao' ? 'Revisar ticket' : 'Continuar';
+  return `<div class="bloco-rodape">
+    <button type="button" class="btn btn-primary btn-lg" data-avancar>${rotulo} <span class="seta-avancar" aria-hidden="true">→</span></button>
+  </div>`;
 }
 
 function telaNota() {
@@ -752,8 +790,69 @@ function telaNota() {
         <textarea id="nota" maxlength="1000" placeholder="Ex.: Desde hoje cedo aparece um X no ícone de rede. Já reiniciei o computador e continua igual.">${esc(estado.nota)}</textarea>
         <div class="nota-medidor" id="notaMedidor"><div class="nota-barra"><span></span></div><span id="notaTexto"></span></div>
       </div>
+      <p class="aviso aviso-erro erro-etapa" id="erroNota" hidden></p>
+      ${botaoDoCard('nota')}
+    </div>`;
+}
+
+/**
+ * Equipamento: um computador (ou impressora) desenhado, com o campo do número
+ * DENTRO da tela. A etiqueta colada no gabinete acompanha o que é digitado.
+ */
+function telaMaquina() {
+  const impressora = aparelhoAtual() === 'impressora';
+  const nome = impressora ? 'impressora' : 'máquina';
+  const campo = `<input id="maquina" class="aparelho-input" type="text" maxlength="30" value="${esc(estado.maquina)}"
+      placeholder="${impressora ? 'IMP-02' : '043'}" autocomplete="off" spellcheck="false"
+      aria-label="Número de identificação da ${nome}" />`;
+  const etiqueta = `<span class="aparelho-etiqueta" aria-hidden="true"><small>PATRIMÔNIO</small><b data-etiqueta>${esc(estado.maquina) || '···'}</b><i class="barras"></i></span>`;
+  const desenho = impressora ? `
+    <div class="aparelho aparelho-impressora">
+      <div class="imp-papel-entrada" aria-hidden="true"></div>
+      <div class="imp-corpo">
+        <div class="imp-painel">
+          <label class="imp-visor">
+            <span class="visor-rotulo">ID da impressora</span>
+            ${campo}
+          </label>
+          <div class="imp-botoes" aria-hidden="true"><span class="led ok"></span><span class="led"></span><span class="imp-tecla"></span><span class="imp-tecla"></span></div>
+        </div>
+        <div class="imp-fenda" aria-hidden="true"></div>
+        ${etiqueta}
+      </div>
+      <div class="imp-bandeja" aria-hidden="true"><span class="imp-folha"></span></div>
+    </div>` : `
+    <div class="aparelho aparelho-pc">
+      <div class="pc-monitor">
+        <label class="pc-tela">
+          <span class="visor-rotulo">Nº da máquina</span>
+          ${campo}
+          <span class="visor-dica">Está na etiqueta de patrimônio</span>
+        </label>
+        <span class="pc-marca" aria-hidden="true">Help<b>IA</b></span>
+        <span class="pc-led" aria-hidden="true"></span>
+      </div>
+      <div class="pc-pe" aria-hidden="true"></div>
+      <div class="pc-base" aria-hidden="true"></div>
+      <div class="pc-teclado" aria-hidden="true"></div>
+      <div class="pc-gabinete" aria-hidden="true">
+        <span class="gab-botao"></span><span class="gab-drive"></span><span class="gab-grade"></span>
+        ${etiqueta}
+      </div>
+    </div>`;
+  return `
+    <div class="etapa-cabeca">
+      ${migalha()}
+      <h1>Qual é o número da ${nome}?</h1>
+      <p>Opcional, mas ajuda muito: o analista vê se o problema já aconteceu nesse equipamento.</p>
     </div>
-    <p class="aviso aviso-erro erro-etapa" id="erroNota" hidden></p>`;
+    <div class="bloco bloco-aparelho">
+      <div class="aparelho-palco">
+        ${desenho}
+        <button type="button" class="btn-info" data-info-maquina aria-label="Como encontro o número da ${nome}?" title="Como encontro o número da ${nome}?">i</button>
+      </div>
+      ${botaoDoCard('maquina')}
+    </div>`;
 }
 
 /** Prioridade do rascunho, com a mesma regra usada nos tickets prontos. */
@@ -804,7 +903,7 @@ function ticketHtml(numero = null) {
     dados: [
       ['Fila', esc(g.fila)],
       ['Solicitante', esc(usuario.nome)],
-      estado.maquina ? ['Máquina', esc(estado.maquina)] : null,
+      estado.maquina ? [aparelhoAtual() === 'impressora' ? 'Impressora' : 'Máquina', esc(estado.maquina)] : null,
     ].filter(Boolean),
     nota: estado.nota,
     carimbo: '<span class="tk-carimbo">ENVIADO</span>',
@@ -843,20 +942,30 @@ function ligarEventos(etapa) {
 
   elPalco.querySelectorAll('[data-sub]').forEach((b) => b.addEventListener('click', () => escolherSub(b.dataset.sub, b)));
 
+  // Escolheu quem é afetado: já vai para a próxima etapa (não há botão "Continuar")
   elPalco.querySelectorAll('[data-impacto]').forEach((b) => b.addEventListener('click', () => {
+    if (etapaAtual !== 'situacao' || elPalco.querySelector('.etapa-situacao.escolheu')) return;
     estado.impacto = b.dataset.impacto;
     elPalco.querySelectorAll('[data-impacto]').forEach((o) => o.classList.toggle('selecionada', o === b));
-    document.querySelector('[data-avancar]')?.removeAttribute('disabled');
-    if (estado.impacto !== 'eu') {
-      const nivel = nivelPrevisto();
-      helpy.dizer(`Entendi, afeta mais gente. Seu ticket vai com prioridade <strong>${nivel.rotulo.toLowerCase()}</strong> ${nivel.id === 'alta' ? ic('chama') : ''}`, { tipo: 'alerta', humor: 'alerta', atraso: 350 });
-    }
+    elPalco.querySelector('.etapa-situacao')?.classList.add('escolheu');
+    setTimeout(() => irPara(proximaDepois('situacao')), 240);
   }));
 
-  const elMaquina = document.getElementById('maquina');
-  if (elMaquina) elMaquina.addEventListener('input', () => { estado.maquina = elMaquina.value.trim(); });
-
+  if (etapa === 'maquina') ligarMaquina();
   if (etapa === 'nota') ligarNota();
+}
+
+function ligarMaquina() {
+  const elMaquina = document.getElementById('maquina');
+  const etiquetas = elPalco.querySelectorAll('[data-etiqueta]');
+  elMaquina.addEventListener('input', () => {
+    estado.maquina = elMaquina.value.trim();
+    etiquetas.forEach((el) => { el.textContent = estado.maquina || '···'; });
+    elPalco.querySelector('.aparelho')?.classList.toggle('preenchido', !!estado.maquina);
+  });
+  elMaquina.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); avancarDe('maquina'); } });
+  elPalco.querySelector('.aparelho')?.classList.toggle('preenchido', !!estado.maquina);
+  setTimeout(() => elMaquina.focus(), 350);
 }
 
 function ligarNota() {
@@ -905,6 +1014,7 @@ function escolherGenero(id, cartao) {
 
 function escolherSub(id, botao) {
   estado.sub = estado.genero.subgeneros.find((s) => s.id === id);
+  if (!aparelhoAtual()) estado.maquina = '';
   elPalco.querySelectorAll('[data-sub]').forEach((o) => o.classList.toggle('selecionada', o === botao));
   setTimeout(() => irPara(proximaDepois('sub')), 220);
 }
@@ -953,11 +1063,19 @@ function falarSobre(etapa) {
   const vaiDarDica = (etapa === 'situacao' || (etapa === 'nota' && !precisaSituacao()))
     && estado.sub?.dica && estado.dicaVista !== estado.sub.id;
   if (vaiDarDica) { dicaDoSub(); return; }
-  if (etapa === 'situacao' && g.pedeMaquina) {
-    helpy.dizer('Se souber o <strong>número da máquina</strong>, informe: assim o analista vê se esse problema já aconteceu antes nesse equipamento.');
+  if (etapa === 'situacao') {
+    helpy.dizer('Toque em quem está sendo afetado e eu já te levo para o próximo passo.');
   }
   if (etapa === 'nota') {
-    helpy.dizer('<p>Escreva como se estivesse contando para um colega: <strong>o que aconteceu, desde quando e o que já tentou</strong>.</p>');
+    const nivel = nivelPrevisto();
+    const prioridade = estado.impacto && estado.impacto !== 'eu' && !g.prioridade
+      ? `<p>Entendi, afeta mais gente: seu ticket vai com prioridade <strong>${nivel.rotulo.toLowerCase()}</strong> ${nivel.id === 'alta' ? ic('chama') : ''}</p>` : '';
+    helpy.dizer(`${prioridade}<p>Escreva como se estivesse contando para um colega: <strong>o que aconteceu, desde quando e o que já tentou</strong>.</p>`,
+      prioridade ? { tipo: 'alerta', humor: 'alerta' } : {});
+  }
+  if (etapa === 'maquina') {
+    const impressora = aparelhoAtual() === 'impressora';
+    helpy.dizer(`Digite o número ${impressora ? 'da <strong>impressora</strong> no visor dela' : 'da <strong>máquina</strong> direto na tela do computador'}. Não sabe onde fica? Clique no <strong>i</strong> azul que eu te mostro.`);
   }
   if (etapa === 'ver') {
     const c = chamadoVisto();
@@ -996,9 +1114,7 @@ function dicaDoSub() {
 function respostaDica() {
   helpy.calar();
   const orientacao = etapaAtual === 'situacao'
-    ? (estado.genero.pedeMaquina
-      ? 'Agora me diga quem está sendo afetado e, se souber, o <strong>número da máquina</strong>: assim o analista vê se o problema já aconteceu nesse equipamento.'
-      : 'Agora me diga quem está sendo afetado.')
+    ? 'Agora toque em <strong>quem está sendo afetado</strong>.'
     : 'Agora conte com as suas palavras <strong>o que aconteceu, desde quando e o que já tentou</strong>.';
   helpy.dizer(`<p>Sem problemas, seguimos com o ticket. ${ic('seta-baixo')}</p><p>${orientacao}</p>`, { atraso: 300 });
 }
@@ -1139,13 +1255,19 @@ function perguntas() {
 /** Botão de INFO do card da máquina: o Helpy explica o passo a passo. */
 function explicarMaquina() {
   helpy.calar();
-  helpy.dizer(`<p><strong>${ic('etiqueta')} Como achar o número da máquina:</strong></p>
-    <ol class="helpy-passos">
+  const impressora = etapaAtual === 'maquina' && aparelhoAtual() === 'impressora';
+  const passos = impressora ? `
+      <li>Procure a <strong>etiqueta de patrimônio</strong> na frente ou na lateral da impressora: um adesivo com código de barras.</li>
+      <li>Sem etiqueta? Muitas impressoras mostram o nome no <strong>visor</strong> ou na folha de configuração (segure o botão <strong>i</strong> da impressora).</li>
+      <li>Digite o código que aparecer, por exemplo <strong>IMP-02</strong>.</li>` : `
       <li>Procure uma <strong>etiqueta de patrimônio</strong>: um adesivo com código de barras e um número.</li>
-      <li><strong>Computador de mesa:</strong> lateral ou parte de trás do gabinete. <strong>Notebook:</strong> embaixo, perto da bateria. <strong>Monitor ou impressora:</strong> atrás ou na lateral.</li>
-      <li>Digite só o número da etiqueta, por exemplo <strong>043</strong>.</li>
-    </ol>
-    <p>Não achou? Tudo bem, deixe em branco: o analista descobre no atendimento.</p>`, { humor: 'pensando', atraso: 350 });
+      <li><strong>Computador de mesa:</strong> lateral ou parte de trás do gabinete. <strong>Notebook:</strong> embaixo, perto da bateria.</li>
+      <li>Digite só o número da etiqueta, por exemplo <strong>043</strong>.</li>`;
+  helpy.dizer(`<p><strong>${ic('etiqueta')} Como achar o número da ${impressora ? 'impressora' : 'máquina'}:</strong></p>
+    <ol class="helpy-passos">${passos}</ol>
+    <p>Não achou? Tudo bem, deixe em branco: o analista descobre no atendimento.</p>`, {
+    humor: 'pensando', atraso: 350, aoMostrar: () => focarNoHelpy(3500),
+  });
 }
 
 function atalho(tipo) {

@@ -159,6 +159,7 @@ function ticketMesa(c, { naMesa = false, comAcoes = true, indice = 0, novo = fal
               </span>` : `<span>${ic('pasta')} ${esc(c.fila)}</span>`}
           </footer>
         </article>
+        ${comAcoes ? `<button type="button" class="tkp-abrir" data-ver="${c.numero}" aria-label="Ver o ticket ${esc(c.codigo)} completo"></button>` : ''}
       </div>
     </li>`;
 }
@@ -431,6 +432,8 @@ function comemorar() {
 
 // ---------- Cliques nos tickets ----------
 document.querySelector('.mesa').addEventListener('click', (e) => {
+  const ver = e.target.closest('[data-ver]');
+  if (ver) { verTicket(ver.dataset.ver); return; }
   const botao = e.target.closest('[data-acao]');
   if (!botao) return;
   const numero = botao.dataset.numero;
@@ -439,6 +442,38 @@ document.querySelector('.mesa').addEventListener('click', (e) => {
   if (botao.dataset.acao === 'carimbar') abrirCarimbo(numero);
   if (botao.dataset.acao === 'mensagem') falarComColaborador(numero);
 });
+
+/** Clique no ticket: abre o ticket completo (igual ao do colaborador), com as ações do analista. */
+function verTicket(numero) {
+  const c = buscar(numero);
+  if (!c) return;
+  const meu = c.status === 'Em atendimento' && c.analista === usuario.nome;
+  const acoes = [
+    `<button type="button" class="btn" data-modal-acao="nota">${ic('envelope')} Ler a nota</button>`,
+    meu && c.solicitante_id ? `<button type="button" class="btn" data-modal-acao="mensagem">${ic('chat')} Mensagem</button>` : '',
+    c.status === 'Aguardando' ? '<button type="button" class="btn btn-primary" data-modal-acao="assumir">Assumir →</button>' : '',
+    meu ? `<button type="button" class="btn key--green" data-modal-acao="carimbar">${ic('carimbo')} Carimbar</button>` : '',
+  ].join('');
+  const modal = TicketUI.abrir(c, { acoes });
+  // "Helpy lembra": ao abrir o ticket, o Helpy já conta (no canto do ticket e no feed dele)
+  // se essa pessoa ou essa máquina já tiveram um chamado parecido
+  const l = lembranca(c);
+  if (l) {
+    const aviso = document.createElement('div');
+    aviso.className = 'lembranca lembranca-modal';
+    aviso.innerHTML = `${Helpy.avatar('feliz')}<div><strong class="lembranca-titulo">${ic('lampada')} Helpy lembra</strong>${textoLembranca(l)}</div>`;
+    modal.querySelector('.modal-topo').after(aviso);
+    helpy.dizer(textoLembranca(l), { tipo: 'memoria', humor: 'acenando' });
+  }
+  modal.querySelectorAll('[data-modal-acao]').forEach((b) => b.addEventListener('click', () => {
+    modal.close();
+    const acao = b.dataset.modalAcao;
+    if (acao === 'nota') abrirNota(c.numero);
+    if (acao === 'mensagem') falarComColaborador(c.numero);
+    if (acao === 'assumir') assumir(c.numero, elEntrada.querySelector(`[data-numero="${c.numero}"]`));
+    if (acao === 'carimbar') abrirCarimbo(c.numero);
+  }));
+}
 
 /** Abre o HelpIA Chat com o colaborador do ticket, já com o ticket anexado. */
 function falarComColaborador(numero) {
@@ -451,7 +486,7 @@ function falarComColaborador(numero) {
 // ---------- Arrastar da bandeja para a mesa (o ticket acompanha o cursor, balançando) ----------
 Arrastar.ligar(elEntrada, {
   item: '.tkp-item',
-  ignorar: 'input, label, a, button',
+  ignorar: 'input, label, a, button:not(.tkp-abrir)',      // o ticket inteiro é clicável e continua arrastável
   aoMover({ alvo }) {
     arrastando = true;
     elTampo.classList.toggle('alvo', !!alvo?.closest('#tampo'));

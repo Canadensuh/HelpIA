@@ -75,10 +75,12 @@ const Sessao = {
 
   /** Preenche o menu do usuário no cabeçalho e mostra itens do perfil. */
   montarMenu(usuario) {
-    const iniciais = usuario.nome.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
     const rotulos = { colaborador: 'Colaborador', analista: 'Analista', gestor: 'Gestor' };
     document.querySelectorAll('[data-usuario-nome]').forEach((el) => { el.textContent = usuario.nome; });
-    document.querySelectorAll('[data-usuario-iniciais]').forEach((el) => { el.textContent = iniciais; });
+    document.querySelectorAll('[data-usuario-iniciais]').forEach((el) => {
+      el.classList.add('avatar', `perfil-${usuario.perfil}`);
+      el.innerHTML = Avatar.conteudo(usuario);
+    });
     document.querySelectorAll('[data-usuario-perfil]').forEach((el) => {
       const empresa = usuario.empresa?.nome ? ` · ${usuario.empresa.nome}` : '';
       el.textContent = `${rotulos[usuario.perfil] || usuario.perfil}${empresa}`;
@@ -89,9 +91,34 @@ const Sessao = {
     document.querySelectorAll('[data-acao="sair"]').forEach((botao) => {
       botao.addEventListener('click', () => this.sair());
     });
+    window.Conta?.montar(usuario);            // cartão do usuário vira menu (configurações, simulação, sair)
     document.querySelectorAll('[data-inicio]').forEach((link) => { link.href = this.destino(usuario); });
     window.Navegacao?.montar(usuario);          // trilho lateral com as abas (js/navegacao.js)
   },
 };
 
 window.Sessao = Sessao;
+
+/* ---------- Avatar das pessoas ----------
+   Com foto (campo "foto" da conta): mostra a foto.
+   Sem foto (ou se a foto não carregar): ícone colorido do cargo —
+   colaborador = bonequinho · analista = ferramenta · gestor = coroa.
+   A cor de fundo vem da classe perfil-<cargo> do contêiner (base.css). */
+const Avatar = {
+  ICONES: { colaborador: 'usuario', analista: 'ferramenta', gestor: 'coroa' },
+
+  conteudo(pessoa) {
+    const icone = `<i class="ic ic-${this.ICONES[pessoa?.perfil] || 'usuario'} av-ico" aria-hidden="true"></i>`;
+    const foto = String(pessoa?.foto || '');
+    if (!/^https:\/\//.test(foto)) return icone;
+    const src = foto.replace(/[&"<>]/g, (c) => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' }[c]));
+    return `${icone}<img class="av-foto" src="${src}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" />`;
+  },
+
+  /** Avatar completo: <span class="avatar perfil-x classe">…</span> */
+  html(pessoa, classe = '') {
+    return `<span class="avatar perfil-${pessoa?.perfil || 'colaborador'} ${classe}" aria-hidden="true">${this.conteudo(pessoa)}</span>`;
+  },
+};
+
+window.Avatar = Avatar;

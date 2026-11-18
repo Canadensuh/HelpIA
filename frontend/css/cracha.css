@@ -1,0 +1,112 @@
+/* =========================================================
+   cracha.css — o crachá do HelpIA (um só desenho para o app e o site)
+   Usado em: Usuários do gestor (criar-conta.html) e página inicial.
+   Cor por cargo, no crachá inteiro e no cordão:
+     colaborador = azul · analista = verde · gestor = amarelo
+   Marcação:
+     <li class="cracha-item"><span class="cordao"></span>
+       <article class="cracha p-colaborador">
+         <span class="cracha-faixa"></span>
+         <span class="cracha-foto">…</span>
+         <span class="cracha-nome">…</span><span class="cracha-cargo">…</span>
+         <span class="cracha-email">…</span><span class="cracha-senha">…</span>
+         <span class="cracha-id">…</span><span class="codigo-barras"></span>
+       </article></li>
+   Não depende de base.css: as cores estão todas aqui.
+   ========================================================= */
+
+/* ---------- Cores de cada cargo ---------- */
+.cracha.p-colaborador, .cracha-item:has(.p-colaborador) {
+  --cr-1: #3F7BC0;   /* faixa (forte) */
+  --cr-2: #73A6DC;   /* faixa (clara) */
+  --cr-tinta: #1F4A78; /* texto do cargo, foto, listras escuras do cordão */
+  --cr-fundo: #E4EFFB; /* papel do crachá */
+  --cr-borda: #8DB6E2;
+  --cr-foto: #BFD9F6;
+}
+.cracha.p-analista, .cracha-item:has(.p-analista) {
+  --cr-1: #3F8F34;
+  --cr-2: #73C163;
+  --cr-tinta: #285C21;
+  --cr-fundo: #E5F3DC;
+  --cr-borda: #93CB83;
+  --cr-foto: #BFE6AE;
+}
+.cracha.p-gestor, .cracha-item:has(.p-gestor) {
+  --cr-1: #D19A1C;
+  --cr-2: #F2CE58;
+  --cr-tinta: #7A5508;
+  --cr-fundo: #FCF2CF;
+  --cr-borda: #E5C25A;
+  --cr-foto: #F6DD8A;
+}
+
+/* ---------- Cordão: fita listrada na cor do cargo + presilha ---------- */
+.cracha-item { position: relative; display: flex; flex-direction: column; align-items: center; }
+.cracha-item .cordao {
+  position: relative;
+  width: 16px; height: 30px; margin-bottom: -5px;
+  border-radius: 3px 3px 0 0;
+  background: repeating-linear-gradient(180deg, var(--cr-2, #8FA858) 0 6px, var(--cr-1, #5E7A2E) 6px 12px);
+  box-shadow: inset 2px 0 0 rgba(255, 255, 255, .25), inset -2px 0 0 rgba(0, 0, 0, .15);
+}
+.cracha-item .cordao::after {            /* presilha de metal */
+  content: ''; position: absolute; left: 50%; bottom: -1px; z-index: 3;
+  width: 22px; height: 8px; border-radius: 3px;
+  background: linear-gradient(180deg, #E8E8E2, #9C9C94);
+  border: 1px solid #6E6E66;
+  transform: translateX(-50%);
+}
+
+/* ---------- O crachá ---------- */
+.cracha {
+  position: relative;
+  width: 100%;
+  display: flex; flex-direction: column; align-items: center; gap: .15rem;
+  padding: 0 .9rem 1rem;
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--cr-fundo, #FFFCF2) 0%, #FFFDF6 92%);
+  border: 2px solid var(--cr-borda, #D5CBAE);
+  color: #23291B;
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, .45);
+  text-align: center;
+  overflow: hidden;
+  transform-origin: 50% -30px;
+}
+.cracha::before {               /* furo do cordão */
+  content: ''; position: absolute; top: 7px; left: 50%; transform: translateX(-50%);
+  width: 30px; height: 7px; border-radius: 4px; background: rgba(0, 0, 0, .25); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .4); z-index: 2;
+}
+.cracha .cracha-faixa {
+  align-self: stretch; margin: 0 -.9rem .9rem; height: 54px;
+  background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, .16) 0 8px, transparent 8px 16px), linear-gradient(90deg, var(--cr-1), var(--cr-2));
+  border-bottom: 2px solid var(--cr-borda);
+}
+.cracha .cracha-foto {
+  position: relative; z-index: 1;
+  width: 70px; height: 70px; margin-top: -48px; margin-bottom: .4rem;
+  border-radius: 50%; overflow: hidden;
+  display: grid; place-items: center;
+  background: var(--cr-tinta); color: var(--cr-foto);
+  border: 4px solid #FFFDF6;
+  box-shadow: 0 0 0 2px var(--cr-borda);
+  font-family: var(--font-display, 'Bricolage Grotesque', sans-serif); font-weight: 700; font-size: 1.5rem;
+}
+.cracha .cracha-foto .ic { width: 46%; height: 46%; }
+.cracha .cracha-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cracha .cracha-nome { font-family: var(--font-display, 'Bricolage Grotesque', sans-serif); font-weight: 700; font-size: 1.02rem; line-height: 1.2; color: #23291B; }
+.cracha .cracha-cargo {
+  margin: .1rem 0 .15rem; padding: .05rem .55rem; border-radius: 999px;
+  background: var(--cr-tinta); color: #FFFDF6;
+  font-size: .66rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+}
+.cracha .cracha-email { font-size: .75rem; color: #4F4B3A; word-break: break-all; }
+.cracha .cracha-senha { font-size: .74rem; color: #4F4B3A; }
+.cracha .cracha-senha b { font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; letter-spacing: .18em; color: #23291B; }
+.cracha .cracha-id { margin-top: .35rem; font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; font-size: .68rem; color: #4F4B3A; }
+.cracha .codigo-barras {
+  display: block; width: 70%; height: 18px; margin-top: .45rem; opacity: .6;
+  background: repeating-linear-gradient(90deg,
+    #23291B 0 2px, transparent 2px 4px, #23291B 4px 5px, transparent 5px 8px,
+    #23291B 8px 11px, transparent 11px 13px, #23291B 13px 14px, transparent 14px 17px);
+}

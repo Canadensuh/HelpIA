@@ -62,7 +62,7 @@ const API = {
   resolver(numero, nota) { return this.enviar(`/chamados/${numero}/resolver`, { nota }); },
   /** Só tickets "Aguardando" do próprio colaborador. */
   excluir(numero) { return this.requisitar(`/chamados/${numero}`, { method: 'DELETE' }); },
-  /** Esconde um ticket resolvido do histórico do colaborador (o analista continua vendo). */
+  /** Tira um ticket resolvido da coluna "Histórico" da mesa do colaborador (continua na tela Histórico de Tickets). */
   removerDoHistorico(numero) { return this.enviar(`/chamados/${numero}/ocultar`); },
 
   // ---------- HelpIA Chat ----------
@@ -73,8 +73,17 @@ const API = {
   chatAbrir(com, ticket = null) { return this.enviar('/chat/conversas', { com, ticket }); },
   chatMensagens(id) { return this.requisitar(`/chat/conversas/${id}/mensagens`); },
   /** anexos: [{ id, nome, tipo, tamanho }] — os arquivos são guardados antes por Anexos.salvar() */
-  chatEnviar(id, texto, ticket = null, anexos = []) { return this.enviar(`/chat/conversas/${id}/mensagens`, { texto, ticket, anexos }); },
+  /** resposta = id da mensagem respondida (opcional) */
+  chatEnviar(id, texto, ticket = null, anexos = [], resposta = null) { return this.enviar(`/chat/conversas/${id}/mensagens`, { texto, ticket, anexos, resposta }); },
+  /** Comando /clear (só o gestor): apaga as mensagens da conversa. */
+  chatLimpar(id) { return this.requisitar(`/chat/conversas/${id}/mensagens`, { method: 'DELETE' }); },
   chatLida(id) { return this.enviar(`/chat/conversas/${id}/lida`); },
+
+  // ---------- Minha conta e modo simulação (gestor) ----------
+  trocarSenha(atual, nova) { return this.enviar('/auth/senha', { atual, nova }); },
+  simulacao() { return this.requisitar('/simulacao'); },
+  definirSimulacao(ativo) { return this.enviar('/simulacao', { ativo }); },
+  limparDados() { return this.enviar('/simulacao/limpar'); },
 
   // ---------- Metas (definidas pelo gestor) ----------
   metas() { return this.requisitar('/metas'); },
